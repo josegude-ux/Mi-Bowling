@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f3f8fb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Mi Bowling">
+  <meta name="description" content="Tus entrenamientos, competiciones, bolas, pistas y estadísticas de bowling. Sin cuenta y sin conexión.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Mi Bowling · Analítica</title>
+</head>
+<body>
+ <header class="topbar">
+   <div class="topbar-inner">
+     <button class="brand" type="button" onclick="go('inicio')" aria-label="Ir al inicio"><span class="brand-mark">🎳</span>Mi <b>Bowling</b><span class="brand-sub">ANALÍTICA</span></button>
+     <div class="header-actions"><span class="offline-label"><i></i> En tu dispositivo</span><button type="button" class="icon-button" onclick="go('ajustes')" aria-label="Ajustes" title="Ajustes">⚙</button></div>
+   </div>
+ </header>
+ <main id="app" class="app-main" role="main"></main>
+ <nav id="bottom-nav" class="bottom-nav" aria-label="Navegación"></nav>
+ <input id="restore-file" type="file" accept=".json,application/json" hidden>
+ <script src="app.js"></script>
+</body>
+</html>
