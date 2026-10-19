@@ -57,3 +57,13 @@ body:has(.premium-home) .premium-stat{min-height:79px}
 body:has(.premium-home) .premium-quick-btn{min-height:76px}
 .premium-version{text-align:center;margin:15px 0 5px;font-size:11px;color:#74899a}
 @media(max-width:390px){body:has(.premium-home) .premium-banner{height:184px}body:has(.premium-home) .premium-stat{min-height:74px}}
+
+/* 2.4: registro más directo y notación bowling */
+.compact-score{padding:12px;margin:12px 0}.compact-score .card-head{margin-bottom:4px}
+.score-marks{display:flex!important;align-items:center;justify-content:center;gap:2px;min-height:32px!important;margin:2px 0!important;letter-spacing:0!important}
+.score-mark{display:inline-flex;align-items:center;justify-content:center;font-size:15px;min-width:14px;min-height:26px;font-weight:850}
+.score-mark.strike-mark{font-size:25px;color:#008e9b;font-weight:950}
+.score-mark.split-mark{border:2px solid #db5a50;border-radius:100%;width:26px;height:26px;color:#b63734;font-weight:900}
+.stats-checkbox{background:#eaf7f7;border-radius:12px;padding:11px 12px;margin:10px 0;font-weight:750}
+.stats-checkbox input{width:18px;height:18px}
+body:has(.premium-home) .premium-banner{background-position:center 62%;background-size:contain;background-color:#09273e}
