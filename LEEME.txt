@@ -1,9 +1,1 @@
-Mi Bowling v2.4.0 · Analítica Premium
-
-Incluye: exclusión de partidas de entrenamiento de estadísticas, botones de registro automático, marcador debajo de los controles, strikes mayores y detección automática de splits, icono deportivo de competición y ajuste de cabecera.
-
-Para actualizar: extrae el ZIP y sube TODOS los archivos a la raíz del repositorio GitHub Pages Mi-Bowling, sustituyendo los anteriores. index.html, app.js, styles.css y sw.js deben quedar en la raíz.
-
-La aplicación guarda las partidas en el almacenamiento local de tu iPhone. La actualización está diseñada para conservarlo. La versión aparece en Inicio y Ajustes. El catálogo externo de bolas queda para una fase posterior.
-
-IMPORTANTE: versión de prueba. Verifica los botones rápidos y la actualización en el iPhone antes de utilizarla en competiciones.
+Mi Bowling v2.5.0 — subir TODOS los archivos a la raíz de GitHub Pages. La portada se incluye como portada-opcion-2.jpg. La versión instalada se muestra en Inicio y Ajustes. Mantener copias JSON periódicas. Al ser una actualización de prueba, verificar marcadores, faltas y décimo frame antes de registrar competiciones reales.
