@@ -26,3 +26,24 @@
 .roll-log .item-subtitle{overflow-wrap:anywhere;line-height:1.6}
 .card details summary{cursor:pointer;color:#058893;font-weight:750;font-size:12px}
 @media(max-width:370px){.line-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Mi Bowling 2.2: Inicio Premium B, sin eslogan. El resto de pantallas conserva el diseño analítico. */
+body:has(.premium-home) .app-main{padding-top:0}
+.premium-home{max-width:580px;margin:0 auto}
+.premium-banner{height:228px;border-radius:0 0 20px 20px;background:linear-gradient(180deg,rgba(1,19,38,.42),transparent 48%),url('./premium-bowling-hero.jpg') center 42%/cover no-repeat;position:relative;overflow:hidden;box-shadow:0 9px 24px #05394a20}
+.premium-banner-name{font-size:22px;font-weight:850;color:white;position:absolute;top:21px;left:21px;letter-spacing:-.6px;text-shadow:0 2px 14px #001b37b8}
+.premium-body{padding:0 1px 24px}
+.premium-dashboard-grid{position:relative;z-index:1;margin-top:-18px;display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.premium-stat{min-width:0;text-align:left;border:1px solid #e1ebf0;border-radius:15px;background:white;min-height:92px;padding:13px 10px;display:flex;gap:10px;align-items:center;box-shadow:0 5px 17px #16496912;color:var(--ink)}
+.premium-stat:disabled{opacity:1;cursor:default}.premium-stat-icon{display:inline-flex;flex:none;align-items:center;justify-content:center;color:#048b9b;font-size:24px;font-weight:850;width:29px}.premium-stat-text{display:flex;flex-direction:column;min-width:0}.premium-label{font-size:10px;font-weight:750;color:#59758a;line-height:1.3}.premium-stat strong{font-size:25px;font-weight:850;line-height:1.18;letter-spacing:-.7px;overflow-wrap:anywhere}.premium-stat small{font-size:9px;color:#168d8e;margin-top:4px;line-height:1.2}
+.premium-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0 12px}
+.premium-quick-btn{border:1px solid #dfeaf1;background:linear-gradient(160deg,#fff,#f1f7fa);color:#254463;padding:13px 4px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:10px;font-weight:750;min-height:88px;box-shadow:0 3px 13px #102f4d09}
+.premium-quick-btn.main{background:linear-gradient(145deg,#10b6c1,#007887);color:white;border-color:transparent;box-shadow:0 8px 15px #008f9a2b}
+.premium-quick-icon{font-size:26px;line-height:28px}
+.premium-summary,.premium-last{border:1px solid #e2edf2;background:white;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 4px 14px #16496909}
+.premium-summary-header{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px}.premium-summary-header h2{font-size:15px;margin:0;font-weight:850}
+.premium-summary-content{display:flex;align-items:center;gap:14px}.premium-summary-main{width:37%;display:flex;flex-direction:column;gap:5px;flex:none;border-right:1px solid #e3edf2;padding-right:12px}.premium-summary-main span{font-size:11px;color:#5f7a8a}.premium-summary-main strong{font-size:28px;font-weight:870;letter-spacing:-1px}.premium-summary-main small{color:#13949d;font-size:10px}.premium-bars{height:105px;display:flex;flex:1;align-items:end;gap:3px;border-bottom:1px solid #cbdbe3;background:repeating-linear-gradient(to top,transparent 0,transparent 24%,#edf2f5 25%);padding:6px 2px 0}.premium-bar{background:linear-gradient(#20bdc8,#0097aa);min-width:3px;flex:1;border-radius:2px 2px 0 0}.premium-empty-chart{color:#7a94a3;font-size:11px;line-height:1.45;flex:1;text-align:center}
+.premium-minigrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:12px}.premium-minigrid .premium-stat{display:block;min-height:92px;padding:9px}.premium-minigrid .premium-stat-icon{font-size:20px;width:auto;height:24px;justify-content:flex-start}.premium-minigrid .premium-stat strong{font-size:22px}.premium-minigrid .premium-label{font-size:10px}
+.premium-session{background:white;width:100%;border-top:1px solid #edf2f5;padding:11px 1px;display:flex;text-align:left;align-items:center;gap:11px;color:var(--ink)}.premium-session-icon{font-size:20px;color:#0098a6}.premium-session span:nth-child(2){flex:1;min-width:0}.premium-session strong,.premium-session small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.premium-session strong{font-size:12px}.premium-session small{font-size:10px;color:#7891a0;margin-top:4px}.premium-session>span:last-child{color:#07909b;font-size:20px}.premium-no-sessions{font-size:12px;color:#71849a}
+@media(min-width:700px){.premium-banner{border-radius:18px;height:265px}.premium-body{padding:0 8px 24px}}
+@media(max-width:375px){.premium-banner{height:205px}.premium-stat{gap:6px;padding:10px 7px}.premium-stat strong{font-size:22px}.premium-quick-btn{font-size:9px}}

@@ -37,3 +37,11 @@ PRUEBAS REALIZADAS
 - Navegación, formularios, registro, catálogo de bolas y estadísticas en vista móvil.
 
 Diseño original inspirado en la categoría de apps analíticas para bowling.
+
+NOVEDADES v2.1: tocar bolos que QUEDAN EN PIE; botón de registro inmediato bajo diagrama (sin seleccionar ninguno, strike/derribo completo); entrenamientos también con par de pistas y alternancia por frame.
+
+VERSIÓN 2.2 PREMIUM B
+- Inicio rediseñado siguiendo la opción B elegida, sin frase de cabecera.
+- Imagen de bowling, métricas separadas y resumen de entrenamientos real.
+- Se mantienen todos los datos de v2.1; hacer copia de seguridad antes de actualizar.
+- Subir todos los archivos nuevos a la raíz de GitHub, incluido premium-bowling-hero.jpg.
