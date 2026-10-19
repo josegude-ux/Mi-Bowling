@@ -47,3 +47,13 @@ body:has(.premium-home) .app-main{padding-top:0}
 .premium-session{background:white;width:100%;border-top:1px solid #edf2f5;padding:11px 1px;display:flex;text-align:left;align-items:center;gap:11px;color:var(--ink)}.premium-session-icon{font-size:20px;color:#0098a6}.premium-session span:nth-child(2){flex:1;min-width:0}.premium-session strong,.premium-session small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.premium-session strong{font-size:12px}.premium-session small{font-size:10px;color:#7891a0;margin-top:4px}.premium-session>span:last-child{color:#07909b;font-size:20px}.premium-no-sessions{font-size:12px;color:#71849a}
 @media(min-width:700px){.premium-banner{border-radius:18px;height:265px}.premium-body{padding:0 8px 24px}}
 @media(max-width:375px){.premium-banner{height:205px}.premium-stat{gap:6px;padding:10px 7px}.premium-stat strong{font-size:22px}.premium-quick-btn{font-size:9px}}
+
+/* Inicio premium v2.3 */
+body:has(.premium-home) .topbar{background:#071f34;color:white;border-bottom:0}
+body:has(.premium-home) .topbar .brand,body:has(.premium-home) .topbar .icon-button{color:white}
+body:has(.premium-home) .premium-banner{height:210px;border-radius:0;background-position:center 53%;box-shadow:none}
+body:has(.premium-home) .premium-dashboard-grid{margin-top:-24px}
+body:has(.premium-home) .premium-stat{min-height:79px}
+body:has(.premium-home) .premium-quick-btn{min-height:76px}
+.premium-version{text-align:center;margin:15px 0 5px;font-size:11px;color:#74899a}
+@media(max-width:390px){body:has(.premium-home) .premium-banner{height:184px}body:has(.premium-home) .premium-stat{min-height:74px}}

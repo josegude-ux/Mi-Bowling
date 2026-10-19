@@ -1,47 +1,9 @@
-MI BOWLING · ANALÍTICA · VERSIÓN 2.0 (PRIMERA VERSIÓN FUNCIONAL)
-===============================================================
+Mi Bowling v2.3.0 · Premium
 
-CONTENIDO DEL ZIP
-- index.html: abre la aplicación.
-- app.js, styles.css: funcionamiento y diseño.
-- manifest.json, sw.js, iconos: instalación y uso sin conexión.
+Sube todos los archivos descomprimidos a la raíz del repositorio GitHub, reemplazando los anteriores. Incluye sw.js e index.html.
 
-PARA PUBLICAR EN GITHUB PAGES
-1. Descomprime el ZIP.
-2. Sube los archivos que contiene a la raíz de un repositorio de GitHub (index.html debe estar en la raíz, no dentro de otra carpeta).
-3. En el repositorio: Settings > Pages > Deploy from a branch > main > /(root) > Save.
-4. Abre la dirección que proporcione GitHub Pages, desde Safari en el iPhone.
-5. Safari > Compartir > Añadir a pantalla de inicio.
+Las nuevas versiones se comprueban al abrir o volver a la app con conexión. Si se detecta un cambio, se descarga y se aplica al reabrir, o mediante Actualizar ahora desde Ajustes.
 
-PRIMEROS PASOS
-1. En "Mis bolas", registra tus bolas (marca/modelo/peso/foto opcional).
-2. Pulsa "Nueva" y selecciona entrenamiento o competición oficial.
-3. En una competición, introduce el par y pista de salida.
-4. En cada lanzamiento marca los bolos que HAN CAÍDO (no los que quedan en pie), selecciona la bola y registra la línea.
-5. Guarda el tiro: el marcador se calcula solo.
-6. En una competición, "Cambiar par" permite fijar un nuevo par desde el siguiente frame disponible, o elegirlo para la siguiente partida.
-7. Revisa las estadísticas por separado en "Estadísticas".
+La actualización no borra los datos del dispositivo. Antes de actualizar es prudente exportar una copia JSON desde Ajustes.
 
-IMPORTANTE
-- Los datos se guardan LOCALMENTE en cada navegador/app instalada, sin nube ni sincronización.
-- Las partidas incompletas se conservan pero NO cuentan en las medias ni en el total de partidas terminadas.
-- Para corregir una tirada anterior, se rebobina la partida desde ese punto: se borran esa tirada y las posteriores, previa confirmación.
-- Haz copias de seguridad con Ajustes (icono engranaje) > Exportar copia.
-- Importar copia REEMPLAZA los datos presentes, previa confirmación.
-- Si la versión 1 ya estaba publicada en la misma dirección, esta versión puede migrar el historial existente guardado en el mismo navegador. Aun así, realiza una copia antes de sustituir archivos.
-- El PWA debe publicarse en HTTPS para instalarse y usarse sin conexión correctamente. Abrir index.html directamente en Archivos no instala el modo offline.
-
-PRUEBAS REALIZADAS
-- Marcador: partida perfecta 300, spares 190, canaletas 0, 9 abiertos 90 y bonificación del 10º frame.
-- Comprobadas alternancias 5/6 y cambio al par 9/10.
-- Navegación, formularios, registro, catálogo de bolas y estadísticas en vista móvil.
-
-Diseño original inspirado en la categoría de apps analíticas para bowling.
-
-NOVEDADES v2.1: tocar bolos que QUEDAN EN PIE; botón de registro inmediato bajo diagrama (sin seleccionar ninguno, strike/derribo completo); entrenamientos también con par de pistas y alternancia por frame.
-
-VERSIÓN 2.2 PREMIUM B
-- Inicio rediseñado siguiendo la opción B elegida, sin frase de cabecera.
-- Imagen de bowling, métricas separadas y resumen de entrenamientos real.
-- Se mantienen todos los datos de v2.1; hacer copia de seguridad antes de actualizar.
-- Subir todos los archivos nuevos a la raíz de GitHub, incluido premium-bowling-hero.jpg.
+La versión instalada aparece al pie del Inicio y en Ajustes.
