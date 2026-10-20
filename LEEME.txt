@@ -1,7 +1,4 @@
-Mi Bowling v3.1.4 · Acceso a Liga desde Nueva > Competición oficial
-
-- Al elegir competición oficial, selecciona el formato habitual o Liga Nacional.
-- El marcador de Liga conserva los registros locales previos.
-- En una instalación nueva aparece un enfrentamiento ficticio de demostración.
-- No desinstalar la app: el almacenamiento local se perdería.
-- Versión de prueba, validar en iPhone.
+Mi Bowling v3.2.0 - Liga Nacional, acta simplificada de puntuaciones.
+Sube el contenido del ZIP a la raiz del repositorio GitHub Pages. No desinstales la app del iPhone.
+El acta tiene datos de muestra ficticios; el marcador anterior se conserva con su clave local previa.
+Puntos oficiales: 4 individuales + 4 trios + 2 bolos. Los resultados incompletos no adjudican puntos.
