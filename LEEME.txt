@@ -1,20 +1,7 @@
-Mi Bowling 3.1.2 · Cálculo automático Liga Nacional
+Mi Bowling v3.1.4 · Acceso a Liga desde Nueva > Competición oficial
 
-Mi Bowling v3.1.0 - PRUEBA DE LIGA NACIONAL
-
-Descomprimir y subir TODOS los archivos a la raíz del mismo repositorio GitHub Pages de Mi Bowling (sin borrar los archivos previos necesarios).
-
-Novedades:
-- Liga Nacional Primera Masculina: dos tripletas separadas y 12 jugadores.
-- Enfrentamientos independientes y dos partidas por enfrentamiento.
-- Introducción cuadro a cuadro de bolos por tiro (sin seleccionar cuáles).
-- Empezar desde cualquier cuadro: puntuación acumulada del monitor y X/pleno, /semi o abierto.
-- Sumas provisionales de ambos tríos, considerando solo el último acumulado introducido en el monitor por jugador.
-- Selector desplegable en Estadísticas en vez de desplazamiento lateral.
-
-LIMITACIONES DE ESTA PRUEBA:
-- Los lanzamientos registrados NO se convierten automáticamente en puntos del monitor si falta historial o bonos de cuadros anteriores.
-- Los puntos federativos de 10 por enfrentamiento y las sustituciones aún NO están automatizados.
-- Los datos de Liga se almacenan LOCALMENTE en el dispositivo en un registro separado del historial habitual. Su copia se exporta desde Liga; el JSON estándar de Mi Bowling NO los incluye.
-- No borrar/reinstalar la app sin exportar copias previamente.
-- Si una partida tiene puntuaciones parciales, la comparación entre tríos no es equivalente hasta que todos estén al día.
+- Al elegir competición oficial, selecciona el formato habitual o Liga Nacional.
+- El marcador de Liga conserva los registros locales previos.
+- En una instalación nueva aparece un enfrentamiento ficticio de demostración.
+- No desinstalar la app: el almacenamiento local se perdería.
+- Versión de prueba, validar en iPhone.
