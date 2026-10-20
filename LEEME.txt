@@ -1,4 +1,5 @@
-Mi Bowling Premium v2.7.0 (prueba)
-Actualización sobre v2.6. Copia de seguridad recomendada.
-Sube todos los archivos del ZIP a la raíz de tu repositorio GitHub Pages.
-Novedades: análisis por frame, combinaciones, periodos, competiciones y tamaño del registro. Corrección anillo rojo 0%.
+Mi Bowling v2.8.0 — BASE VISUAL.
+Cambios: icono de pista azul, portada con bola a la izquierda, botón Empezar partida más pequeño a la derecha.
+Mantiene todas las funciones de v2.7. Antes de actualizar, exporta copia JSON.
+Extrae los archivos en la RAÍZ del repositorio GitHub Pages. Comprueba versión instalada 2.8.0.
+Nota: iOS puede conservar un icono antiguo en pantalla de inicio por caché; puede ser necesario eliminar solo el acceso directo y añadirlo de nuevo desde Safari, previa copia de seguridad.

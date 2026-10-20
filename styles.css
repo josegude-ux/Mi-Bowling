@@ -88,3 +88,10 @@ body.home-screen .app-main{padding-top:8px}
 
 /* v2.7 */
 .v25-ring.zero-hit{background:#f05b56!important}.v25-actions.quick-compact .btn{padding:8px 3px;font-size:11px}.v25-actions.quick-large .btn{padding:19px 4px;font-size:14px}.quick-before{margin-bottom:8px}
+
+/* v2.8 visual baseline: image has intrinsically correct proportions; never stretch */
+body.home-screen .topbar{display:none}
+body.home-screen .app-main{padding-top:12px}
+.v25-hero{height:clamp(280px,78vw,360px)!important;min-height:280px!important;background-image:linear-gradient(180deg,rgba(0,12,31,.35),transparent 35%,rgba(0,14,29,.08)),url('./portada-opcion-2.jpg')!important;background-size:cover!important;background-position:40% center!important;border-radius:20px!important;position:relative}
+.v25-start{position:absolute!important;left:auto!important;right:13px!important;bottom:14px!important;width:auto!important;max-width:none!important;font-size:12px!important;min-height:38px!important;padding:9px 13px!important;border:1px solid #54deeb!important;border-radius:24px!important;background:rgba(5,52,81,.88)!important;box-shadow:0 3px 12px #00192360!important}
+.v25-hero-name{font-size:clamp(26px,6vw,34px)!important}
