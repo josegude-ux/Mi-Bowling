@@ -85,3 +85,6 @@ body.home-screen .app-main{padding-top:8px}
 .v25-hero{border-radius:20px!important;background-position:center center!important;background-size:cover!important;height:min(84vw,340px)!important;min-height:270px}
 .v25-hero-name{font-size:clamp(26px,6vw,34px)!important;text-shadow:0 2px 7px #000b}
 .v25-shortcuts button{min-height:82px}
+
+/* v2.7 */
+.v25-ring.zero-hit{background:#f05b56!important}.v25-actions.quick-compact .btn{padding:8px 3px;font-size:11px}.v25-actions.quick-large .btn{padding:19px 4px;font-size:14px}.quick-before{margin-bottom:8px}

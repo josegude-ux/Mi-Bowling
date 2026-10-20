@@ -1,4 +1,4 @@
-MI BOWLING PREMIUM v2.6.0
-Subir los archivos descomprimidos a la raiz de GitHub Pages.
-Cambios: Pocket configurable por mano, Clean Games, exportar marcador como imagen, portada compacta, historial por jornadas.
-Mantiene los registros locales existentes. Exporta copia de seguridad antes de actualizar.
+Mi Bowling Premium v2.7.0 (prueba)
+Actualización sobre v2.6. Copia de seguridad recomendada.
+Sube todos los archivos del ZIP a la raíz de tu repositorio GitHub Pages.
+Novedades: análisis por frame, combinaciones, periodos, competiciones y tamaño del registro. Corrección anillo rojo 0%.
