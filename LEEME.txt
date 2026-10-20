@@ -1,4 +1,11 @@
-Mi Bowling v3.2.0 - Liga Nacional, acta simplificada de puntuaciones.
-Sube el contenido del ZIP a la raiz del repositorio GitHub Pages. No desinstales la app del iPhone.
-El acta tiene datos de muestra ficticios; el marcador anterior se conserva con su clave local previa.
-Puntos oficiales: 4 individuales + 4 trios + 2 bolos. Los resultados incompletos no adjudican puntos.
+Mi Bowling 3.3.0 — Liga Nacional (PRUEBA)
+
+Actualización: subir el contenido de esta carpeta a la raíz del repositorio GitHub Pages Mi-Bowling, reemplazando los archivos anteriores. No desinstales la aplicación en el iPhone; los datos locales pueden perderse al desinstalar.
+
+Incluye: 3 jornadas x 7 encuentros (4 sábado + 3 domingo), nombres propios y rivales reutilizables, puntuaciones finales por partida, 10 puntos federativos por enfrentamiento, estadísticas registradas, y registro detallado opcional para cualquiera de los 12 jugadores, enlazado a la casilla de la hoja.
+
+IMPORTANTE: Marcar "Mi posición" antes de abrir tu propio registro detallado, para que tus partidas cuenten en las estadísticas personales. Las detalladas de otros jugadores se excluyen de tus estadísticas personales.
+
+Copia general JSON: incluye actas de Liga, plantillas y partidas detalladas, pero los PDF de patrones siguen guardándose por separado.
+
+Versión de prueba: verificar cálculos y navegación en iPhone antes de utilizar en una competición real.
