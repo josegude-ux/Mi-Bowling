@@ -1,1 +1,4 @@
-Mi Bowling v2.5.0 — subir TODOS los archivos a la raíz de GitHub Pages. La portada se incluye como portada-opcion-2.jpg. La versión instalada se muestra en Inicio y Ajustes. Mantener copias JSON periódicas. Al ser una actualización de prueba, verificar marcadores, faltas y décimo frame antes de registrar competiciones reales.
+MI BOWLING PREMIUM v2.6.0
+Subir los archivos descomprimidos a la raiz de GitHub Pages.
+Cambios: Pocket configurable por mano, Clean Games, exportar marcador como imagen, portada compacta, historial por jornadas.
+Mantiene los registros locales existentes. Exporta copia de seguridad antes de actualizar.
