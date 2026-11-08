@@ -1,4 +1,4 @@
-name: MI BOWLING · Auth correo + RLS ficticio · LAB A5
+name: MI BOWLING · Auth / RLS / migración con respaldos · LAB A6
 on:
   push:
     branches:
@@ -17,6 +17,9 @@ on:
       - tests/auth-webkit-a4.test.cjs
       - tests/rls-mock-server.cjs
       - tests/auth-three-users-rls-a5.test.cjs
+      - auth-legacy-migration-lab.js
+      - tests/auth-migration-a6.test.cjs
+      - tests/private-pdf-store-mock.cjs
       - auth-private-repository.js
       - docs/sql/BOWLING_AUTH_RLS_A1_REVIEW_ONLY.sql
       - auth-supabase-adapter.js
@@ -53,6 +56,10 @@ jobs:
           node --check tests/rls-mock-server.cjs
           node --check tests/auth-three-users-rls-a5.test.cjs
           node tests/auth-three-users-rls-a5.test.cjs
+          node --check auth-legacy-migration-lab.js
+          node --check tests/auth-migration-a6.test.cjs
+          node --check tests/private-pdf-store-mock.cjs
+          node tests/auth-migration-a6.test.cjs
           node --check tests/auth-callback.test.cjs
           node tests/auth-callback.test.cjs
           node --check tests/auth-email-flows.test.cjs
