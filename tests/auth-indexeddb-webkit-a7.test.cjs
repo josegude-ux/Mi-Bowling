@@ -4,7 +4,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const os=require('node:os'),https=require('node:https'),cp=require('node:child_process');
-const {webkit,devices}=require('playwright');
+const {webkit,chromium,devices}=require('playwright');
 const root=path.resolve(__dirname,'..'),out=path.join(__dirname,'artifacts-migration-a7');
 fs.mkdirSync(out,{recursive:true});
 const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'bowling-a7-idb-'));
@@ -28,10 +28,10 @@ async function start(){
  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve)});
  return 'https://127.0.0.1:'+server.address().port;
 }
-async function checkReader(page,base){
+async function checkReader(page,base,useBlob=false){
  await page.goto(base+'/lab/migracion-a7.html');
  await page.addScriptTag({url:base+'/auth-idb-pdf-reader-lab.js'});
- const result=await page.evaluate(async()=>{
+ const result=await page.evaluate(async(useBlob)=>{
   let stage='reader init';
   try{
   const fact=window.MiBowlingIdbPdfReaderLAB,M=window.MiBowlingMigrationLAB;
@@ -53,7 +53,7 @@ async function checkReader(page,base){
   const db='mi-bowling-patrones-pdf-'+fixture;
   stage='creating fake WebKit database: secure='+(window.isSecureContext)+' origin='+location.origin;
   const binary=contents('Aceite-A7');
-  await makeDb(db,[['oil',new Uint8Array(binary)]]); // WebKit CI supports typed-array fixtures; Blob write probed separately
+  await makeDb(db,[['oil',useBlob?new Blob([binary],{type:'application/pdf'}):new Uint8Array(binary)]]);
   stage='reader open existing fixture';
   const beforeList=typeof indexedDB.databases==='function'?(await indexedDB.databases()).map(x=>x.name):null;
   const reader=fact.create({indexedDB,sourceProfileId:fixture});
@@ -91,13 +91,13 @@ async function checkReader(page,base){
    throw Error('Reader mutated existing DB');
   absentReader.close();
   // Corrupted bytes and wrong MIME must be rejected.
-  await makeDb('mi-bowling-patrones-pdf-p-a7-corrupt',[['bad',new TextEncoder().encode('not a pdf')]]);
+  await makeDb('mi-bowling-patrones-pdf-p-a7-corrupt',[['bad',useBlob?new Blob(['not a pdf'],{type:'application/pdf'}):new TextEncoder().encode('not a pdf')]]);
   const invalid=fact.create({indexedDB,sourceProfileId:'p-a7-corrupt'});
   try{await invalid.readPdf('bad');throw Error('Corrupt PDF was accepted')}
   catch(e){if(!/Firma/.test(e.message))throw e}
   invalid.close();
   // Legacy fallback: scoped DB absent; original can be read using known legacy name.
-  await makeDb('mi-bowling-patrones-pdf',[['oil-old',contents('OldLegacy')]]);
+  await makeDb('mi-bowling-patrones-pdf',[['oil-old',useBlob?new Blob([contents('OldLegacy')],{type:'application/pdf'}):contents('OldLegacy')]]);
   const legacy=fact.create({indexedDB,sourceProfileId:'legacy'});
   stage='legacy reader fallback';
   const old=await legacy.readPdf('oil-old');
@@ -112,10 +112,12 @@ async function checkReader(page,base){
   return {bytes:binary.length,pkgSha:pkg.sha256,
    sourceOnly:db,createdMissing:false,legacyFallback:true,score:237};
   }catch(e){return{failed:true,stage,name:e?.name,message:e?.message,stack:e?.stack,asString:String(e)}}
- });
- if(result.failed)throw Error('WebKit IDB stage '+result.stage+': '+JSON.stringify(result));
+ },useBlob);
+ if(result.failed)throw Error((useBlob?'Chrome Blob':'WebKit bytes')+' IDB stage '+result.stage+': '+JSON.stringify(result));
  assert.equal(result.score,237);
- console.log('OK · WebKit IndexedDB read-only: Blob bytes, SHA-256, old DB fallback, missing/invalid PDF, no new DB');
+ console.log(useBlob?
+  'OK · Chromium IndexedDB real Blob: bytes, SHA-256, legacy fallback and read-only database':
+  'OK · WebKit IndexedDB Uint8Array: bytes, SHA-256, legacy fallback, missing/invalid PDF, no new DB');
  return result;
 }
 async function click(page,id){
@@ -199,6 +201,16 @@ async function main(){
   await ui(page,base,name);
   await ctx.close();
  }
+ // Chromium's native IndexedDB Blob persistence complements WebKit's synthetic
+ // typed-array fixture; this does NOT certify Safari's Blob serialization.
+ const chromeBinary=cp.execFileSync('which',['google-chrome'],{encoding:'utf8'}).trim();
+ const chrome=await chromium.launch({executablePath:chromeBinary,headless:true,args:['--no-sandbox']});
+ try{
+  const ctx=await chrome.newContext({ignoreHTTPSErrors:true});
+  const page=await ctx.newPage();
+  await checkReader(page,base,true);
+  await ctx.close();
+ }finally{await chrome.close();}
  assert.ok(hits.every(h=>!h.includes('supabase')&&!h.includes('password')&&!h.includes('token=')),
   'Unexpected external or token access');
  console.log('OK · Actual WebKit engine, isolated temporary HTTPS and fictional data only');
