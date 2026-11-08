@@ -58,10 +58,10 @@ assert(scene.innerHTML.includes('<svg'));
 assert.equal(labels.breakpoint.textContent,'Tabla 27');
 assert(saves>=6,'Cambios guardados');
 assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Datos existentes conservados');
-assert(app.includes("const APP_VERSION='3.3.4-prueba'"));
-assert(index.includes('styles.css?v=334prueba')&&index.includes('app.js?v=334prueba'));
-assert(worker.includes('mi-bowling-analitica-v3-3-4-prueba'));
-assert(worker.includes("'./styles.css?v=334prueba','./app.js?v=334prueba'"));
+assert(app.includes("const APP_VERSION='3.3.5-prueba'"));
+assert(index.includes('styles.css?v=335prueba')&&index.includes('app.js?v=335prueba'));
+assert(worker.includes('mi-bowling-analitica-v3-3-5-prueba'));
+assert(worker.includes("'./styles.css?v=335prueba','./app.js?v=335prueba'"));
 assert(styles.includes('MI BOWLING · LAB visual R2'));
 assert(app.includes('${laneVisual(s)}'),'La pista está integrada en el registro');
 assert(app.includes("' · Break '+esc(r.line.breakpoint)"),'El historial muestra breakpoint');
@@ -76,7 +76,9 @@ assert(scoreIndex>=0&&pairIndex>scoreIndex&&undoIndex>pairIndex&&undoIndex-pairI
 assert.equal(registrySource.split('onclick="undoRoll()"').length-1,1,'Un único botón Deshacer');
 assert(registrySource.includes("g.rolls.length?'':'disabled'"),'Deshacer inactivo sin tiradas');
 assert(registrySource.includes("score-action-buttons"),'Ambos botones agrupados en marcador');
-assert(registrySource.includes("${lane.pair?`<button"),'Cambiar par sigue siendo condicional');
+assert(!registrySource.includes("${lane.pair?`<button"),'Cambiar par debe mostrarse incluso sin par');
+assert(registrySource.includes('<button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button>'),'Cambiar par siempre presente');
+assert(registrySource.includes('onclick="undoRoll()"'),'Deshacer permanece junto a Cambiar par');
 assert(styles.includes('grid-template-columns:repeat(2,minmax(0,1fr))'),'Botones en paralelo en móvil');
 
 console.log('BOWLING LAB: pruebas de sintaxis, tablas, controles, persistencia simulada y recursos correctas.');
