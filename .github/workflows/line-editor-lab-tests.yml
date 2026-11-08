@@ -46,3 +46,11 @@ jobs:
           command -v google-chrome || command -v chromium
           node --check tests/browser-smoke.cjs
           node tests/browser-smoke.cjs
+      - name: Guardar capturas de laboratorio (móvil tablet escritorio)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-lab-pista3d
+          path: tests/artifacts/pista-3d-*.png
+          if-no-files-found: warn
+          retention-days: 14
