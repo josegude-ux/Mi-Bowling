@@ -73,7 +73,7 @@ async function runView(browser,engine,width,height,origin){
   await page.getByRole('button',{name:'Mes siguiente'}).click();
   assert(await page.getByText('0 sesión(es) registrada(s) este mes').isVisible(),'Navegación al siguiente mes');
   await page.getByRole('button',{name:'Mes anterior'}).click();
-  await page.getByRole('button',{name:/8 de noviembre/}).click();
+  await page.locator('.calendar-day[aria-label^="8 de noviembre"]').click();
   assert(await page.locator('.calendar-session').isVisible(),'Día seleccionado muestra partidas');
   await page.locator('.calendar-session button').click();
   assert.equal(await page.evaluate(()=>activeId),'LAB-SESION','Acceso a partida existente sin duplicar');
