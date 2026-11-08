@@ -5,7 +5,7 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),asse
 const root=path.resolve(__dirname,'..');
 function read(file){return fs.readFileSync(path.join(root,file),'utf8')}
 const authSrc=read('auth-supabase-adapter.js'),repoSrc=read('auth-private-repository.js'),gateSrc=read('auth-lab.js'),bootSrc=read('auth-boot.js');
-const sql=read('docs/sql/BOWLING_AUTH_RLS_A1_REVIEW_ONLY.sql'),html=read('index.html');
+const sql=read('docs/sql/BOWLING_AUTH_RLS_A1_REVIEW_ONLY.sql'),html=read('lab/integracion-main-auth-cp020.html');
 const A='11111111-1111-4111-8111-111111111111';
 const B='22222222-2222-4222-8222-222222222222';
 const calls=[];
@@ -92,7 +92,7 @@ function dom(){
  assert.equal(noService.getState().opened,false);
  await assert.rejects(noService.login('jugadora@example.test','Correcta12345678'),/no disponibles/);
  assert.ok(!/src="app\.js/.test(html),'Main login entrypoint must not load app JS');
- assert.ok(!html.includes('profiles.js'),'Old PIN selector must not launch');
+ assert.ok(!html.includes('MiBowlingProfiles.init()'),'Old PIN selector must not authenticate remote users');
  // The adapter uses the remote getUser endpoint after authenticating.
  const beforeGet=calls.length;
  await auth.signIn('jugadora@example.test','Correcta12345678');
