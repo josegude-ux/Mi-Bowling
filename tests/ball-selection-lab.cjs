@@ -117,6 +117,23 @@ async function run(browser,engine,width,origin){
   assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),['Sin asignar','Marca LAB Alpha','Marca LAB Beta'],'Sesión antigua sin check conserva comportamiento');
   await page.evaluate(()=>go('bolas'));
   assert.equal(await page.locator('.ball-session-toggle input:checked').count(),0,'Nueva selección independiente tras sesión');
+  await page.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').check();
+  let beforeRetire=await getData(page);
+  assert.deepEqual(beforeRetire.picks.__next__,['lab-a'],'Alpha se marca para la siguiente sesión');
+  assert.deepEqual(beforeRetire.picks[sid],['lab-a','lab-b'],'La sesión anterior conserva ambas seleccionadas');
+  await page.locator('.ball-card').filter({hasText:'Alpha'}).getByRole('button',{name:'Retirar'}).click();
+  data=await getData(page);
+  assert.equal(data.db.balls.find(b=>b.id==='lab-a').retired,true,'La ficha se marca como retirada');
+  assert.deepEqual(data.picks.__next__,[],'Retirar elimina bola de la siguiente selección');
+  assert.deepEqual(data.picks[sid],['lab-b'],'Retirar elimina bola de otras sesiones seleccionadas');
+  assert.deepEqual(data.db.sessions[1].games[0].rolls.slice(0,2).map(r=>r.ballId),['lab-a','lab-b'],'Retirar no borra lanzamientos con bola antigua');
+  assert.equal(data.db.sessions[0].games[0].rolls[0].ballId,'lab-b','La sesión antigua sigue intacta');
+  await page.locator('.ball-card').filter({hasText:'Alpha'}).getByRole('button',{name:'Activar'}).click();
+  data=await getData(page);
+  assert.deepEqual(data.db.balls,fixture.balls,'Reactivar recupera ficha completa sin campos nuevos');
+  assert.deepEqual(data.picks.__next__,[],'Reactivar no vuelve a marcar bola automáticamente');
+  assert.deepEqual(data.picks[sid],['lab-b'],'Reactivar no restaura una selección que fue retirada');
+  assert.equal(await page.locator('.ball-session-toggle input:checked').count(),0,'Bola reactivada exige nuevo check explícito');
   await page.evaluate(()=>{
    const original=Storage.prototype.setItem;
    Storage.prototype.setItem=function(key,value){
