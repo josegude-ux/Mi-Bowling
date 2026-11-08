@@ -139,8 +139,11 @@ async function checkMainCalendarAndLeague(page){
  await page.locator('#lab-league').click();
  await page.waitForFunction(()=>window.MiBowlingIntegrationI2.getState().view==='league');
  const leagueText=(await page.locator('#app').textContent())||'';
- const diag=await page.evaluate(()=>({tab:(()=>{try{return Function('return tab')()}catch(e){return e.message}})(),
-  current:window.MiBowlingIntegrationI2?.getState().view}));
+ const diag=await page.evaluate(()=>({
+  tab:(()=>{try{return Function('return tab')()}catch(e){return e.message}})(),
+  current:window.MiBowlingIntegrationI2?.getState().view,
+  ligaDirect:(()=>{try{return Function('return ligaView()')().slice(0,160)}catch(e){return 'ERROR '+e.message+' STACK '+(e.stack||'').slice(0,600)}})()
+ }));
  assert.ok(leagueText.toLowerCase().includes('liga nacional'),
   'Liga view is absent. tab='+JSON.stringify(diag)+' html='+leagueText.slice(0,750));
 }
