@@ -5,7 +5,9 @@
 **Origen I3:** PR #20, checkpoint documental d561f0f6f71b6fb3daa81fe8e07be957f684ae3b. Código I3 probado 66d3cede69abc6bca2a4d3fff5d5c5acfa168d4e.  
 **Rama nueva:** feature/integracion-main-auth-i4-lab-20261109, derivada del checkpoint I3.  
 **Main observado:** 566aafdc05be163baf8c7f82e60433b0f532d748; conservación de portada VISURA y FGB CP-020.  
-**Estado:** código candidato; comprobar GitHub Actions antes de certificar pruebas.
+**Código I4 validado en CI:** 5d9a9d238f3156b336c7970d8557508d6107bfc6.
+**Resultado CI I4 push:** SUCCESS, run 42535884170 (contratos y WebKit/Chromium).
+**PR I4:** #21, borrador apilado sobre #20; no fusionada.
 
 ## Arquitectura implementada (LAB)
 
@@ -35,12 +37,38 @@
 - **Producción:** app.js, index.html, styles.css, sw.js, official-calendar-2026-2027.js y data/calendario-fgb-2026-2027.json deben conservar SHA de blob verificado de CP-020. Total FGB: 31, 10 gallegos y 21 nacionales.
 - PR #1/#8/#10/#12/#13/#18/#20 se mantienen abiertas e independientes; la rama I4 tendrá PR apilada en borrador, no se fusiona ni publica.
 
-## Criterios de aceptación pendientes de CI
+## Criterios de aceptación comprobados en CI
 
-- [ ] Contrato del motor CP-020 por hash; seis activos intactos y calendario FGB 31 (10+21).
-- [ ] Tests Node con UUID A/B/C: inicialización read-only, journal previo a escritura, conflictos, timeout ambiguo, corrupción, identidad cruzada y cierre de sesión.
-- [ ] Fusiones conservadoras de sesiones nuevas diferentes sin sobrescribir cambios anteriores y rechazo de solapamiento.
-- [ ] WebKit iPhone/tablet emulados y Chromium escritorio con motor CP-020 transformado, autosave ficticio y localStorage real sin modificación.
-- [ ] Regresiones I2/I3 SUCCESS, checkpoint de código probado y evidencia CI final.
+- [x] Contrato del motor CP-020 por hash; seis activos intactos y calendario FGB 31 (10+21).
+- [x] Tests Node con UUID A/B/C: inicialización read-only, journal previo a escritura, conflictos, timeout ambiguo, corrupción, identidad cruzada y cierre de sesión.
+- [x] Fusiones conservadoras de sesiones nuevas diferentes sin sobrescribir cambios anteriores y rechazo de solapamiento.
+- [x] WebKit iPhone/tablet emulados y Chromium escritorio con motor CP-020 transformado, autosave ficticio y localStorage real sin modificación.
+- [x] Regresiones I2/I3 SUCCESS, checkpoint de código probado y evidencia CI final.
 
 **NO FUSIONAR · NO PUBLICAR · NO CONECTAR SERVICIOS REALES.**
+
+
+## Checkpoint I4 validado · 9 noviembre 2026
+
+**Código original ensayado:** 5d9a9d238f3156b336c7970d8557508d6107bfc6.
+**Evidencia principal:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42535884170 · **SUCCESS**, 2/2 jobs.
+**Rama:** feature/integracion-main-auth-i4-lab-20261109.
+**Documento:** docs/INTEGRACION_MAIN_CP020_PERSISTENCIA_I4_LAB_20261109.md.
+
+Resultados Node observados:
+- Los seis activos de CP-020 originales siguen idénticos; calendario 31 eventos (10 gallegos y 21 nacionales).
+- UUID A/B/C con lectura privada y creación del primer documento B. Ninguna acta de Liga entra al documento personal.
+- Journal escrito antes de la petición remota; recuperación explícita desde el mismo journal de memoria tras reiniciar el adaptador.
+- Timeout tras commit reconocido por hash y revisión sin repetir la escritura.
+- Fusión conservadora de dos sesiones con IDs nuevos y diferentes mediante confirmación explícita. Los cambios solapados se rechazan y conservan copias.
+- Journal corrupto o de otra identidad bloqueado; cambio de usuario durante escritura no provoca fuga ni sobrescritura.
+- Regresiones de I3 aprobadas.
+
+Resultados Playwright observados:
+- Regresión de I2: WebKit iPhone A/B, tablet C; Chromium escritorio A/B; portada, calendario, perfiles y estadísticas.
+- Regresión independiente I3: aprobada.
+- I4: WebKit iPhone A, tablet B y Chromium escritorio C. Motor CP-020 verificado por SHA en tiempo de ejecución y cargado en memoria; guardado asíncrono con repositorio ficticio y aislamiento del almacenamiento real. No se ha iniciado PWA ni accedido a servicios externos.
+
+**Alcance del checkpoint:** I4 preparado y validado contra dobles ficticios en Linux y navegadores emulados. **No** hay journal duradero después de recargar realmente la página, Auth/RLS real, sincronización de dispositivos reales, PDF Blob Safari físico ni publicación. La siguiente etapa debe resolver ese gap antes de cualquier piloto con datos auténticos.
+
+**Prohibiciones permanentes para este trabajo:** no merge, no despliegue, no datos reales, no tocar las PR #1, #8, #10, #12, #13, #18, #20 o main.
