@@ -12,7 +12,7 @@ const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'mi-bowling-main-i2-'));
 let server;const hits=[];
 async function serve(){
  const cert=path.join(tmp,'cert.pem'),key=path.join(tmp,'key.pem');
- cp.execFileSync('openssl',['req','-x509','-nodes','rsa:2048','-days','1',
+ cp.execFileSync('openssl',['req','-x509','-nodes','-days','1',
  '-newkey','rsa:2048','-keyout',key,'-out',cert,'-subj','/CN=localhost',
  '-addext','subjectAltName=DNS:localhost,IP:127.0.0.1'],{stdio:'ignore'});
  server=https.createServer({cert:fs.readFileSync(cert),key:fs.readFileSync(key)},(req,res)=>{
