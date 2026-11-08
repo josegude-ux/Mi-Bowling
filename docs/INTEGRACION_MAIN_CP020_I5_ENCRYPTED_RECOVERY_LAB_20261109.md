@@ -2,7 +2,7 @@
 
 **Orden:** BOWLING-INTEGRACION-CP020-I5-20261109
 **Fecha:** 9 de noviembre de 2026
-**Origen I4:** PR #21, checkpoint d561f0f6? NO: checkpoint correcto I4 5fc439d246ef1619476b8ea2a96602559662c949 y código verificado 5d9a9d238f3156b336c7970d8557508d6107bfc6.
+**Origen I4:** PR #21, checkpoint 5fc439d246ef1619476b8ea2a96602559662c949 y código validado 5d9a9d238f3156b336c7970d8557508d6107bfc6.
 **Rama I5:** feature/integracion-main-auth-i5-lab-20261109, derivada del último checkpoint I4; PR independiente en borrador.
 **Main preservado:** 566aafdc05be163baf8c7f82e60433b0f532d748 (VISURA y FGB CP-020).
 
@@ -11,7 +11,7 @@
 I4 guardaba pendientes en un Map de memoria; cerrar la página destruía el diario. I5 implementa un **journal write-ahead verdaderamente persistente entre cierres y recargas de pestaña dentro de un mismo origen de laboratorio**.
 
 - lab/i5-encrypted-journal.js: captura un manejador nativo de IndexedDB **antes** del aislamiento. Únicamente el módulo de journal puede acceder a él; el motor, perfiles, Auth de demostración y resto de la página siguen viendo window.indexedDB como undefined. Base dedicada: mi-bowling-i5-lab-encrypted-pending-v1, store encrypted-wal. No accede a bases de datos preexistentes del usuario.
-- Cifrado AES-256-GCM con IV aleatorio por escritura, sal aleatoria de 128 bits, PBKDF2-SHA-256 con 310 000 iteraciones y AAD vinculada a versión/UUID/checksum. Solo el identificador del propietario y metadatos cifrados quedan visibles; no se guarda ninguna puntuación ni contraseña en texto claro.
+- Cifrado AES-256-GCM con IV aleatorio por escritura, sal aleatoria de 128 bits, PBKDF2-SHA-256 con 310 000 iteraciones y AAD vinculada a versión/UUID/checksum. Quedan visibles UUID, versión, huella, sal e IV; el contenido del pendiente queda cifrado, sin guardar puntuaciones ni frases de desbloqueo en claro.
 - La frase de desbloqueo es introducida expresamente y permite importar la clave PBKDF2 no extraíble **en RAM**. El formulario borra su valor tras crear el journal. **No se guarda la frase ni una clave de descifrado**; si se pierde la frase, el pendiente no puede recuperarse.
 - lab/i5-guard.js y lab/integracion-main-auth-i5.html: nueva ruta LAB aislada sin PWA, IndexedDB accesible al motor, tokens reales, credenciales personales o servicios externos.
 - lab/i5-persistence.js: mantiene revisión CAS, SHA-256 y resolución explícita de I4. El replace del journal durante una fusión segura se realiza con comprobación atómica del checksum anterior; evita descartar un borrador por una escritura simultánea en el journal.
@@ -22,7 +22,7 @@ I4 guardaba pendientes en un Map de memoria; cerrar la página destruía el diar
 
 1. Cada UUID puede consultar y limpiar exclusivamente su propio journal; un intento de acceso cruzado se rechaza antes de iniciar una transacción.
 2. La entrada WAL se cifra y confirma en IndexedDB antes de comenzar la escritura remota simulada. Un error remoto deja un borrador cifrado recuperable.
-3. Tras **cerrar realmente la pestaña y abrir otra en el mismo contexto de navegador**, el journal sobrevive; nuevo desbloqueo y relectura de versión/hash deciden si procede recuperar. La clave de la sesión cerrada no persiste.
+3. Tras **cerrar realmente la pestaña, abrir otra y recargar de nuevo dentro del mismo contexto de navegador**, el journal sobrevive; nuevo desbloqueo y relectura de versión/hash deciden si procede recuperar. La clave de la sesión cerrada no persiste.
 4. Una contraseña incorrecta, un ciphertext adulterado o un journal inconsistente **no se borra** ni se utiliza para sobrescribir datos.
 5. No se afirma recuperar cambios anteriores al primer commit del journal: **permanece una ventana de debounce de 80 ms** previa a persistir el WAL. No es aún un autosave a prueba de cortes instantáneos.
 6. El repositorio remoto de demostración es exclusivamente un Map simulado: **sus cambios confirmados no sobreviven a una recarga real**. I5 valida durabilidad del **pendiente cifrado**, no durabilidad remota ni sincronización de puntuaciones reales. Una demo recargada tras recuperar y limpiar el journal volverá a datos de fixture iniciales.
