@@ -66,6 +66,7 @@ async function runView(browser,engine,width,height,origin){
   assert.equal(await page.locator('.bowling-home-tool-card').count(),3,'Tres tarjetas de herramientas homogéneas');
   assert.equal(await page.locator('.bowling-home-tool-card .bowling-home-tool-copy small').count(),3,'Subtítulos de herramientas');
   assert(await page.locator('.bowling-home-module-gold').evaluate(el=>getComputedStyle(el).backgroundImage.includes('home-estadisticas-limpio.jpg')),'Imagen de estadísticas sin cifras ficticias');
+  await page.waitForFunction(()=>Array.from(document.querySelectorAll('.bowling-home-module-icon img')).every(img=>img.complete&&img.naturalWidth>0),null,{timeout:10000});
   assert((await page.locator('.bowling-home-module-icon img').evaluateAll(img=>img.every(x=>x.complete&&x.naturalWidth>0))),'Iconos cargados correctamente');
 
   assert.equal(await page.getByRole('button',{name:'Mis bolas',exact:true}).count(),1,'Mis bolas sigue accesible en herramientas');
