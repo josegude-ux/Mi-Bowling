@@ -87,6 +87,9 @@
      try{
        if(!window.MiBowlingLane3D||!window.MiBowlingLineEditor)throw Error('Módulos visuales ausentes');
        if(!/mi\s+bowling/i.test(document.getElementById('app').textContent))throw Error('Portada no cargada');
+       for(const label of ['Registrar partida','Consultar partidas','Analizar estadísticas','Gestionar mis bolas']){
+         if(!document.getElementById('app').textContent.includes(label))throw Error('Menú 3.3.3 ausente: '+label);
+       }
        go('nueva');
        const form=document.getElementById('newSessionForm');
        if(!form)throw Error('Formulario de sesión ausente');
