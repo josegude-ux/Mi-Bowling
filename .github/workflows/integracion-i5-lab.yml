@@ -1,0 +1,69 @@
+name: MI BOWLING · LAB I5 · Diario cifrado y recarga real
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i5-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i5-*'
+      - 'lab/integracion-main-auth-i5*'
+      - 'tests/integracion-i5-*'
+      - 'tests/i5-*'
+      - '.github/workflows/integracion-i5-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contract:
+    name: I5 · identidad, sintaxis, contratos y regresión I4
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Main y calendario intactos
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Sintaxis de I5
+        run: |
+          node --check lab/i5-encrypted-journal.js
+          node --check lab/i5-persistence.js
+          node --check lab/i5-guard.js
+          node --check lab/integracion-main-auth-i5.js
+          node --check tests/integracion-i5-browser.test.cjs
+          node --check tests/i5-durable-reload-browser.test.cjs
+      - name: Reutilizar contratos ya validados I4, I3 y aislamiento de jugadores
+        run: |
+          node tests/integracion-i4-journal.test.cjs
+          node tests/score-sync-i3.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
+          node tests/stats-bolos.test.cjs
+  browser:
+    name: I5 · WebKit iPhone y Chromium: cierre, recarga, AES-GCM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preparar navegador de pruebas sin cuentas reales
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: Instalar WebKit Linux para navegador emulado
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Probar integración I5 con motor CP-020 sin localStorage real
+        run: node tests/integracion-i5-browser.test.cjs
+      - name: Recuperación cifrada tras cierre y reapertura REALES de pestaña
+        run: node tests/i5-durable-reload-browser.test.cjs
+      - name: Capturas solo con datos ficticios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-i5-lab-cifrado
+          path: tests/artifacts-integracion-i5/*.png
+          retention-days: 14
+          if-no-files-found: warn
