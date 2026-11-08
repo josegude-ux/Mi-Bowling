@@ -361,8 +361,46 @@ async function saveBall(e){e.preventDefault();const form=e.currentTarget,data=ne
 async function scaledImage(file){if(file.size>20*1024*1024)throw Error('Imagen demasiado grande');const url=URL.createObjectURL(file);try{const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});const canvas=document.createElement('canvas');const max=320,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));canvas.width=Math.round(img.naturalWidth*scale);canvas.height=Math.round(img.naturalHeight*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/jpeg',.74)}finally{URL.revokeObjectURL(url)}}
 function retireBall(id){const b=db.balls.find(x=>x.id===id);if(!b)return;b.retired=!b.retired;save();render()}
 function settings(){return `${head('Ajustes y copias','')}<div class="card"><h2>Jugador activo</h2><p class="hint">${esc(MiBowlingProfiles.current()?.name||'Sin seleccionar')} · Partidas, estadísticas y bolas independientes.</p><button class="btn outline" type="button" onclick="MiBowlingProfiles.leave()">Cambiar jugador</button></div><div class="card"><h2>Registro rápido</h2><label class="field">Tamaño y disposición</label><select class="input" onchange="quickLayout=this.value;localStorage.setItem(MiBowlingProfiles.storageKey('mi-bowling-quick-layout'),this.value);render()"><option value="standard" ${quickLayout==='standard'?'selected':''}>Estándar</option><option value="compact" ${quickLayout==='compact'?'selected':''}>Compacto</option><option value="large" ${quickLayout==='large'?'selected':''}>Botones grandes</option></select></div><div class="card"><h2>Perfil de jugador</h2><label class="field" for="mano-bowling">Mano de lanzamiento</label><select id="mano-bowling" class="input" onchange="changeHand(this.value)"><option value="diestro" ${db.hand==='diestro'?'selected':''}>Diestro · pocket 1–3</option><option value="zurdo" ${db.hand==='zurdo'?'selected':''}>Zurdo · pocket 1–2</option></select></div><div class="card"><h2>🔒 Almacenamiento local</h2><p class="hint">Perfil activo: ${esc(MiBowlingProfiles.current()?.name||'Sin seleccionar')}. Los datos se guardan por jugador en este navegador, sin cuentas online ni sincronización. Borrar los datos del navegador puede eliminar el historial.</p><p class="hint">Sesiones: ${db.sessions.length} · Bolas: ${db.balls.length}</p></div><div class="card"><h2>Patrones de aceitado</h2><button class="btn primary" onclick="go('patrones')">Abrir biblioteca · ${db.patterns.length} patrones</button><p class="hint">Los PDF se almacenan en este dispositivo por separado de la copia JSON. Descarga los PDF originales antes de borrar o reinstalar la app.</p></div><div class="card"><h2>Copias de seguridad</h2><p class="hint">Recomendado: exportar una copia JSON regularmente y guardarla en Archivos/iCloud/otro lugar seguro. Al importar una copia se sustituyen los datos actuales.</p><div class="actions"><button class="btn primary" onclick="exportData()">↓ Exportar copia</button><button class="btn outline" onclick="$('restore-file').click()">↑ Importar copia</button></div></div><div class="card"><h2>Reglas del marcador</h2><p class="hint">Bolera de 10 bolos · puntuación tradicional hasta 300 puntos · frame 10 con tiradas de bonificación. Las partidas incompletas se guardan, pero no entran en la media de puntuación.</p></div><div class="card"><h2>Actualizaciones</h2><p class="hint">Versión instalada: <strong>${APP_VERSION}</strong>. Al abrir la aplicación se comprueba si hay una versión nueva. Si estás jugando, se aplicará al volver a abrir para no interrumpir la partida.</p><p id="update-state" class="hint">${updateAvailable?"Actualización descargada y lista para aplicar.":"La comprobación se realiza con conexión a Internet."}</p><button class="btn outline block" onclick="checkForUpdates(true)">↻ Comprobar actualizaciones</button><button class="btn primary block mt12" id="apply-update" style="${updateAvailable?"":"display:none"}" onclick="applyUpdate()">Actualizar ahora</button></div><div class="card"><h2>Mi Bowling Analítica</h2><p class="hint">Versión instalada: ${APP_VERSION} · actualización automática al volver a abrir la aplicación con conexión. Los entrenamientos y la competición oficial no se mezclan estadísticamente.</p></div>`}
+function restorePlayerData(obj){
+ MiBowlingProfiles.validateRestore(obj);
+ if(!obj||!Array.isArray(obj.sessions)||!Array.isArray(obj.balls)&&obj.version===2)throw Error('Copia no reconocida');
+ const nextDb=migrate(obj);
+ const league=Array.isArray(obj.leagueNational?.matches)?obj.leagueNational:null;
+ const roster=obj.leagueRosters&&typeof obj.leagueRosters==='object'&&!Array.isArray(obj.leagueRosters)?obj.leagueRosters:null;
+ // Copia temporal de los valores actuales; nunca se alteran datos de otro perfil.
+ // Los valores grandes (partidas) se escriben al final para minimizar fallos por cuota.
+ const changes=[];
+ if(league)changes.push([LIGA32_KEY,JSON.stringify(league)]);
+ if(roster)changes.push([LIGA33_ROSTER_KEY,JSON.stringify(roster)]);
+ changes.push([KEY,JSON.stringify(nextDb)]);
+ const previous=new Map(changes.map(([key])=>[key,localStorage.getItem(key)])),written=[];
+ try{
+  for(const [key,value] of changes){
+   localStorage.setItem(key,value);
+   written.push(key);
+   if(localStorage.getItem(key)!==value)throw Error('La escritura de la copia no pudo verificarse');
+  }
+ }catch(err){
+  const rollbackErrors=[];
+  for(const key of written.reverse()){
+   try{
+    const old=previous.get(key);
+    if(old===null)localStorage.removeItem(key);
+    else localStorage.setItem(key,old);
+    if(localStorage.getItem(key)!==old)rollbackErrors.push(key);
+   }catch(e){rollbackErrors.push(key)}
+  }
+  throw Error('No se pudo restaurar la copia; '+(rollbackErrors.length?'la reversión también falló en '+rollbackErrors.join(', ')+'. Conserva tu respaldo externo.':'los datos anteriores se han restablecido.')+' Detalle: '+err.message);
+ }
+ db=nextDb;
+ if(league)liga32=league;
+ if(roster)liga33Roster=roster;
+ activeId=null;
+ saveError=false;
+ go('inicio');
+}
 function exportData(){const player=MiBowlingProfiles.current();if(!player)throw Error('No hay jugador activo');const blob=new Blob([JSON.stringify({...db,localPlayer:player,leagueNational:liga32,leagueRosters:liga33Roster,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Mi_Bowling_${player.id}_copia_${today()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-$('restore-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const obj=JSON.parse(await f.text());MiBowlingProfiles.validateRestore(obj);if(!obj||!Array.isArray(obj.sessions)||!Array.isArray(obj.balls)&&obj.version===2)throw Error('Copia no reconocida');if(!confirm('Se REEMPLAZARÁN los datos actuales. ¿Importar esta copia?'))return;db=migrate(obj);if(obj.leagueNational?.matches&&Array.isArray(obj.leagueNational.matches)){liga32=obj.leagueNational;liga32Save()}if(obj.leagueRosters&&typeof obj.leagueRosters==='object'){liga33Roster=obj.leagueRosters;localStorage.setItem(LIGA33_ROSTER_KEY,JSON.stringify(liga33Roster))}activeId=null;save();go('inicio')}catch(err){alert('No se pudo importar la copia: '+err.message)}finally{e.target.value=''}});
+$('restore-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const obj=JSON.parse(await f.text());MiBowlingProfiles.validateRestore(obj);if(!obj||!Array.isArray(obj.sessions)||!Array.isArray(obj.balls)&&obj.version===2)throw Error('Copia no reconocida');if(!confirm('Se REEMPLAZARÁN los datos actuales de este jugador. ¿Importar esta copia?'))return;restorePlayerData(obj)}catch(err){alert('No se pudo importar la copia: '+err.message)}finally{e.target.value=''}});
 
 // Biblioteca de patrones: metadatos en la copia JSON, PDF binarios en IndexedDB.
 function oilDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(MiBowlingProfiles.pdfDatabase(),1);r.onupgradeneeded=()=>r.result.createObjectStore('pdf');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
