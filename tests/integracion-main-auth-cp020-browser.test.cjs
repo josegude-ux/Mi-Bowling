@@ -138,7 +138,11 @@ async function checkMainCalendarAndLeague(page){
  assert.ok(calendar.includes('calendario'),'Published calendar missing');
  await page.locator('#lab-league').click();
  await page.waitForFunction(()=>window.MiBowlingIntegrationI2.getState().view==='league');
- assert.ok((await page.locator('#app').textContent()).toLowerCase().includes('liga nacional'), 'Liga view is absent');
+ const leagueText=(await page.locator('#app').textContent())||'';
+ const diag=await page.evaluate(()=>({tab:(()=>{try{return Function('return tab')()}catch(e){return e.message}})(),
+  current:window.MiBowlingIntegrationI2?.getState().view}));
+ assert.ok(leagueText.toLowerCase().includes('liga nacional'),
+  'Liga view is absent. tab='+JSON.stringify(diag)+' html='+leagueText.slice(0,750));
 }
 async function runUser(browser,base,letter,screen,label){
  const ctx=await browser.newContext({...screen,ignoreHTTPSErrors:true,locale:'es-ES'});
