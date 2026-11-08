@@ -108,7 +108,10 @@ async function checkReader(page,base){
  console.log('OK · WebKit IndexedDB read-only: Blob bytes, SHA-256, old DB fallback, missing/invalid PDF, no new DB');
  return result;
 }
-async function click(page,id){await page.locator('#'+id).click()}
+async function click(page,id){
+ await page.locator('#'+id).click();
+ await page.waitForFunction(()=>[...document.querySelectorAll('[data-action]')].every(b=>!b.disabled),null,{timeout:12000});
+}
 async function status(page,expected){
  await page.locator('#a7-status[data-kind="'+expected+'"]').waitFor();
 }
