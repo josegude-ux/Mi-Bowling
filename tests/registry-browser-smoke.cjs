@@ -119,6 +119,32 @@ async function runView(browser,engine,width,height,origin){
   await context.close();
  }
 }
+async function runOffline(browser,origin){
+ // Contexto nuevo, Service Worker real: valida primera instalación y uso sin red.
+ const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});
+ const page=await context.newPage(),navigations=[];
+ page.on('framenavigated',f=>{if(f===page.mainFrame())navigations.push(f.url());});
+ try {
+  await page.goto(origin,{waitUntil:'load'});
+  await page.waitForFunction(()=>!!navigator.serviceWorker?.controller,null,{timeout:20000});
+  await page.waitForTimeout(350);
+  assert.equal(navigations.length,1,'No debe recargar al tomar el control por primera vez');
+  const cacheNames=await page.evaluate(()=>caches.keys());
+  assert(cacheNames.some(x=>x.includes('v3-3-6-lab')),'Caché versionada disponible');
+  await page.evaluate(db=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));},fixture);
+  await context.setOffline(true);
+  await page.reload({waitUntil:'load'});
+  await page.evaluate(()=>{activeId='LAB-SESION';go('registro');});
+  assert(await page.locator('.registry-v4-score').isVisible(),'Marcador disponible sin conexión');
+  await page.getByRole('button',{name:/Bolo 7/}).click();
+  assert.equal(await page.locator('.pin.selected').count(),1,'Bolos interactivos sin conexión');
+  await page.locator('#quick-record').click();
+  assert.equal((await dbFromPage(page)).sessions[0].games[0].rolls.length,1,
+   'Registro ficticio guardado sin conexión');
+  console.log('OK chromium PWA offline: caché, primer control sin recarga y anotación local.');
+ }finally{await context.close();}
+}
+
 (async()=>{
  let browsers=[];let passed=0;
  try {
@@ -129,9 +155,10 @@ async function runView(browser,engine,width,height,origin){
    for(const [w,h] of [[320,640],[390,844],[768,1024],[1280,900]]){
     await runView(browser,engine,w,h,origin);passed++;
    }
+   if(engine==='chromium')await runOffline(browser,origin);
   }
   assert.equal(passed,8);
-  console.log('PASS 8 combinaciones de navegador/viewport con datos ficticios.');
+  console.log('PASS 8 combinaciones de navegador/viewport y comprobación PWA offline.');
  }catch(e){console.error('FAIL Browser Lab:',e.stack||e);process.exitCode=1;}
  finally {for(const b of browsers)await b.close();if(server.listening)await close();}
 })();
