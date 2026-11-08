@@ -27,3 +27,11 @@
 .shot-log-fields .shot-field .input{min-width:0}
 @media(max-width:600px){.shot-log-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.roll-log .list-item{flex-wrap:wrap}}
 @media(max-width:340px){.shot-log-fields{grid-template-columns:1fr}}
+
+/* R4 · controles táctiles de tamaño suficiente en pantallas estrechas */
+.shot-field-block{display:flex;flex-direction:column;gap:6px;min-width:0}
+.shot-field-block>.shot-field{min-width:0}
+.shot-nudges{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.shot-nudges button{display:flex;align-items:center;justify-content:center;min-height:44px;border:1px solid #c5e0ea;border-radius:10px;background:#edf7fa;color:#155f79;font-size:23px;font-weight:700;touch-action:manipulation}
+.shot-nudges button:active{background:#cfeef5}
+.shot-nudges button:focus-visible{outline:3px solid #28a4c0;outline-offset:2px}
