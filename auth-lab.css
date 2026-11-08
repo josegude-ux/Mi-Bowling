@@ -29,3 +29,14 @@ body.auth-stage{margin:0;min-height:100vh;background:#edf5fb;color:#163d5b;font-
 .auth-lab-foot{font-size:11px;color:#718b9d;line-height:1.5;text-align:center;margin:17px 0 0}
 @media(max-width:390px){.auth-lab-panel{padding:19px;border-radius:18px}.auth-lab-brand>strong{font-size:22px}}
 @media(prefers-reduced-motion:reduce){.auth-lab-primary{transition:none}}
+
+/* LAB A3: email callback is a small, separate, accessible recovery screen. */
+#auth-link-title{font-size:20px;line-height:1.3;letter-spacing:-.3px;margin:20px 0 12px;color:#173f5f}
+#auth-link-gate .auth-lab-notice{margin:10px 0 15px}
+#auth-link-gate .auth-lab-primary{width:100%;display:block}
+#auth-link-gate .auth-lab-panel{overflow-wrap:anywhere}
+#auth-link-password-form{display:grid;gap:10px}
+#auth-link-password-form label{font-size:12px;font-weight:750;color:#375f78;margin-top:7px}
+#auth-link-password-form input{width:100%;min-width:0;min-height:49px;padding:12px;font:400 16px system-ui;border:1px solid #cadfe9;border-radius:10px;background:white;color:#173d56}
+#auth-link-password-form input:focus-visible,#auth-link-gate button:focus-visible{outline:3px solid #2798c5;outline-offset:2px}
+#auth-link-status{font-size:12px;line-height:1.5;color:#a13c45}
