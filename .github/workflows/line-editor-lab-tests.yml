@@ -12,6 +12,8 @@ on:
       - line-editor.css
       - tests/line-editor.test.cjs
       - tests/app-line-integration.test.cjs
+      - tests/browser-smoke.cjs
+      - tests/lane-browser.html
       - .github/workflows/line-editor-lab-tests.yml
 permissions:
   contents: read
@@ -36,3 +38,8 @@ jobs:
           node --check tests/app-line-integration.test.cjs
           node tests/line-editor.test.cjs
           node tests/app-line-integration.test.cjs
+      - name: Probar pista real en Chrome móvil y escritorio
+        run: |
+          command -v google-chrome || command -v chromium
+          node --check tests/browser-smoke.cjs
+          node tests/browser-smoke.cjs
