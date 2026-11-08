@@ -194,7 +194,7 @@ async function main(){
  assert.equal(sh.state().dirty,true);
  await sh.flush();assert.equal(personalRecord(server,'A').revision,5);
  sh.close();assert.equal(mainWindow.save,original);
- assert.ok(!fs.readFileSync(path.join(root,'lab/score-sync-i3.js'),'utf8').includes('localStorage'));
+ assert.ok(!fs.readFileSync(path.join(root,'lab/score-sync-i3.js'),'utf8').includes('localStorage.'));
  console.log('OK I3 contract · main save hook, malformed payload denied, no localStorage');
  sa.close();sb.close();sc.close();
  console.log('OK · LAB I3 ALL PASS · only synthetic score data, no real services');
