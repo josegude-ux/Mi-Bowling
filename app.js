@@ -80,9 +80,9 @@ function cleanGame(g){if(!complete(g))return false;for(let f=1;f<=10;f++){const 
 function pocketStats(a){const flank=db.hand==='zurdo'?2:3;const throws=a.games.flatMap(g=>Array.from({length:10},(_,i)=>rollsIn(g,i+1)[0]).filter(Boolean)).filter(r=>!r.foul&&(!statsBallId||r.ballId===statsBallId));return{hit:throws.filter(r=>r.pins.includes(1)&&r.pins.includes(flank)).length,total:throws.length,flank}}
 function shareSessionImage(){const s=session();if(!s)return;const cvs=document.createElement('canvas');cvs.width=1200;const games=s.games;cvs.height=310+games.length*270;const c=cvs.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cvs.width,cvs.height);c.fillStyle='#063950';c.fillRect(0,0,1200,158);c.fillStyle='white';c.font='bold 45px system-ui';c.fillText('Mi Bowling',44,65);c.font='25px system-ui';c.fillText(`${s.date}  ·  ${s.venue||'Bolera'}  ·  ${s.type==='oficial'?'Competición':'Entrenamiento'}`,44,118);let y=230;for(let k=0;k<games.length;k++){const g=games[k],scores=frameScores(g);c.fillStyle='#102e48';c.font='bold 27px system-ui';c.fillText(`Partida ${k+1}`,40,y);c.fillText(complete(g)?String(score(g)):'Incompleta',1020,y);y+=25;for(let f=1;f<=10;f++){let x=40+(f-1)*112;c.fillStyle='#e8f4f7';c.fillRect(x,y,108,126);c.fillStyle='#173d57';c.font='20px system-ui';c.fillText(String(f),x+10,y+27);c.font='bold 25px system-ui';c.fillText(frameLabel(g,f),x+10,y+67);c.font='bold 22px system-ui';c.fillText(String(scores[f-1]??'–'),x+10,y+109)}y+=199}cvs.toBlob(async blob=>{if(!blob)return;const file=new File([blob],'Mi_Bowling_'+s.date+'.png',{type:'image/png'});if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'Mi Bowling · '+s.date});return}catch(e){if(e.name==='AbortError')return}}const url=URL.createObjectURL(blob),el=document.createElement('a');el.href=url;el.download=file.name;el.click();setTimeout(()=>URL.revokeObjectURL(url),2000)},'image/png')}
 function changeHand(value){db.hand=value==='zurdo'?'zurdo':'diestro';save();render()}
-function nav(){const names=[['inicio','⌂','Inicio'],['historial','▤','Partidas'],['nueva','+','Nueva'],['estadisticas','▥','Estadísticas'],['bolas','◉','Mis bolas']];$('bottom-nav').innerHTML=names.map(([t,i,v])=>`<button type="button" aria-label="${v}" class="${tab===t||tab==='registro'&&t==='nueva'?'active':''} ${t==='nueva'?'fab':''}" onclick="go('${t}')"><span class="nav-icon">${i}</span>${v}</button>`).join('')}
+function nav(){const names=[['inicio','⌂','Inicio'],['historial','▤','Partidas'],['nueva','+','Nueva'],['estadisticas','▥','Estadísticas'],['calendario','<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="M8 14h2M14 14h2M8 18h2"/></svg>','Calendario']];$('bottom-nav').innerHTML=names.map(([t,i,v])=>`<button type="button" aria-label="${v}" class="${tab===t||tab==='registro'&&t==='nueva'?'active':''} ${t==='nueva'?'fab':''}" onclick="go('${t}')"><span class="nav-icon">${i}</span>${v}</button>`).join('')}
 function go(t){tab=t;editPair=false;showNext=false;noticeText='';selection=[];render();window.scrollTo({top:0,behavior:'instant'})}
-function render(){document.body.classList.toggle('home-screen',tab==='inicio');document.body.classList.toggle('registry-screen',tab==='registro');nav();$('app').innerHTML=tab==='inicio'?home():tab==='nueva'?newSessionView():tab==='registro'?registry():tab==='historial'?history():tab==='detalle'?detail():tab==='estadisticas'?stats():tab==='bolas'?ballsView():tab==='patrones'?patternsView():tab==='liga'?ligaView():settings();if(tab==='estadisticas')renderCharts();if(tab==='liga')ligaShowFrame();if(tab==='nueva')updateSessionFields();if(tab==='registro'){const strip=document.querySelector('.score-strip'),curr=strip?.querySelector('.frame-cell.current');if(curr)strip.scrollLeft=Math.max(0,curr.offsetLeft-strip.offsetLeft-strip.clientWidth/2+curr.clientWidth/2)}}
+function render(){document.body.classList.toggle('home-screen',tab==='inicio');document.body.classList.toggle('registry-screen',tab==='registro');nav();$('app').innerHTML=tab==='inicio'?home():tab==='nueva'?newSessionView():tab==='registro'?registry():tab==='historial'?history():tab==='detalle'?detail():tab==='estadisticas'?stats():tab==='bolas'?ballsView():tab==='calendario'?calendarView():tab==='patrones'?patternsView():tab==='liga'?ligaView():settings();if(tab==='estadisticas')renderCharts();if(tab==='liga')ligaShowFrame();if(tab==='nueva')updateSessionFields();if(tab==='registro'){const strip=document.querySelector('.score-strip'),curr=strip?.querySelector('.frame-cell.current');if(curr)strip.scrollLeft=Math.max(0,curr.offsetLeft-strip.offsetLeft-strip.clientWidth/2+curr.clientWidth/2)}}
 function head(title,sub,extra=''){return `<div class="section-head"><div><h1>${esc(title)}</h1>${sub?`<p>${esc(sub)}</p>`:''}</div>${extra}</div>`}
 function metrics(a){return [{icon:'◉',label:'Media',value:a.games.length?fmt(a.avg):'—'},{icon:'▥',label:'Partidas',value:a.games.length},{icon:'♛',label:'Mejor partida',value:a.games.length?Math.max(...a.totals):'—'},{icon:'✦',label:'Strikes',value:p100(a.strikes.length,a.first.length)},{icon:'✓',label:'Spare',value:p100(a.spare,a.opportunities.length)}]}
 function tile(icon,label,value,detail=''){return `<div class="stat-tile"><div class="label"><span>${icon}</span> ${label}</div><div class="value">${value}</div>${detail?`<div class="detail">${detail}</div>`:''}</div>`}
@@ -102,11 +102,11 @@ function home(){
    '<button type="button" class="bowling-home-module bowling-home-module-red" data-target="nueva" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true">🎳</span><strong>Registrar partida</strong><span class="bowling-home-module-desc">Entrenamientos y competiciones, lanzamiento a lanzamiento.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
    '<button type="button" class="bowling-home-module bowling-home-module-blue" data-target="historial" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true">▤</span><strong>Consultar partidas</strong><span class="bowling-home-module-desc">Revisa tus jornadas, resultados y registros anteriores.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
    '<button type="button" class="bowling-home-module bowling-home-module-gold" data-target="estadisticas" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true">▥</span><strong>Analizar estadísticas</strong><span class="bowling-home-module-desc">Descubre tu evolución y compara tus puntuaciones.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
-   '<button type="button" class="bowling-home-module bowling-home-module-purple" data-target="bolas" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true">◉</span><strong>Gestionar mis bolas</strong><span class="bowling-home-module-desc">Consulta y organiza tu equipamiento.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
   '</nav>',
   '<section class="bowling-home-tools" aria-label="Otras herramientas"><h2>Más herramientas</h2><div class="bowling-home-tool-grid">',
    '<button type="button" data-target="patrones" onclick="go(this.dataset.target)"><span aria-hidden="true">💧</span><span>Patrones de aceitado</span><b aria-hidden="true">›</b></button>',
    '<button type="button" data-target="liga" onclick="go(this.dataset.target)"><span aria-hidden="true">🏆</span><span>Liga Nacional</span><b aria-hidden="true">›</b></button>',
+   '<button type="button" data-target="bolas" onclick="go(this.dataset.target)"><span aria-hidden="true">🎳</span><span>Mis bolas</span><b aria-hidden="true">›</b></button>',
   '</div></section>',
   '<section class="bowling-home-stats" aria-label="Resumen de resultados"><h2>Tu rendimiento</h2><div class="bowling-home-stat-grid">',
    '<div><span>Media entrenamiento</span><strong>'+(t.games.length?fmt(t.avg):'—')+'</strong><small>'+t.allGames.filter(complete).length+' partidas completadas</small></div>',
@@ -116,6 +116,61 @@ function home(){
  '</section>'
  ].join('');
 }
+
+let calendarMonth=today().slice(0,7),calendarSelected=today();
+function changeCalendarMonth(delta){
+ const parts=calendarMonth.split('-').map(Number);
+ const d=new Date(Date.UTC(parts[0],parts[1]-1+delta,1));
+ calendarMonth=d.toISOString().slice(0,7);
+ calendarSelected='';
+ render();
+}
+function chooseCalendarDay(value){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(value)||value.slice(0,7)!==calendarMonth)return;
+ calendarSelected=value;
+ render();
+}
+function calendarView(){
+ const parts=calendarMonth.split('-').map(Number),year=parts[0],month=parts[1];
+ const daysInMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
+ const first=(new Date(Date.UTC(year,month-1,1)).getUTCDay()+6)%7;
+ const monthLabel=new Date(Date.UTC(year,month-1,1)).toLocaleDateString('es-ES',{month:'long',year:'numeric',timeZone:'UTC'});
+ const records=db.sessions.filter(s=>typeof s.date==='string'&&s.date.slice(0,7)===calendarMonth);
+ const dateCounts=new Map();
+ for(const s of records)dateCounts.set(s.date,(dateCounts.get(s.date)||0)+1);
+ const selected=calendarSelected&&calendarSelected.slice(0,7)===calendarMonth?calendarSelected:'';
+ const selectedEvents=selected?records.filter(s=>s.date===selected):[];
+ let html=head('Calendario','Consulta tus entrenamientos y competiciones por fecha.');
+ html+='<section class="calendar-panel" aria-label="Calendario de partidas">';
+ html+='<div class="calendar-monthbar"><button type="button" class="calendar-chevron" aria-label="Mes anterior" onclick="changeCalendarMonth(-1)">‹</button><h2>'+esc(monthLabel.charAt(0).toUpperCase()+monthLabel.slice(1))+'</h2><button type="button" class="calendar-chevron" aria-label="Mes siguiente" onclick="changeCalendarMonth(1)">›</button></div>';
+ html+='<div class="calendar-summary">'+records.length+' sesión(es) registrada(s) este mes</div>';
+ html+='<div class="calendar-weekdays">'+['L','M','X','J','V','S','D'].map(x=>'<span>'+x+'</span>').join('')+'</div><div class="calendar-grid">';
+ for(let i=0;i<first;i++)html+='<span class="calendar-pad" aria-hidden="true"></span>';
+ for(let day=1;day<=daysInMonth;day++){
+   const date=calendarMonth+'-'+String(day).padStart(2,'0'),count=dateCounts.get(date)||0;
+   const cls='calendar-day'+(date===selected?' selected':'')+(date===today()?' today':'')+(count?' has-events':'');
+   const label=day+' de '+monthLabel+(count?', '+count+' sesión(es)':' sin sesiones');
+   html+='<button type="button" class="'+cls+'" onclick="chooseCalendarDay('+esc(JSON.stringify(date))+')" aria-label="'+esc(label)+'" aria-pressed="'+(date===selected?'true':'false')+'"><span>'+day+'</span>'+(count?'<i aria-hidden="true"></i>':'')+'</button>';
+ }
+ html+='</div></section>';
+ html+='<section class="calendar-agenda" aria-label="Partidas del día seleccionado"><h2>'+(selected?'Partidas del '+esc(selected.split('-').reverse().join('/')):'Selecciona un día')+'</h2>';
+ if(!selected)html+='<p class="calendar-empty">Toca un día para consultar las partidas registradas.</p>';
+ else if(!selectedEvents.length)html+='<p class="calendar-empty">No hay partidas registradas en esta fecha.</p>';
+ else for(const session of selectedEvents){
+  const games=Array.isArray(session.games)?session.games:[],finished=games.filter(complete).length;
+  const label=session.title||(session.type==='oficial'?'Competición':'Entrenamiento');
+  html+='<article class="calendar-session"><div><strong>'+esc(label)+'</strong><small>'+esc(session.venue||'Bolera sin indicar')+' · '+games.length+' partida(s) · '+finished+' completa(s)</small></div><button class="btn outline" type="button" onclick="openCalendarSession('+esc(JSON.stringify(String(session.id)))+')">Abrir</button></article>';
+ }
+ html+='</section>';
+ html+='<div class="calendar-actions"><button type="button" class="btn outline" onclick="go(\'nueva\')">+ Nueva partida</button><button type="button" class="btn outline" onclick="go(\'bolas\')">Mis bolas</button></div>';
+ return html;
+}
+function openCalendarSession(id){
+ if(!db.sessions.some(s=>s.id===id))return;
+ activeId=id;
+ go('detalle');
+}
+
 let newMode='entrenamiento';let competitionFormat='habitual';function startWith(type){newMode=type;go('nueva')}
 function chooseSessionType(v){newMode=v;updateSessionFields()}
 function chooseCompetitionFormat(v){competitionFormat=v;updateSessionFields()}
