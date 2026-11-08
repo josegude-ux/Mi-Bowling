@@ -21,7 +21,7 @@ for(const [w,h] of [[390,844],[768,1024],[1440,900]]){
   if(res.error)throw res.error;
   assert.equal(res.status,0,'Falló Chromium '+w+'/'+mode+': '+String(res.stderr).slice(-900));
   assert.ok(res.stdout.includes('data-profiles-test="PASS"'),
-    'Fallo interfaz '+w+'/'+mode+': '+res.stdout.slice(-2200)+' '+String(res.stderr).slice(-500));
+    'Fallo interfaz '+w+'/'+mode+': '+(res.stdout.match(/data-profiles-error="([^"]*)"/)||[])[1]+' · '+res.stdout.slice(0,1100)+' · '+String(res.stderr).slice(-400));
   console.log('OK · '+w+' × '+h+' · Selector, '+mode+', partida nueva y legado intacto');
  }
 }
