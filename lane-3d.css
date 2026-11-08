@@ -44,3 +44,8 @@
 @media(prefers-reduced-motion:reduce){
  .lane3d-toggle,.lane3d-camera button{transition:none}
 }
+/* Ergonomía móvil: dianas y controles de cámara más grandes */
+.lane3d-toggle{min-height:44px}
+.lane3d-camera button{min-width:44px;min-height:44px;touch-action:manipulation}
+@media(max-width:640px){.lane3d-camera button{min-width:41px;min-height:44px}}
+@media(max-width:340px){.lane3d-camera button{min-width:40px;min-height:44px}}
