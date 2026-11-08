@@ -24,6 +24,7 @@ const client={
   async signUp({email,password}){
    calls.push(['signUp',email,password.length]);return {data:{user:null,session:null},error:null}
   },
+  async resend({type,email,options}){calls.push(['resend',type,email,options]);return {data:{},error:null}},
   async signOut(){signOutCount++;calls.push(['signOut']);return {error:null}},
   async resetPasswordForEmail(email,opts){calls.push(['reset',email,opts]);return {error:null}},
   async updateUser({password}){calls.push(['update-password',password.length]);return {error:null}},
