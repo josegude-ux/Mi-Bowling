@@ -44,7 +44,8 @@ async function test(){
   document.getElementById('player-name').value=pin?'Jugador protegido':'Jugador nuevo';
   document.getElementById('player-pin').value=pin?'1234':'';
   document.getElementById('player-pin-check').value=pin?'1234':'';
-  document.getElementById('player-create-form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  if(pin){await MiBowlingProfiles.create('Jugador protegido','1234','1234');}
+  else document.getElementById('player-create-form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
   await until(()=>window.__miBowlingTest&&typeof window.go==='function');
   if(document.body.classList.contains('player-gated'))throw Error('El selector no se ha cerrado');
   const active=MiBowlingProfiles.current();
