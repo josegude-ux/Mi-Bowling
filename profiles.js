@@ -289,8 +289,22 @@
       }
     }
   }
+  function validateRestore(data) {
+    const active = current();
+    if(!active)throw new Error('Selecciona un jugador antes de importar una copia');
+    if(!data || typeof data!=='object' || Array.isArray(data))
+      throw new Error('La copia no tiene un formato válido');
+    if(Object.prototype.hasOwnProperty.call(data,'localPlayer')){
+      const owner = data.localPlayer;
+      if(!owner || typeof owner!=='object' || typeof owner.id!=='string' || owner.id!==active.id)
+        throw new Error('Esta copia pertenece a otro jugador. Selecciona primero el perfil propietario.');
+    } else if(!isLegacy()){
+      throw new Error('La copia antigua no identifica a su propietario: solo puede restaurarse en el perfil principal de datos anteriores, nunca en un jugador nuevo.');
+    }
+    return true;
+  }
   root.MiBowlingProfiles = Object.freeze({
-    init, current, profiles, storageKey, pdfDatabase, isLegacy, leave,
+    init, current, profiles, storageKey, pdfDatabase, isLegacy, leave, validateRestore,
     // Métodos de prueba. No sustituyen la validación de la interfaz.
     create, verifyPin, getCatalog: () => catalog,
     metadataKey: META, selectedKey: TAB, legacyKeys: LEGACY_KEYS.slice()
