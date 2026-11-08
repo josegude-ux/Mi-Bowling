@@ -56,9 +56,6 @@ jobs:
         run: |
           node tests/auth-browser-smoke.cjs
           node tests/auth-callback-browser.test.cjs
-        run: |
-          node tests/auth-browser-smoke.cjs
-          node tests/auth-callback-browser.test.cjs
       - name: Capturas callback A3
         if: always()
         uses: actions/upload-artifact@v4
