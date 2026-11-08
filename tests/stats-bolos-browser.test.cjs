@@ -10,6 +10,7 @@ if(!chrome)for(const name of ['google-chrome','google-chrome-stable','chromium',
 }
 assert.ok(chrome,'Chromium is needed for UI verification');
 const fixture=pathToFileURL(path.join(__dirname,'stats-bolos-browser.html')).href;
+const demo=pathToFileURL(path.join(__dirname,'..','lab','estadisticas.html')).href;
 const out=path.join(__dirname,'artifacts-bolos');
 fs.mkdirSync(out,{recursive:true});
 for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
@@ -26,8 +27,15 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
  assert.ok(page.stdout.includes('data-browser-test="PASS"'),
    'App stats UI failure '+width+': '+(failure||page.stdout.slice(-1400)));
  console.log('OK · '+width+'×'+height+' · Four modes + actual scoring data + profile separation');
+ const visualTest=cp.spawnSync(chrome,[...flags,'--dump-dom',demo+'?smoke=1'],{
+   encoding:'utf8',timeout:40000,maxBuffer:5*1024*1024
+ });
+ assert.equal(visualTest.status,0,'Error al abrir demo visual '+width);
+ assert.ok(visualTest.stdout.includes('data-demo-smoke="PASS"'),
+   'Fallo de demo visual '+width+': '+(visualTest.stdout.match(/data-demo-error="([^"]*)"/)?.[1]||visualTest.stdout.slice(-1300)));
+ console.log('OK · '+width+'×'+height+' · Demo ficticia interactiva, A vs B, sin persistencia');
  const img=path.join(out,'estadisticas-bolos-'+width+'.png');
- const shot=cp.spawnSync(chrome,[...flags,'--screenshot='+img,fixture],{
+ const shot=cp.spawnSync(chrome,[...flags,'--screenshot='+img,demo],{
    encoding:'utf8',timeout:40000,maxBuffer:1024*1024
  });
  assert.equal(shot.status,0,'Chrome screenshot error '+width);
