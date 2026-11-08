@@ -232,3 +232,82 @@ body.home-screen .app-main{max-width:1440px;padding:18px clamp(14px,3vw,32px) ca
  .compact-score .score-action-buttons .btn{min-width:0;font-size:11.5px;padding:9px 6px}
  .compact-score .score-action-buttons .btn:only-child{grid-column:1/-1}
 }
+
+
+/* MI BOWLING · Anotación compacta LAB R1 (inspiración VISURA INVENTA).
+   Los estilos están limitados a .registry-v4 para preservar las pantallas existentes. */
+.registry-v4{max-width:950px;margin:0 auto;color:#102c50}
+.registry-v4 .section-head{margin:0 0 11px}
+.registry-v4 .section-head h1{font-size:clamp(20px,2.7vw,27px)}
+.registry-v4 .section-head p{font-size:12px}
+.registry-v4 .card{box-shadow:0 5px 20px rgba(19,54,94,.055)}
+.registry-v4-score{border:1px solid #d1e0f3;padding:14px 12px 13px;margin:11px 0 12px}
+.registry-v4-score .card-head{align-items:center;margin-bottom:8px}
+.registry-v4-score .card-head h2{font-size:15px}
+.registry-v4-score .score-strip{display:grid!important;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px!important;padding:2px 0 0!important;overflow-x:visible!important}
+.registry-v4-score .frame-cell{display:flex;flex-direction:column;justify-content:space-between;min-width:0!important;max-width:none!important;width:100%;min-height:71px;padding:6px 0!important;border-radius:7px!important;border:1px solid #dce6ef;background:#f6f9fe}
+.registry-v4-score .frame-cell.current{background:#deebff;border:2px solid #1266bb}
+.registry-v4-score .frame-cell>span{font-size:11px;font-weight:850;color:#315b83}
+.registry-v4-score .frame-cell .score-marks{display:flex!important;gap:0;justify-content:center;align-items:center;min-height:23px!important;margin:3px 0!important;font-size:11px;letter-spacing:-.5px}
+.registry-v4-score .frame-cell .score-mark{min-width:0!important;min-height:17px!important;font-size:11px;line-height:17px}
+.registry-v4-score .frame-cell .score-mark.strike-mark{font-size:19px}
+.registry-v4-score .frame-cell strong{font-size:11px;font-weight:850;color:#102d56;line-height:1.1}
+.registry-v4-pin-history{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;margin:2px 0 11px}
+.registry-v4-mini-frame{min-height:47px;padding:5px 0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;border:1px solid #edf0f5;background:#f7fafc;border-radius:5px}
+.registry-v4-mini-row{display:flex;gap:2px;justify-content:center}
+.registry-v4-mini-dot{display:block;width:4px;height:4px;border-radius:50%;background:#d6dee7}
+.registry-v4-mini-dot.standing{background:#18334f}
+.registry-v4-mini-dot.split{background:#d9484a}
+.registry-v4-mini-dot.fallen{background:#ccd3da}
+.registry-v4-mini-dot.unplayed{background:#e2e6ec}
+.registry-v4-score .score-actions-row{gap:8px}
+.registry-v4-score .score-action-buttons{width:100%;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.registry-v4-score .score-action-buttons .btn{border:1px solid #bad1e9;color:#154a7b;background:#fff;border-radius:12px;font-size:12px;line-height:1.3;white-space:normal;min-height:45px}
+.registry-v4-score .score-actions-row>.hint{margin-bottom:4px;color:#667f99}
+.registry-v4-roll{border:1px solid #d9e7f4;padding:17px 14px 15px;margin:12px 0}
+.registry-v4-roll .game-heading{align-items:center;gap:8px;margin-bottom:10px}
+.registry-v4-roll .game-heading h1{font-size:21px;color:#0e3565}
+.registry-v4-pin-caption{text-align:center;color:#58718a;font-size:12px;margin:5px 0 12px}
+.registry-v4-rack-wrap{max-width:490px;margin:auto}
+.registry-v4 .pin-layout{max-width:100%;padding:17px 8px 19px;border:1px solid #d8e5ef;border-radius:19px;background:linear-gradient(135deg,#f7fbff,#e7f1fc);gap:11px}
+.registry-v4 .pin-row{gap:17px}
+.registry-v4 .pin{height:59px;width:59px;font-size:18px;color:#17518b;background:#fff;border:2px solid #a3c3e0;box-shadow:0 3px 0 #d3e2f0}
+.registry-v4 .pin.selected{background:#135dad;border-color:#0e4c94;color:#fff;box-shadow:0 3px 0 #0d4781}
+.registry-v4 .pin.unavailable{opacity:.17}
+.registry-v4-record{background:linear-gradient(105deg,#0e66c3,#084f9c)!important;font-size:15px!important;border-radius:13px}
+.registry-v4-quick{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;margin-top:10px}
+.registry-v4-quick .btn{font-size:12px!important;min-width:0;min-height:45px;padding:9px 4px!important;line-height:1.2}
+.registry-v4 .stats-checkbox{margin-top:13px}
+.registry-v4-extra,.registry-v4-history{border:1px solid #d6e5f3;border-radius:15px;margin-top:14px;background:#fff;box-shadow:0 3px 11px rgba(18,57,94,.035);overflow:hidden}
+.registry-v4-extra>summary,.registry-v4-history>summary{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;padding:15px 13px;font-weight:780;font-size:13px;color:#194874;list-style-position:inside;min-height:48px}
+.registry-v4-extra>summary small{display:block;color:#69849c;font-size:10px;font-weight:600}
+.registry-v4-extra[open]>summary,.registry-v4-history[open]>summary{background:#edf6ff}
+.registry-v4-extra>.card,.registry-v4-history>.card{margin:9px!important;box-shadow:none}
+.registry-v4-history>.card{border:0}
+.registry-v4-extra .lane-visual{margin-top:13px}
+.registry-v4-extra .line-grid{margin-bottom:5px}
+@media(max-width:580px){
+ .registry-v4 .section-head{align-items:start}
+ .registry-v4 .section-head h1{font-size:20px}
+ .registry-v4-score{padding:11px 6px 11px}
+ .registry-v4-score .frame-cell{min-height:65px;padding:5px 0!important}
+ .registry-v4-score .frame-cell .score-marks{min-height:22px!important}
+ .registry-v4-score .frame-cell .score-mark{font-size:10px}
+ .registry-v4-score .frame-cell .score-mark.strike-mark{font-size:16px}
+ .registry-v4-score .frame-cell strong{font-size:10px}
+ .registry-v4-score .frame-cell>span{font-size:10px}
+ .registry-v4-mini-row{gap:1px}
+ .registry-v4-mini-dot{width:3.7px;height:3.7px}
+ .registry-v4-score .score-action-buttons .btn{font-size:11px;min-height:45px;padding:9px 5px}
+ .registry-v4-roll{padding:12px 9px}
+ .registry-v4 .pin-row{gap:11px}
+ .registry-v4 .pin{width:54px;height:54px}
+ .registry-v4-extra>summary,.registry-v4-history>summary{padding:14px 10px}
+}
+@media(max-width:350px){
+ .registry-v4 .pin-row{gap:7px}
+ .registry-v4 .pin{width:49px;height:49px;font-size:16px}
+ .registry-v4-mini-dot{width:3px;height:3px}
+ .registry-v4-score .frame-cell .score-mark{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){.registry-v4 .pin{transition:none}}
