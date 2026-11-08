@@ -6,6 +6,14 @@ on:
   pull_request:
     paths:
       - auth-lab.js
+      - auth-email-callback.js
+      - auth-link-boot.js
+      - auth/callback.html
+      - auth/callback-entry.js
+      - docs/email-templates/LAB_A3_confirm_signup_REVIEW_ONLY.html
+      - docs/email-templates/LAB_A3_reset_password_REVIEW_ONLY.html
+      - tests/auth-callback.test.cjs
+      - tests/auth-callback-browser.test.cjs
       - auth-supabase-adapter.js
       - auth-private-repository.js
       - auth-boot.js
@@ -30,10 +38,15 @@ jobs:
       - name: Sintaxis y contrato de acceso seguro
         run: |
           node --check auth-lab.js
+          node --check auth-email-callback.js
+          node --check auth-link-boot.js
+          node --check auth/callback-entry.js
           node --check auth-supabase-adapter.js
           node --check auth-private-repository.js
           node --check auth-boot.js
           node --check tests/auth-lab.test.cjs
+          node --check tests/auth-callback.test.cjs
+          node tests/auth-callback.test.cjs
           node --check tests/auth-email-flows.test.cjs
           node --check tests/auth-browser-smoke.cjs
           node tests/auth-lab.test.cjs
