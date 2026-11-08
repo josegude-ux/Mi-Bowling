@@ -82,8 +82,8 @@
     var initial=svg(line);
     return '<section class="shot-editor" aria-label="Editor visual de la línea de lanzamiento">'+
       '<p class="shot-explanation">Marca <b>dónde colocas los pies</b>, la <b>tabla por la que pasa la bola en las flechas</b> y el <b>breakpoint</b>. Los puntos pueden arrastrarse sobre la pista.</p>'+
-      '<div class="shot-editor-layout"><div class="shot-visual">'+initial+
-      '<div class="shot-legend"><span><i class="shot-dot foot"></i>Pies</span><span><i class="shot-dot arrow"></i>Flecha</span><span><i class="shot-dot bp"></i>Break</span></div></div>'+
+      '<div class="shot-editor-layout"><div class="shot-stage lane-view-3d" id="shot-stage">'+(window.MiBowlingLane3D?window.MiBowlingLane3D.html():'')+'<div class="shot-visual">'+initial+
+      '<div class="shot-legend"><span><i class="shot-dot foot"></i>Pies</span><span><i class="shot-dot arrow"></i>Flecha</span><span><i class="shot-dot bp"></i>Break</span></div></div></div>'+
       '<div class="shot-controls">'+
       field('approach','1 · Salida de los pies','Ej. 25').replace('placeholder="Ej. 25"','value="'+visible(line.approach)+'" placeholder="Ej. 25"')+
       field('arrow','2 · Paso por flechas','Ej. 15').replace('placeholder="Ej. 15"','value="'+visible(line.arrow)+'" placeholder="Ej. 15"')+
@@ -111,6 +111,7 @@
       var ft=document.getElementById('breakpointFt');
       summary.textContent='Pies '+raw[0]+' · Flecha '+raw[1]+' · Break '+raw[2]+(ft&&ft.value.trim()?' a '+ft.value.trim()+' pies':'');
     }
+    if(window.MiBowlingLane3D&&typeof window.MiBowlingLane3D.refresh==='function')window.MiBowlingLane3D.refresh();
   }
   function toSvg(evt,svgEl){
     var box=svgEl.getBoundingClientRect();
