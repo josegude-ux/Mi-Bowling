@@ -142,7 +142,7 @@ function dom(){
  tested.init();
  await tested.login('jugadora@example.test','Correcta12345678');
  assert.equal(launches,1);
- user={...user,id:B};
+ user={...user,id:B,email:'otra-persona@example.test'};
  await assert.rejects(tested.login('jugadora@example.test','Correcta12345678'),/usuario no verificado|Usuario no verificado|No se puede verificar|Usuario/i);
  assert.equal(launches,1,'Wrong owner must not launch');
  // RLS design must include scope for select/insert/update and NO public deletes.
