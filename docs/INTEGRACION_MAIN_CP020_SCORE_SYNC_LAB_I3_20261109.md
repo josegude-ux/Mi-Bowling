@@ -5,7 +5,8 @@
 **Origen:** PR #18, checkpoint I2 14f1d5b73c3ede4fe479d01c1a4722e79fd10de6.
 **Main recuperado:** 566aafdc05be163baf8c7f82e60433b0f532d748; portada VISURA y calendario FGB CP-020.
 **Rama I3:** feature/integracion-main-auth-i3-lab-20261109; rama independiente derivada de I2, NO fusionada.
-**Validación CI:** pendiente hasta verificar ejecuciones de esta rama.
+**Checkpoint funcional I3:** 66d3cede69abc6bca2a4d3fff5d5c5acfa168d4e.
+**Verificación CI:** SUCCESS · I3 push #42534477109, I3 PR #42534482255 y regresión I2 PR #42534482333.
 
 ## Alcance implementado
 
@@ -36,16 +37,33 @@
 
 ## Matriz de pruebas a verificar en GitHub Actions
 
-- [ ] Inicialización de solo lectura; A/B/C separados y B con documento inicialmente inexistente.
-- [ ] Debounce, cola serial y autosave sin pérdida de cambios intermedios.
-- [ ] Conflicto remoto y bloqueo sin sobrescribir cambios ajenos.
-- [ ] Commit remoto con timeout y conciliación sin duplicados; error anterior al commit.
-- [ ] Offline, reconexión, logout durante escritura y rechazo de Liga dentro de documento personal.
-- [ ] WebKit iPhone/tablet emulados, Chromium escritorio, portada, FGB y no exposición de datos reales.
-- [ ] Verificación binaria CP-020 y CI de I3 SUCCESS.
+- [x] Inicialización de solo lectura; A/B/C separados y B con documento inicialmente inexistente.
+- [x] Debounce, cola serial y autosave sin pérdida de cambios intermedios.
+- [x] Conflicto remoto y bloqueo sin sobrescribir cambios ajenos.
+- [x] Commit remoto con timeout y conciliación sin duplicados; error anterior al commit.
+- [x] Offline, reconexión, logout durante escritura y rechazo de Liga dentro de documento personal.
+- [x] WebKit iPhone/tablet emulados, Chromium escritorio, portada, FGB y no exposición de datos reales.
+- [x] Verificación binaria CP-020 y CI de I3 SUCCESS.
 
 ## Pendientes fuera de alcance
 
 Antes de un uso real: migrar guardado del motor sin depender de almacenamiento local, recuperación duradera de operaciones pendientes, manejo de conflictos entre dispositivos, Auth y RLS de servidor probados, PDF/Storage privado real con autorización independiente y pruebas Safari físico.
 
 **NO FUSIONAR · NO PUBLICAR · NO CONECTAR SERVICIOS REALES.**
+
+
+## Evidencias finales y checkpoint · 9 noviembre 2026
+
+**Código probado:** 66d3cede69abc6bca2a4d3fff5d5c5acfa168d4e. Este SHA es el código I3 validado; este documento de evidencia se añade después, sin alterar lógica ni pruebas.
+**PR en borrador:** https://github.com/josegude-ux/Mi-Bowling/pull/20, base PR #18, rama feature/integracion-main-auth-cp020-lab-20261108.
+**GitHub Actions I3:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42534477109 · ambos jobs SUCCESS.
+**GitHub Actions I3 PR:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42534482255 · ambos jobs SUCCESS.
+**GitHub Actions de regresión I2:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42534482333 · ambos jobs SUCCESS.
+
+### Resultados realmente observados
+
+Node: tres UUID A/B/C, alta personal sin documento previo, agrupación de cambios, escrituras en serie, conflicto externo rechazado, timeout posterior al commit sin duplicar, reconexión tras error anterior al commit, modo offline y conflicto remoto, cierre durante escritura y bloqueo de mezcla de Liga. No se escribió en disco, ni en navegador real, ni en servidor externo.
+Navegador: regresión I2 satisfactoria con WebKit emulando iPhone A/B y tablet C y Chromium de escritorio A/B. I3 con motor CP-020 original y save() de prueba en WebKit iPhone A, WebKit tablet B y Chromium escritorio C; auto guardado y relectura privada simulados, interfaz y calendario conservados, almacenamiento real del origen intacto y sin red externa.
+Contratos: los seis Git blobs protegidos del main CP-020 son idénticos; FGB conserva 31 eventos (10 gallegos/21 nacionales); PR #1/#8/#10/#12/#13/#18 no modificadas.
+
+**Estado:** fase I3 de LAB funcionalmente validada con dobles ficticios. NO hay garantía de Auth/RLS/Storage real, cola persistente offline, migración ni Safari físico. NO FUSIONAR, NO PUBLICAR.
