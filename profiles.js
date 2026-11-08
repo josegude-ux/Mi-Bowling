@@ -259,7 +259,7 @@
     const button = doc.getElementById('player-switch');
     if (button) { button.hidden = false; button.setAttribute('aria-label', 'Cambiar jugador, actual: ' + player.name); }
     const script = doc.createElement('script');
-    script.src = 'app.js?v=338lab-profiles1';
+    script.src = 'app.js?v=338-int-perfiles-stats1';
     script.onerror = () => {
       doc.getElementById('app').textContent = 'No ha sido posible abrir MI BOWLING LAB. Recarga la página.';
     };
