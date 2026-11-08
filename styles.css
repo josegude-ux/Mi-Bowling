@@ -355,3 +355,74 @@ body.registry-screen .app-main{padding-bottom:calc(26px + env(safe-area-inset-bo
 /* Icono oficial MI BOWLING: encabezado y menú inicio, sin alterar diseño funcional. */
 .brand-mark,.bowling-home-mark{overflow:hidden;isolation:isolate}
 .brand-mark img,.bowling-home-mark img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+
+
+/* MI BOWLING · Portada VISURA elegida · 3 fotografías estáticas, sin 3D interactivo. */
+body.home-screen{background:linear-gradient(160deg,#f4f9ff 0%,#e9f5fe 64%,#f4f9ff 100%)}
+body.home-screen .app-main{max-width:1440px}
+.bowling-home-intro{background:radial-gradient(ellipse at 95% 52%,#c8e4fb8c 0%,transparent 48%);padding-block:24px 27px}
+.bowling-home-kicker{letter-spacing:2px;color:#0965aa;font-size:12px}
+.bowling-home-intro h1{color:#092a55;font-weight:900;letter-spacing:-1px}
+.bowling-home-header{border-color:#d8eafa;border-bottom-color:#b3d9ee;box-shadow:0 10px 24px #104a9022}
+.bowling-home-menu{grid-template-columns:1fr;gap:16px;max-width:1120px;margin-inline:auto}
+.bowling-home-module{min-height:224px;border-radius:24px;padding:22px 24px;background-repeat:no-repeat;background-size:cover,auto 110%;background-position:center,right center;border:1px solid #ffffff80;box-shadow:0 9px 23px #153e6724}
+.bowling-home-module-red{background-color:#9b0920;background-image:linear-gradient(105deg,#9d0826 0%,#9d0927f7 32%,#a5142fb4 55%,#9b093000 86%),url('./home-registro.jpg')}
+.bowling-home-module-blue{background-color:#063d77;background-image:linear-gradient(105deg,#093c77 0%,#073f7df0 32%,#0a6da9a3 56%,#065c9300 88%),url('./home-partidas.jpg')}
+.bowling-home-module-gold{background-color:#9b6305;background-image:linear-gradient(105deg,#a36b00 0%,#ae7600f0 32%,#c48607ae 56%,#89610b00 88%),url('./home-estadisticas.jpg')}
+.bowling-home-module-content{min-height:176px;max-width:68%}
+.bowling-home-module-icon{font-size:25px;min-width:32px;filter:drop-shadow(0 2px 3px #0018)}
+.bowling-home-module strong{font-size:clamp(22px,2.5vw,30px);line-height:1.12;text-wrap:balance;text-shadow:0 1px 3px #0003}
+.bowling-home-module-desc{font-size:clamp(13px,1.4vw,16px);line-height:1.4;max-width:400px}
+.bowling-home-module-arrow{border-width:2.5px;background:#ffffff0b;width:46px;height:46px}
+.bowling-home-module:hover{transform:translateY(-1px)}
+.bowling-home-tools,.bowling-home-stats{max-width:1120px;margin-left:auto;margin-right:auto}
+.bottom-nav{background:#f5fafff2;border-top:1px solid #cfebf8;box-shadow:0 -6px 23px #0a42791a}
+.bottom-nav button{position:relative;font-size:clamp(8px,1.6vw,11px);font-weight:740;min-width:0;white-space:nowrap;color:#506b92}
+.bottom-nav button.active{color:#006b9f}
+.bottom-nav button.active::after{content:"";position:absolute;bottom:4px;left:20%;right:20%;height:3px;border-radius:5px;background:#11b5d0}
+.bottom-nav button.fab .nav-icon{background:linear-gradient(150deg,#11b3e5,#0960b3);box-shadow:0 8px 19px #087db94a;border-color:#fff}
+.bottom-nav button.fab.active::after{display:none}
+.nav-icon svg{vertical-align:middle;max-width:100%}
+@media(max-width:760px){
+ .bowling-home-menu{grid-template-columns:1fr;gap:13px}
+ .bowling-home-module{min-height:203px;padding:19px 20px 17px;border-radius:22px}
+ .bowling-home-module-content{min-height:166px;max-width:76%}
+ .bowling-home-module strong{font-size:clamp(21px,4.7vw,27px)}
+ .bowling-home-module-desc{font-size:13px;max-width:245px;margin-top:8px}
+ .bowling-home-intro{padding:22px 8px 24px}
+ .bottom-nav button{padding:10px 0 13px}
+}
+@media(max-width:370px){
+ .bowling-home-module{min-height:206px;padding:17px 16px}
+ .bowling-home-module-content{min-height:170px;max-width:80%}
+ .bowling-home-module strong{font-size:20px}
+ .bowling-home-module-desc{font-size:12px}
+ .bottom-nav button{font-size:8.4px}
+ .nav-icon{font-size:20px}
+}
+/* Calendario de partidas de solo lectura: usa sesiones existentes sin migración. */
+.calendar-panel,.calendar-agenda{max-width:780px;margin:0 auto 16px;background:#fff;border:1px solid #d6e6f6;border-radius:21px;padding:clamp(12px,2.6vw,23px);box-shadow:0 6px 22px #143b6710}
+.calendar-monthbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.calendar-monthbar h2{margin:0;font-size:clamp(18px,3vw,24px);color:#0b315c;letter-spacing:-.3px}
+.calendar-chevron{border:1px solid #b9d5eb;border-radius:13px;width:44px;height:44px;flex:none;background:#f5fbff;font-size:29px;line-height:1;color:#0e639e}
+.calendar-summary{color:#6c8097;font-size:12px;margin:12px 0 16px}
+.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.calendar-weekdays span{text-align:center;color:#557792;font-weight:750;font-size:12px;padding-bottom:8px}
+.calendar-pad{display:block}
+.calendar-day{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;min-height:44px;border-radius:12px;border:1px solid #e3edf5;background:#f7fbfe;color:#19456e;font-weight:750;font-size:15px;gap:4px;padding:5px 0}
+.calendar-day i{width:6px;height:6px;background:#10a8c4;border-radius:50%;display:block}
+.calendar-day.today{box-shadow:inset 0 0 0 1px #61c1d9}
+.calendar-day.selected{background:linear-gradient(140deg,#0e7fcb,#064c9e);color:#fff;border-color:#0b67b2;box-shadow:0 3px 9px #0a6fac33}
+.calendar-day.selected i{background:#fff}
+.calendar-day:focus-visible{outline:3px solid #53b6e2;outline-offset:2px}
+.calendar-agenda h2{font-size:18px;margin:0 0 14px;color:#0b315c}
+.calendar-empty{font-size:13px;color:#6e8090;margin:0}
+.calendar-session{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#f4f9fe;border:1px solid #e2edf6;padding:14px;border-radius:14px;margin-top:10px}
+.calendar-session div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.calendar-session strong{font-size:14px;color:#0d3d66}
+.calendar-session small{font-size:12px;color:#688296;line-height:1.4}
+.calendar-session button{flex:none;min-height:44px}
+.calendar-actions{max-width:780px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px}
+.calendar-actions .btn{min-height:44px}
+@media(max-width:370px){.calendar-weekdays,.calendar-grid{gap:3px}.calendar-day{font-size:13px;min-height:44px}.calendar-session{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.bottom-nav button.fab .nav-icon,.calendar-chevron{transition:none}}

@@ -61,6 +61,28 @@ async function runView(browser,engine,width,height,origin){
   assert.equal(await page.locator('#bottom-nav').isVisible(),false,'Registro sin navegación fija superpuesta');
   await page.evaluate(()=>go('inicio'));
   assert(await page.locator('#bottom-nav').isVisible(),'Navegación conservada fuera del registro');
+  assert.equal(await page.locator('.bowling-home-module').count(),3,'Tres tarjetas visuales de inicio');
+  assert.equal(await page.getByRole('button',{name:'Mis bolas',exact:true}).count(),1,'Mis bolas sigue accesible en herramientas');
+  await page.getByRole('button',{name:'Calendario',exact:true}).click();
+  await page.evaluate(()=>{calendarMonth='2026-11';calendarSelected='2026-11-08';render()});
+  await page.locator('.calendar-panel').waitFor();
+  assert.equal(await page.locator('.calendar-day').count(),30,'Calendario de noviembre con 30 días');
+  assert(await page.getByText('Partida ficticia de laboratorio').isVisible(),'Sesión real de fixture mostrada en calendario');
+  assert.equal(await page.locator('.calendar-agenda .calendar-session').count(),1,'Un registro por fecha');
+  assert((await assertNoHorizontalOverflow(page)).scroll<=(await assertNoHorizontalOverflow(page)).width+2,'Calendario sin scroll horizontal');
+  await page.getByRole('button',{name:'Mes siguiente'}).click();
+  assert(await page.getByText('0 sesión(es) registrada(s) este mes').isVisible(),'Navegación al siguiente mes');
+  await page.getByRole('button',{name:'Mes anterior'}).click();
+  await page.getByRole('button',{name:/8 de noviembre/}).click();
+  assert(await page.locator('.calendar-session').isVisible(),'Día seleccionado muestra partidas');
+  await page.locator('.calendar-session button').click();
+  assert.equal(await page.evaluate(()=>activeId),'LAB-SESION','Acceso a partida existente sin duplicar');
+  assert(await page.getByRole('heading',{name:'Partida ficticia de laboratorio'}).isVisible(),'Detalle desde calendario');
+  await page.evaluate(()=>go('inicio'));
+  await page.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  assert(await page.getByRole('heading',{name:/Mis bolas/}).isVisible(),'El catálogo de bolas continúa accesible');
+  await page.evaluate(()=>go('inicio'));
+  if(width===390)await page.screenshot({path:path.join(results,engine+'-inicio-390-visura.png'),fullPage:true});
   await page.evaluate(()=>go('registro'));
 
   assert.equal(await page.locator('.score-strip .frame-cell').count(),10, '10 frames');
