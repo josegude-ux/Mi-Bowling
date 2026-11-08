@@ -63,4 +63,7 @@ assert(index.includes('styles.css?v=333lab')&&index.includes('app.js?v=333lab'))
 assert(worker.includes('mi-bowling-analitica-v3-3-3-lab'));
 assert(worker.includes("'./styles.css?v=333lab','./app.js?v=333lab'"));
 assert(styles.includes('MI BOWLING · LAB visual R2'));
+assert(app.includes('${laneVisual(s)}'),'La pista está integrada en el registro');
+assert(app.includes("' · Break '+esc(r.line.breakpoint)"),'El historial muestra breakpoint');
+assert(app.includes('scene.innerHTML=laneVisualSvg(s)'),'Refresco parcial de la pista para preservar el foco');
 console.log('BOWLING LAB: pruebas de sintaxis, tablas, controles, persistencia simulada y recursos correctas.');
