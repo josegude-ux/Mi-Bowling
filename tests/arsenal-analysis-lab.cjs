@@ -62,6 +62,31 @@ async function run(browser,name,width,origin){
   assert.match(await page.locator('#app').innerText(),/Ficha no identificada/,'Sin datos inventados');
   assert.deepEqual((await store(page)).db,fixture,'Análisis no escribe fichas, esquema ni sesiones');
   assert.deepEqual((await store(page)).picks,before.picks,'Análisis no modifica checks');
+
+  // Asistente desde el marcador: conserva bolos en pie y no crea tiros al consultar.
+  await page.getByRole('button',{name:/Volver a Mis bolas/}).click();
+  await page.getByRole('button',{name:'Nueva',exact:true}).click();
+  await page.locator('#s-title').fill('Competicicón ficticia de análisis');
+  await page.locator('#s-venue').fill('Bolera LAB');
+  await page.locator('#s-ball').selectOption('lab-rally');
+  await page.locator('#newSessionForm button[type=submit]').click();
+  let active=await store(page);
+  assert.equal(active.db.sessions.length,1,'Una única sesión sintética creada');
+  const sid=active.db.sessions[0].id;
+  assert.deepEqual(active.picks[sid],before.picks.__next__,'Los cuatro checks se transfieren por UUID de sesión');
+  await page.evaluate(()=>togglePin(1));
+  assert.deepEqual(await page.evaluate(()=>selection),[1],'Bolo en pie antes del asistente');
+  const extras=page.locator('details.registry-v4-extra');
+  if((await extras.getAttribute('open'))===null)await extras.locator('summary').click();
+  await page.getByRole('button',{name:/Asistente de competición/}).click();
+  assert.match(await page.locator('#app').innerText(),/4 bola\(s\) marcadas|bola[s]? candidatas de tu selección/i,'Asistente abierto para la sesión');
+  await page.locator('input[name="arsenal-issue"][value="skid"]').check();
+  await page.getByRole('button',{name:/Volver al lanzamiento/}).click();
+  assert.deepEqual(await page.evaluate(()=>selection),[1],'El regreso rápido conserva el bolo pendiente');
+  active=await store(page);
+  assert.equal(active.db.sessions[0].games[0].rolls.length,0,'Consultar el asistente no registra ni elimina lanzamientos');
+  assert.deepEqual(active.db.balls,fixture.balls,'No cambia ninguna ficha al volver al lanzamiento');
+  assert.deepEqual(active.picks[sid],before.picks.__next__,'El asesor no altera la selección');
   const scroll=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
   assert(scroll.scroll<=scroll.client+2,'Sin scroll horizontal en responsive');
   assert.deepEqual(errors,[],'Sin errores JS');
