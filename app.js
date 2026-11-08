@@ -527,7 +527,7 @@ function openBallAdvisorFor(sessionId){openBallPickerFor(sessionId,'registro');s
 function arsenalInsightView(){
  if(!window.MiBowlingArsenalView)return '<div class="card">Análisis temporalmente no disponible.</div>';
  const scope=ballPickTarget===BALL_SELECTION_NEXT?'la próxima sesión':'esta sesión';
- return window.MiBowlingArsenalView.render({mode:arsenalPanel,detailId:arsenalDetailId,issue:arsenalIssue,balls:db.balls,ids:selectedBallsFor(ballPickTarget)||[],scope,escape:esc});
+ return window.MiBowlingArsenalView.render({mode:arsenalPanel,detailId:arsenalDetailId,issue:arsenalIssue,balls:db.balls,ids:selectedBallsFor(ballPickTarget)||[],scope,returnTo:ballPickReturn,escape:esc});
 }
 function ballsView(){
  if(arsenalPanel!=='list')return arsenalInsightView();
