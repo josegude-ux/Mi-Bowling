@@ -270,7 +270,7 @@ function updatePairHint(){const pair=normalPair($('lane-pair')?.value),o=$('lane
 function ballSelect(id,name,selected){
  const scope=id==='s-ball'?BALL_SELECTION_NEXT:session()?.id;
  const chosen=scope?selectedBallsFor(scope):null;
- return `<select class="input" id="${id}" name="${name}"><option value="">Sin asignar</option>${db.balls.filter(b=>(!b.retired||b.id===selected)&&(chosen===null||chosen.includes(b.id)||b.id===selected)).map(b=>`<option value="${esc(b.id)}" ${selected===b.id?'selected':''}>${esc(b.brand+' '+b.model)}</option>`).join('')}</select>`;
+ return `<select class="input" id="${id}" name="${name}"><option value="">Sin asignar</option>${db.balls.filter(b=>chosen===null?(!b.retired||b.id===selected):chosen.includes(b.id)).map(b=>`<option value="${esc(b.id)}" ${selected===b.id?'selected':''}>${esc(b.brand+' '+b.model)}</option>`).join('')}</select>`;
 }
 function createSession(e){e.preventDefault();if(newMode==='oficial'&&competitionFormat==='liga'){launchLeagueFromNew();return}const f=new FormData(e.currentTarget);const typ=f.get('type');const pair=normalPair(f.get('pair')),start=pair?(intLane(f.get('startLane'))||pair[0]):null;
  if(pair&&!pair.includes(start))return alert('La pista inicial debe pertenecer al par elegido.');
