@@ -21,10 +21,10 @@ const base = new Map([
 ]);
 const mem={getItem:k=>base.has(String(k))?base.get(String(k)):null,setItem:(k,v)=>base.set(String(k),String(v)),
  removeItem:k=>base.delete(String(k)),clear:()=>base.clear(),key:i=>Array.from(base.keys())[i],get length(){return base.size}};
-const tabData=new Map(),session={getItem:k=>tabData.get(k)||null,setItem:(k,v)=>tabData.set(k,String(v)),
+const tabData=new Map(),testTabStore={getItem:k=>tabData.get(k)||null,setItem:(k,v)=>tabData.set(k,String(v)),
  removeItem:k=>tabData.delete(k),clear:()=>tabData.clear()};
 Object.defineProperty(window,'localStorage',{configurable:true,value:mem});
-Object.defineProperty(window,'sessionStorage',{configurable:true,value:session});
+Object.defineProperty(window,'sessionStorage',{configurable:true,value:testTabStore});
 </script>
 <script src="profiles.js"></script>
 <script>
