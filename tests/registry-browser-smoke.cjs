@@ -1,0 +1,136 @@
+'use strict';
+// Browser regression isolated from production. Requires: playwright, local files.
+// Uses only fictitious sessions in fresh browser contexts.
+const assert = require('node:assert/strict');
+const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
+const { chromium, webkit } = require('playwright');
+
+const root = path.resolve(__dirname, '..');
+const results = path.join(root, 'test-results');
+fs.mkdirSync(results, { recursive: true });
+
+const types = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8',
+ '.css':'text/css; charset=utf-8', '.json':'application/json', '.svg':'image/svg+xml',
+ '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg' };
+
+const server = http.createServer((req,res)=>{
+ let pathname;
+ try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
+ catch { res.writeHead(400).end(); return; }
+ const file = path.resolve(root, '.' + (pathname==='/' ? '/index.html' : pathname));
+ if(!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()){
+  res.writeHead(404).end('Not found');return;
+ }
+ res.setHeader('Cache-Control','no-store');
+ res.setHeader('Content-Type',types[path.extname(file)] || 'application/octet-stream');
+ fs.createReadStream(file).pipe(res);
+});
+const listen = ()=>new Promise(resolve=>server.listen(0,'127.0.0.1',()=>resolve(server.address().port)));
+const close = ()=>new Promise(resolve=>server.close(()=>resolve()));
+
+const fixture = {
+ version:2, hand:'diestro', balls:[], patterns:[], sessions:[{
+  id:'LAB-SESION',type:'entrenamiento',date:'2026-11-08',
+  title:'Partida ficticia de laboratorio',lane:null,currentBallId:'',
+  currentLine:{approach:'20',arrow:'15',breakpoint:'8'},
+  games:[{id:'LAB-G1',pair:null,startLane:null,includeStats:true,segments:[],rolls:[]}]
+ }]
+};
+const dbFromPage = page=>page.evaluate(()=>JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')));
+function assertNoHorizontalOverflow(page){
+ return page.evaluate(()=>({
+  width:document.documentElement.clientWidth,
+  scroll:document.documentElement.scrollWidth
+ }));
+}
+async function runView(browser,engine,width,height,origin){
+ const context = await browser.newContext({viewport:{width,height},
+  isMobile:width<700,hasTouch:width<700,deviceScaleFactor:1});
+ const page = await context.newPage();
+ const errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ try {
+  await page.goto(origin,{waitUntil:'load'});
+  await page.evaluate(db=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));},fixture);
+  await page.reload({waitUntil:'load'});
+  await page.evaluate(()=>{activeId='LAB-SESION';go('registro');});
+  await page.locator('.registry-v4-score').waitFor();
+  assert.equal(await page.locator('.score-strip .frame-cell').count(),10, '10 frames');
+  assert.equal(await page.locator('.registry-v4-mini-frame').count(),10,'10 miniaturas');
+  assert.equal(await page.locator('.pin-layout button.pin').count(),10,'10 bolos');
+  assert.equal(await page.getByRole('button',{name:/Cambiar par/}).count(),1);
+  assert.equal(await page.getByRole('button',{name:/Deshacer último lanzamiento/}).count(),1);
+  assert(await page.getByRole('button',{name:/Deshacer último lanzamiento/}).isDisabled());
+  assert((await page.locator('.registry-v4-score').boundingBox()).y <
+   (await page.locator('.registry-v4-roll').boundingBox()).y,'Marcador encima del selector');
+  const sizes = await page.locator('.pin-layout button.pin').first().evaluate(el=>{
+   const b=el.getBoundingClientRect(); return [b.width,b.height];
+  });
+  assert(sizes[0]>=44 && sizes[1]>=44,'Bolos cómodos al tacto');
+  const overflow=await assertNoHorizontalOverflow(page);
+  assert(overflow.scroll <= overflow.width + 2,
+   'Desbordamiento horizontal: '+JSON.stringify({engine,width,overflow}));
+  assert.equal(errors.length,0,'Sin excepciones de JS en carga');
+  const screenshot=path.join(results,engine+'-'+width+'.png');
+  await page.screenshot({path:screenshot,fullPage:true});
+
+  if(width===390){
+   // Estabilidad del desplegable al seleccionar bolos.
+   const extra=page.locator('.registry-v4-extra');
+   await extra.locator('summary').click();
+   assert(await extra.evaluate(el=>el.open),'Detalles abiertos');
+   await page.locator('#approach').fill('24');
+   await page.locator('#approach').press('Tab');
+   assert.equal((await dbFromPage(page)).sessions[0].currentLine.approach,'24');
+   await page.getByRole('button',{name:/Bolo 7/}).click();
+   assert.equal(await page.locator('.pin-layout button.pin.selected').count(),1,'Seleccionar bolo');
+   assert(await extra.evaluate(el=>el.open),'Sección de línea mantiene apertura tras seleccionar');
+   await page.getByRole('button',{name:'Limpiar'}).click();
+   assert.equal(await page.locator('.pin-layout button.pin.selected').count(),0,'Limpiar selección');
+   await page.locator('#quick-record').click(); // Primera tirada: strike
+   let db=await dbFromPage(page);
+   assert.equal(db.sessions[0].games[0].rolls.length,1,'Tiro guardado');
+   assert.equal(db.sessions[0].games[0].rolls[0].pins.length,10,'Strike guardado');
+   assert.equal(db.sessions[0].games[0].rolls[0].line.approach,'24','Línea del tiro');
+   assert(!(await page.getByRole('button',{name:/Deshacer último lanzamiento/}).isDisabled()));
+   const undo=page.getByRole('button',{name:/Deshacer último lanzamiento/});
+   page.once('dialog',async dialog=>dialog.accept());
+   await undo.click();
+   db=await dbFromPage(page);
+   assert.equal(db.sessions[0].games[0].rolls.length,0,'Deshacer revierte un tiro');
+   assert(await page.getByRole('button',{name:/Deshacer último lanzamiento/}).isDisabled());
+   await page.getByRole('button',{name:/Cambiar par/}).click();
+   assert(await page.locator('#new-pair').isVisible(),'Editor de par sin par previo');
+   await page.locator('#new-pair').fill('7');
+   await page.locator('#new-pair-start').selectOption('7');
+   await page.getByRole('button',{name:'Confirmar cambio de par'}).click();
+   assert.deepEqual((await dbFromPage(page)).sessions[0].games[0].segments[0].pair,[7,8]);
+   await page.reload({waitUntil:'load'});
+   await page.evaluate(()=>{activeId='LAB-SESION';go('registro');});
+   assert.deepEqual((await dbFromPage(page)).sessions[0].games[0].segments[0].pair,[7,8],
+    'Par guardado tras recarga');
+   assert.equal(errors.length,0,'Sin errores JS en interacción');
+  }
+  console.log('OK '+engine+' '+width+'x'+height+', bolos '+sizes[0]+'px, scroll '+overflow.scroll);
+ } finally {
+  await context.close();
+ }
+}
+(async()=>{
+ let browsers=[];let passed=0;
+ try {
+  const port=await listen(),origin='http://127.0.0.1:'+port+'/';
+  for(const [engine,type] of [['chromium',chromium],['webkit',webkit]]){
+   const browser=await type.launch({headless:true});
+   browsers.push(browser);
+   for(const [w,h] of [[320,640],[390,844],[768,1024],[1280,900]]){
+    await runView(browser,engine,w,h,origin);passed++;
+   }
+  }
+  assert.equal(passed,8);
+  console.log('PASS 8 combinaciones de navegador/viewport con datos ficticios.');
+ }catch(e){console.error('FAIL Browser Lab:',e.stack||e);process.exitCode=1;}
+ finally {for(const b of browsers)await b.close();if(server.listening)await close();}
+})();
