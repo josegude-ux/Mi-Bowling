@@ -1,6 +1,6 @@
 'use strict';
 /* Mi Bowling · versión analítica local. Sin dependencias ni cuentas. */
-const APP_VERSION='3.3.5-prueba';
+const APP_VERSION='3.3.6-prueba';
 const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1';
 const PINS=[1,2,3,4,5,6,7,8,9,10], RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
 const $=id=>document.getElementById(id);
@@ -22,6 +22,7 @@ function migrate(data){const o=emptyDB();if(!data||typeof data!=='object')return
  rolls:(g.rolls||[]).map(r=>({frame:+r.frame,ball:+r.ball,pins:Array.isArray(r.pins)?r.pins.map(Number).filter(p=>PINS.includes(p)):[],ballId:r.ballId||'',line:cleanLine(r.line),lane:intLane(r.lane)||null,pair:Array.isArray(r.pair)?r.pair:null,foul:!!r.foul,createdAt:r.createdAt||null}))}))
  }));return o}
 let selectedPatternId='',patternMode='entrenamiento';
+let registryDetailsOpen=false,registryHistoryOpen=false;
 let ligaGame=0,ligaMatch=0,ligaSelected=0;
 const LIGA_KEY='mi-bowling-liga-v1';
 const ligaBlank=()=>({id:uid(),date:today(),rival:'Equipo rival',myTeam:'Mi equipo',match:1,players:Array.from({length:12},(_,i)=>({name:(i<6?'Jugador ':'Rival ')+(i%6+1),team:i<6?'own':'rival',trio:(i%6)<3?1:2,frames:Array.from({length:2},()=>Array.from({length:10},()=>({a:null,b:null,c:null,monitor:null,kind:''}))),startFrame:1}))});
@@ -81,7 +82,7 @@ function shareSessionImage(){const s=session();if(!s)return;const cvs=document.c
 function changeHand(value){db.hand=value==='zurdo'?'zurdo':'diestro';save();render()}
 function nav(){const names=[['inicio','⌂','Inicio'],['historial','▤','Partidas'],['nueva','+','Nueva'],['estadisticas','▥','Estadísticas'],['bolas','◉','Mis bolas']];$('bottom-nav').innerHTML=names.map(([t,i,v])=>`<button type="button" aria-label="${v}" class="${tab===t||tab==='registro'&&t==='nueva'?'active':''} ${t==='nueva'?'fab':''}" onclick="go('${t}')"><span class="nav-icon">${i}</span>${v}</button>`).join('')}
 function go(t){tab=t;editPair=false;showNext=false;noticeText='';selection=[];render();window.scrollTo({top:0,behavior:'instant'})}
-function render(){document.body.classList.toggle('home-screen',tab==='inicio');nav();$('app').innerHTML=tab==='inicio'?home():tab==='nueva'?newSessionView():tab==='registro'?registry():tab==='historial'?history():tab==='detalle'?detail():tab==='estadisticas'?stats():tab==='bolas'?ballsView():tab==='patrones'?patternsView():tab==='liga'?ligaView():settings();if(tab==='estadisticas')renderCharts();if(tab==='liga')ligaShowFrame();if(tab==='nueva')updateSessionFields();if(tab==='registro'){const strip=document.querySelector('.score-strip'),curr=strip?.querySelector('.frame-cell.current');if(curr)strip.scrollLeft=Math.max(0,curr.offsetLeft-strip.offsetLeft-strip.clientWidth/2+curr.clientWidth/2)}}
+function render(){document.body.classList.toggle('home-screen',tab==='inicio');document.body.classList.toggle('registry-screen',tab==='registro');nav();$('app').innerHTML=tab==='inicio'?home():tab==='nueva'?newSessionView():tab==='registro'?registry():tab==='historial'?history():tab==='detalle'?detail():tab==='estadisticas'?stats():tab==='bolas'?ballsView():tab==='patrones'?patternsView():tab==='liga'?ligaView():settings();if(tab==='estadisticas')renderCharts();if(tab==='liga')ligaShowFrame();if(tab==='nueva')updateSessionFields();if(tab==='registro'){const strip=document.querySelector('.score-strip'),curr=strip?.querySelector('.frame-cell.current');if(curr)strip.scrollLeft=Math.max(0,curr.offsetLeft-strip.offsetLeft-strip.clientWidth/2+curr.clientWidth/2)}}
 function head(title,sub,extra=''){return `<div class="section-head"><div><h1>${esc(title)}</h1>${sub?`<p>${esc(sub)}</p>`:''}</div>${extra}</div>`}
 function metrics(a){return [{icon:'◉',label:'Media',value:a.games.length?fmt(a.avg):'—'},{icon:'▥',label:'Partidas',value:a.games.length},{icon:'♛',label:'Mejor partida',value:a.games.length?Math.max(...a.totals):'—'},{icon:'✦',label:'Strikes',value:p100(a.strikes.length,a.first.length)},{icon:'✓',label:'Spare',value:p100(a.spare,a.opportunities.length)}]}
 function tile(icon,label,value,detail=''){return `<div class="stat-tile"><div class="label"><span>${icon}</span> ${label}</div><div class="value">${value}</div>${detail?`<div class="detail">${detail}</div>`:''}</div>`}
@@ -145,7 +146,7 @@ function foulRoll(){const s=session();if(!s)return;const n=next(game(s));if(n.do
 function fastRoll(allStanding){const s=session();if(!s)return;const n=next(game(s));if(n.done)return;selection=allStanding?[...n.available]:[];recordRoll()}
 function frameLabel(g,f){const a=rollsIn(g,f);return a.map((r,i)=>{let n=r.pins.length;if(r.foul)return 'F';if(n===10&&(i===0||f===10))return'X';if(i===1&&a[0]?.pins.length<10&&a[0].pins.length+n===10)return'/';if(f===10&&i===2&&a[0]?.pins.length===10&&a[1]?.pins.length<10&&a[1].pins.length+n===10)return'/';return n===0?'–':n}).join(' ')}
 function scoreStrip(g,n){const scores=frameScores(g);return `<div class="score-strip">${Array.from({length:10},(_,i)=>{const f=i+1,fr=rollsIn(g,f),split=isSplitFirst(g,f);const marks=fr.map((r,j)=>{const count=r.pins.length;let mark=r.foul?'F':count===10&&(j===0||f===10)?'X':j===1&&fr[0]?.pins.length<10&&fr[0].pins.length+count===10?'/':f===10&&j===2&&fr[0]?.pins.length===10&&fr[1]?.pins.length<10&&fr[1].pins.length+count===10?'/':count===0?'–':count;return `<span class="score-mark ${mark==='X'?'strike-mark':''} ${j===0&&split?'split-mark':''}">${mark}</span>`}).join('');return `<div class="frame-cell ${n?.frame===f?'current':''}"><span>${f}</span><b class="score-marks">${marks||'·'}</b><strong>${scores[i]??'·'}</strong></div>`}).join('')}</div>`}
-function rackUI(available){return `<div class="pin-layout">${RACK.map(row=>`<div class="pin-row">${row.map(p=>`<button type="button" aria-label="Bolo ${p} queda en pie" ${!available.includes(p)?'disabled':''} onclick="togglePin(${p})" class="pin ${!available.includes(p)?'unavailable':selection.includes(p)?'selected':''}">${p}</button>`).join('')}</div>`).join('')}</div>`}
+function rackUI(available){return `<div class="pin-layout">${RACK.map(row=>`<div class="pin-row">${row.map(p=>`<button type="button" aria-label="Bolo ${p}: ${!available.includes(p)?'no disponible':selection.includes(p)?'en pie':'derribado'}" aria-pressed="${selection.includes(p)}" ${!available.includes(p)?'disabled':''} onclick="togglePin(${p})" class="pin ${!available.includes(p)?'unavailable':selection.includes(p)?'selected':''}">${p}</button>`).join('')}</div>`).join('')}</div>`}
 function laneBoardNum(value){
  const raw=String(value??'').trim();
  if(!/^\d{1,2}$/.test(raw))return null;
@@ -241,21 +242,31 @@ function laneKeyboard(event,key){
  }
 }
 
-function registry(){const s=session();if(!s)return `<div class="card"><h2>Ninguna sesión abierta</h2><button class="btn primary" onclick="go('nueva')">Crear sesión</button></div>`;const g=game(s),n=next(g),lane=n.done?currentLane(g,10):currentLane(g,n.frame),completed=s.games.filter(complete).length;return `${head(s.title|| (s.type==='oficial'?'Competición oficial':'Entrenamiento'),`Partida ${s.games.length} · ${s.date}`,`<button class="btn outline" onclick="ligaReturn?ligaBack():go('historial')">${ligaReturn?'← Volver a Liga':'Salir'}</button>`)}
+function registryPinMini(g){
+ return `<div class="registry-v4-pin-history" aria-label="Bolos restantes tras el primer lanzamiento de cada frame">${Array.from({length:10},(_,i)=>{
+  const f=i+1,first=rollsIn(g,f)[0],standing=first?PINS.filter(p=>!first.pins.includes(p)):[],split=!!first&&isSplit(standing);
+  const rows=RACK.map(row=>`<span class="registry-v4-mini-row">${row.map(pin=>`<i aria-hidden="true" class="registry-v4-mini-dot ${!first?'unplayed':standing.includes(pin)?split?'split':'standing':'fallen'}"></i>`).join('')}</span>`).join('');
+  return `<span class="registry-v4-mini-frame" title="Frame ${f}: ${first?standing.length+' bolos en pie tras la primera tirada':'sin registrar'}">${rows}</span>`;
+ }).join('')}</div>`;
+}
+
+function registry(){const s=session();if(!s)return `<div class="card"><h2>Ninguna sesión abierta</h2><button class="btn primary" onclick="go('nueva')">Crear sesión</button></div>`;const g=game(s),n=next(g),lane=n.done?currentLane(g,10):currentLane(g,n.frame),completed=s.games.filter(complete).length;return `<section class="registry-v4">${head(s.title|| (s.type==='oficial'?'Competición oficial':'Entrenamiento'),`Partida ${s.games.length} · ${s.date}`,`<button class="btn outline" onclick="ligaReturn?ligaBack():go('historial')">${ligaReturn?'← Volver a Liga':'Salir'}</button>`)}
  <div class="row wrap mb12"><span class="pill ${s.type==='oficial'?'orange':''}">${s.type==='oficial'?'🎳 Oficial':'👣 Entrenamiento'}</span><span class="pill gray">${lane.pair?`Par ${lane.pair.join('–')} · Pista ${lane.lane}`:lane.lane?`Pista ${lane.lane}`:'Pista no indicada'}</span></div>
 
- ${editPair?pairEditor(s,g,n):''}
- ${n.done?finishedGame(s,g,completed):`<div class="card"><div class="game-heading"><div><h1>Frame ${n.frame} · Tirada ${n.ball}</h1></div><span class="pill">${selection.length} en pie</span></div>
-${rackUI(n.available)}
- <button class="btn primary big block mt12" onclick="recordRoll()" id="quick-record">${selection.length===0?(n.available.length===10?'✕ Strike':'✓ Derribados todos'):`Registrar ${n.available.length-selection.length} derribados →`}</button>
- ${quickLayout==='large'?'':''}<div class="actions mt12 v25-actions ${quickLayout==='compact'?'quick-compact':quickLayout==='large'?'quick-large':''}" data-quickbar><button class="btn" onclick="fastRoll(true)">Todos en pie</button><button class="btn" onclick="fastRoll(false)">Todos derribados</button><button class="btn foul-btn" onclick="foulRoll()">F · Falta</button></div>
+ 
+  <div class="card compact-score registry-v4-score"><div class="card-head"><h2>Marcador · Partida ${s.games.length}</h2><span class="pill">${complete(g)?score(g):'Parcial '+score(g)} pts</span></div>${scoreStrip(g,n)}${registryPinMini(g)}<div class="score-actions-row mt12">${lane.pair?`<span class="hint">${n.done?'Última pista':`Frame ${n.frame} ·`} ${lane.lane?`Pista ${lane.lane}`:'Sin pista'}. Alternancia por frame.</span>`:''}<div class="score-action-buttons"><button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button><button type="button" class="btn outline" onclick="undoRoll()" ${g.rolls.length?'':'disabled'} aria-label="Deshacer último lanzamiento">↶ Deshacer último lanzamiento</button></div></div></div>
+${editPair?pairEditor(s,g,n):''}
+${n.done?finishedGame(s,g,completed):`<div class="card registry-v4-roll"><div class="game-heading"><div><h1>Frame ${n.frame} · Tirada ${n.ball}</h1></div><span class="pill">${selection.length} en pie</span></div>
+<p class="registry-v4-pin-caption">Toca los <strong>bolos que quedan en pie</strong>.<small>Si no marcas ninguno, anotarás todos derribados.</small></p><div class="registry-v4-rack-wrap">${rackUI(n.available)}</div>
+ <button class="btn primary big block mt12 registry-v4-record" onclick="recordRoll()" id="quick-record">${selection.length===0?(n.available.length===10?'✕ Strike':'✓ Derribados todos'):`Registrar ${n.available.length-selection.length} derribados →`}</button>
+ ${quickLayout==='large'?'':''}<p class="registry-v4-quick-caption">Atajos: «Todos en pie», «Todos derribados» y «Falta» registran directamente la tirada.</p><div class="actions mt12 v25-actions registry-v4-quick ${quickLayout==='compact'?'quick-compact':quickLayout==='large'?'quick-large':''}" data-quickbar><button class="btn" onclick="fastRoll(true)">Todos en pie</button><button class="btn" onclick="fastRoll(false)">Todos derribados</button><button class="btn foul-btn" onclick="foulRoll()">Falta</button><button type="button" class="btn" onclick="selection=[];render()">Limpiar</button></div>
  ${s.type==='entrenamiento'?`<label class="switch stats-checkbox"><input type="checkbox" ${g.includeStats!==false?'checked':''} onchange="toggleGameStats('${g.id}',this.checked)"> Incluir esta partida en estadísticas</label>`:''}
- <div class="card compact-score"><div class="card-head"><h2>Marcador · Partida ${s.games.length}</h2><span class="pill">${complete(g)?score(g):'Parcial '+score(g)} pts</span></div>${scoreStrip(g,n)}<div class="score-actions-row mt12">${lane.pair?`<span class="hint">${n.done?'Última pista':`Frame ${n.frame} ·`} ${lane.lane?`Pista ${lane.lane}`:'Sin pista'}. Alternancia por frame.</span>`:''}<div class="score-action-buttons"><button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button><button type="button" class="btn outline" onclick="undoRoll()" ${g.rolls.length?'':'disabled'} aria-label="Deshacer último lanzamiento">↶ Deshacer último lanzamiento</button></div></div></div>
- <div class="card" style="margin:17px 0 12px;background:#f5fbfc"><div class="card-head"><h3>🎳 Bola utilizada</h3><button class="textlink" onclick="go('bolas')">Gestionar bolas →</button></div>${ballSelect('roll-ball','ballId',s.currentBallId).replace('<select ','<select onchange="changeBall(this.value)" ')}
+
+ <details class="registry-v4-extra" ${registryDetailsOpen?'open':''} ontoggle="registryDetailsOpen=this.open"><summary><b>🎳 Bola y línea de juego</b><small>Posición · flechas · breakpoint</small></summary><div class="card" style="margin:17px 0 12px;background:#f5fbfc"><div class="card-head"><h3>🎳 Bola utilizada</h3><button class="textlink" onclick="go('bolas')">Gestionar bolas →</button></div>${ballSelect('roll-ball','ballId',s.currentBallId).replace('<select ','<select onchange="changeBall(this.value)" ')}
  ${laneVisual(s)}
  <div class="row" style="margin-top:10px"><h3 style="margin:0">Línea de juego</h3><span class="hint">Se recuerda para el siguiente tiro</span></div><div class="form-grid line-grid"><div><label class="field" for="approach">Approach · tabla</label><input id="approach" inputmode="decimal" class="input" placeholder="Ej. 25" value="${esc(s.currentLine.approach)}" onchange="changeLine('approach',this.value)"></div><div><label class="field" for="arrow">Flecha · tabla</label><input id="arrow" inputmode="decimal" class="input" placeholder="Ej. 15" value="${esc(s.currentLine.arrow)}" onchange="changeLine('arrow',this.value)"></div><div><label class="field" for="breakpoint">Breakpoint</label><input id="breakpoint" inputmode="decimal" class="input" placeholder="Opcional" value="${esc(s.currentLine.breakpoint)}" onchange="changeLine('breakpoint',this.value)"></div></div></div>
- </div>`}
- ${rollLog(g)}`}
+ </details></div>`}
+ <details class="registry-v4-history" ${registryHistoryOpen?'open':''} ontoggle="registryHistoryOpen=this.open"><summary>Historial de lanzamientos · ${g.rolls.length} tiradas</summary>${rollLog(g)}</details></section>`}
 function changeBall(id){const s=session();if(!s)return;s.currentBallId=id;save()}
 function changeLine(k,v){const s=session();if(!s)return;if(!['approach','arrow','breakpoint'].includes(k))return;s.currentLine[k]=v.trim();save();laneSync()}
 function pairEditor(s,g,n){const from=n.done?11:rollsIn(g,n.frame).length?n.frame+1:n.frame;return `<div class="card" style="background:#eff9fa"><div class="card-head"><h2>⇄ Cambio de par</h2><button class="btn" onclick="editPair=false;render()">Cerrar</button></div>${from>10?`<p class="hint">Esta partida terminó. Elige el nuevo par al iniciar la siguiente.</p>`:`<p class="hint">Se aplicará desde el frame <b>${from}</b>, manteniendo intactas las pistas anteriores. Si ya has empezado un frame, se hará efectivo en el siguiente.</p><div class="form-grid"><div><label class="field">Nueva primera pista del par</label><input class="input" id="new-pair" inputmode="numeric" type="number" min="1" placeholder="Ej. 9" oninput="pairChangeHint()"></div><div><label class="field">Empiezo en la pista</label><select class="input" id="new-pair-start"><option value="">Indica el par</option></select></div></div><p class="hint" id="new-pair-note"></p><button class="btn primary block" onclick="changePair(${from})">Confirmar cambio de par</button>`}</div>`}
@@ -353,7 +364,18 @@ function patternsView(){const p=db.patterns.find(x=>x.id===selectedPatternId);co
 // Exposed test harness; harmless in normal operation.
 window.__miBowlingTest={next,frameScores,score,complete,currentLane,aggregate,migrate};
 if('serviceWorker'in navigator&&location.protocol.startsWith('http')){
- navigator.serviceWorker.addEventListener('controllerchange',()=>{updateAvailable=true;updateStatus('Nueva versión descargada. Se aplicará al volver a abrir; puedes actualizar ahora.',true);if(tab==='inicio'&&document.visibilityState==='visible'&&!updateCheckStarted){updateCheckStarted=true;window.location.reload()}});
+ let swWasControlled=!!navigator.serviceWorker.controller;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  const isUpdate=swWasControlled;
+  swWasControlled=true;
+  // La primera instalación no es una actualización: no recargar al usuario durante la navegación.
+  if(!isUpdate)return;
+  updateAvailable=true;
+  updateStatus('Nueva versión descargada. Se aplicará al volver a abrir; puedes actualizar ahora.',true);
+  if(tab==='inicio'&&document.visibilityState==='visible'&&!updateCheckStarted){
+   updateCheckStarted=true;window.location.reload();
+  }
+ });
  window.addEventListener('load',async()=>{try{swRegistration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});await swRegistration.update();}catch(e){}});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdates(false)});
 }

@@ -1,0 +1,49 @@
+name: "MI BOWLING | Registro compacto LAB"
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app.js'
+      - 'styles.css'
+      - 'index.html'
+      - 'sw.js'
+      - 'tests/registry-browser-smoke.cjs'
+      - 'tests/registry-compact-smoke.cjs'
+      - '.github/workflows/registry-compact-lab.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: bowling-registro-lab-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validar-registro:
+    if: github.head_ref == 'design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright aislado para pruebas
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Pruebas de lógica existentes
+        run: |
+          node tests/visual-lab-smoke.cjs
+          node tests/registry-compact-smoke.cjs
+      - name: Validación real Chromium + WebKit (emulación móvil, tablet y escritorio)
+        run: node tests/registry-browser-smoke.cjs
+      - name: Guardar capturas de pantalla de LAB
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bowling-registro-lab-capturas
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
