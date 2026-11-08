@@ -18,9 +18,15 @@ const db={hand:'diestro'};
 const current={currentLine:{approach:'20',arrow:'15',breakpoint:'8'}};
 let saves=0;
 const values={approach:{value:''},arrow:{value:''},breakpoint:{value:''}};
-const live={innerHTML:''};
+const scene={innerHTML:''};
+const labels={approach:{textContent:''},arrow:{textContent:''},breakpoint:{textContent:''}};
+const live={querySelector:selector=>{
+ if(selector==='.lane-visual-scene')return scene;
+ const m=selector.match(/\[data-lane-row="([^"]+)"\]/);
+ return m?labels[m[1]]||null:null;
+}};
 const byId=id=>id==='lane-visual-live'?live:values[id]||null;
-const doc={createElement:()=>({innerHTML:'',querySelector:()=>({innerHTML:'render actualizado'})})};
+const doc={};
 const factory=new Function('db','session','save','$','document','esc',
  app.slice(start,end)+'\n'+line+'\nreturn {laneBoardNum,laneX,laneVisual,laneSelect,laneNudge,changeLine};');
 const api=factory(db,()=>current,()=>{saves++},byId,doc,x=>String(x));
@@ -48,7 +54,8 @@ api.laneNudge('breakpoint',1);
 assert.equal(current.currentLine.breakpoint,'39');
 api.changeLine('breakpoint','27');
 assert.equal(current.currentLine.breakpoint,'27');
-assert.equal(live.innerHTML,'render actualizado');
+assert(scene.innerHTML.includes('<svg'));
+assert.equal(labels.breakpoint.textContent,'Tabla 27');
 assert(saves>=6,'Cambios guardados');
 assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Datos existentes conservados');
 assert(app.includes("const APP_VERSION='3.3.3-lab'"));
