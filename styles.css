@@ -311,3 +311,8 @@ body.home-screen .app-main{max-width:1440px;padding:18px clamp(14px,3vw,32px) ca
  .registry-v4-score .frame-cell .score-mark{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){.registry-v4 .pin{transition:none}}
+
+/* Texto de seguridad para los atajos de anotación. */
+.registry-v4-quick-caption{font-size:11px;color:#607b93;line-height:1.35;margin:12px 0 3px}
+.registry-v4-quick.quick-large .btn{min-height:56px!important;font-size:14px!important}
+.registry-v4-quick.quick-compact .btn{min-height:42px!important;font-size:11px!important}
