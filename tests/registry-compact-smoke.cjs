@@ -68,7 +68,7 @@ assert(app.includes('aria-pressed="${selection.includes(p)}"'),'Estado accesible
 assert(app.includes('registry-v4-quick-caption'),'Advertencia sobre atajos automáticos');
 assert(css.includes('.registry-v4-quick.quick-large .btn'),'Respeta botones grandes');
 assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Sin migración de datos');
-assert(app.includes("const APP_VERSION='3.3.6-lab'"),'Versión de laboratorio');
-assert(index.includes('app.js?v=336lab')&&index.includes('styles.css?v=336lab'),'Referencias coherentes');
-assert(sw.includes('mi-bowling-analitica-v3-3-6-lab'),'Caché de LAB');
+assert(app.includes("const APP_VERSION='3.3.6-prueba'"),'Versión de laboratorio');
+assert(index.includes('app.js?v=336prueba')&&index.includes('styles.css?v=336prueba'),'Referencias coherentes');
+assert(sw.includes('mi-bowling-analitica-v3-3-6-prueba'),'Caché de LAB');
 console.log('MI BOWLING LAB: registro compacto validado (4 estados, 10 frames, controles, datos, caché).');
