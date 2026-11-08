@@ -141,8 +141,8 @@ async function main(){
  assert.equal(ownerALeague.matches[0].id,'national-A','Existing League remains independent');
  // B is a new UUID, no data imported and no balls/patterns.
  const bEmpty=await repositories.get(B).load(B);
- assert.deepEqual(bEmpty.personal.payload.sessions,[]);
- assert.deepEqual(bEmpty.personal.payload.balls,[]);
+ assert.equal(bEmpty.personal.payload.sessions.length,0);
+ assert.equal(bEmpty.personal.payload.balls.length,0);
  assert.equal(bEmpty.personal.exists,false);
  // Cross-owner migration is blocked before PDF storage and any writes.
  fileStore.change(owner(B));
