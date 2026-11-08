@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MI BOWLING · Callback ficticio iPhone/Safari</title>
+<link rel="stylesheet" href="../auth-lab.css">
+</head>
+<body class="auth-stage">
+<div class="auth-lab-flag">🧪 Simulación Safari/iPhone · Sin correo ni usuario real</div>
+<div id="auth-link-gate"></div>
+<script src="../auth-email-callback.js"></script>
+<script>
+(async()=>{
+'use strict';
+const A='11111111-1111-4111-8111-111111111111';
+let signedIn=false,verified=0,updated=0,logoutCount=0;
+const activePwaStorage=new Map([['pwa-pkce-verifier','separate-private-context']]);
+const emailBrowserStorage=new Map(); // no access to the installed PWA verifier
+const fake={
+ async verifyLinkToken(type,hash){
+  verified++;
+  if(!/^[a-f0-9]{64}$/i.test(hash)||!['email','recovery'].includes(type))throw Error('Bad hash');
+  signedIn=true;return {verifiedByServer:true};
+ },
+ async getVerifiedUser(){
+  if(!signedIn)throw Error('No verified session');
+  return {id:A,email:'ficticia@example.test'};
+ },
+ async updatePassword(pw){if(!signedIn||pw.length<12)throw Error('Not authorized');updated++;},
+ async signOut(){signedIn=false;logoutCount++}
+};
+const type=location.hash.includes('type=recovery')?'recovery':'email';
+try{
+ const ctl=MiBowlingEmailCallback.create({auth:fake,document,location,history});
+ if(verified!==0)throw Error('Prefetch would consume token');
+ if(location.hash!=='')throw Error('Sensitive fragment still in location');
+ if(!document.getElementById('auth-link-verify'))throw Error('Manual action not shown');
+ document.getElementById('auth-link-verify').click();
+ for(let i=0;i<15&&ctl.getState().mode==='verifying';i++)await Promise.resolve();
+ if(type==='email'){
+  if(ctl.getState().mode!=='confirmed'||signedIn)throw Error('Confirmation not terminated with signout');
+ }else{
+  if(ctl.getState().mode!=='password')throw Error('Recovery requires same-browser password form');
+  const pw=document.getElementById('auth-link-password'),cpw=document.getElementById('auth-link-confirm');
+  if(!pw||!cpw)throw Error('Recovery form not rendered');
+  pw.value='FicticiaSegura123456';cpw.value='FicticiaSegura123456';
+  document.getElementById('auth-link-password-form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  for(let i=0;i<25&&ctl.getState().mode==='password';i++)await Promise.resolve();
+  if(ctl.getState().mode!=='done'||updated!==1||signedIn)throw Error('Recovery did not log out');
+ }
+ if(verified!==1||logoutCount<1)throw Error('Verification or cleanup unexpected');
+ if(activePwaStorage.get('pwa-pkce-verifier')!=='separate-private-context'||emailBrowserStorage.size!==0)
+  throw Error('Safari and installed PWA isolation violated');
+ if(document.documentElement.scrollWidth>innerWidth+3)throw Error('Horizontal scrolling');
+ if(document.querySelector('script[src*="app.js"]'))throw Error('Scoring application loaded on mail callback');
+ document.body.dataset.callbackSmoke='PASS';
+ document.body.dataset.callbackType=type;
+}catch(error){
+ document.body.dataset.callbackSmoke='FAIL';
+ document.body.dataset.callbackError=String(error?.stack||error);
+ console.error(error);
+}
+})();
+</script></body></html>

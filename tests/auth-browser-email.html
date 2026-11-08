@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../auth-lab.css">
+<title>MI BOWLING LAB · Formularios de correo ficticios</title>
+</head>
+<body class="auth-stage">
+<div class="auth-lab-flag">🧪 PRUEBA AUTOMATIZADA · Ningún correo o cuenta real</div>
+<div id="auth-gate"></div>
+<script src="../auth-supabase-adapter.js"></script>
+<script src="../auth-private-repository.js"></script>
+<script src="../auth-lab.js"></script>
+<script>
+(async function(){
+ 'use strict';
+ const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222';
+ let emailConfirmed=false,owner=A,email='nuevo@example.test',onEvent;
+ const events=[];
+ const client={
+  auth:{
+   async signUp({email,password,options}){
+    events.push('signup');
+    if(!options?.emailRedirectTo?.startsWith('https://'))throw Error('Missing confirmation redirect');
+    return {data:{user:{id:A,email},session:null},error:null};
+   },
+   async resend({type,email,options}){
+    events.push('resend');
+    if(type!=='signup'||!options?.emailRedirectTo)throw Error('Invalid resend request');
+    return {data:{},error:null};
+   },
+   async signInWithPassword({email:input,password}){
+    events.push('login');
+    if(!input||!password)return {data:null,error:{message:'Wrong password'}};
+    return {data:{session:{access_token:'mock-only'}},error:null};
+   },
+   async getUser(){
+    events.push('getUser');
+    return {data:{user:{id:owner,email,email_confirmed_at:emailConfirmed?'2026-11-08T19:00:00Z':null}},error:null};
+   },
+   async resetPasswordForEmail(email,options){
+    events.push('reset');
+    if(!options?.redirectTo?.startsWith('https://'))throw Error('Missing reset redirect');
+    return {data:{},error:null};
+   },
+   async updateUser({password}){
+    if(password.length<12)throw Error('Password too short');
+    events.push('update');return {data:{},error:null};
+   },
+   async signOut(){events.push('signout');return {data:{},error:null}},
+   onAuthStateChange(fn){onEvent=fn;return {data:{subscription:{unsubscribe(){}}}}}
+  },
+  from(name){
+   if(name!=='bowling_player_documents')throw Error('Unexpected table');
+   return {select(){
+    return {eq(column,id){
+     if(column!=='user_id'||id!==owner)throw Error('Cross-user data');
+     events.push('load');
+     return Promise.resolve({data:[
+      {user_id:id,doc_type:'personal',revision:0,payload:{sessions:[],balls:[]}},
+      {user_id:id,doc_type:'league',revision:0,payload:{matches:[]}}
+     ],error:null});
+    }}
+   }};
+  }
+ };
+ const auth=MiBowlingSupabaseAuth.create(client),repo=MiBowlingPrivateRepository.create(client);
+ const gate=MiBowlingAuthGate.create({auth,repository:repo,allowSignUp:true,document,
+  confirmRedirectTo:'https://bowling.example.test/auth/callback',
+  resetRedirectTo:'https://bowling.example.test/auth/reset'});
+ gate.init();
+ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+ async function until(fn){
+  for(let i=0;i<120;i++){if(fn())return;await sleep(20)}
+  throw Error('Timed out on UI step');
+ }
+ function sendForm(){
+  const f=document.getElementById('auth-form');
+  if(!f)throw Error('No auth form');
+  f.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+ }
+ function fill(id,value){
+  const el=document.getElementById(id);
+  if(!el)throw Error('Missing field '+id);
+  el.value=value;
+ }
+ try{
+  if(document.documentElement.scrollWidth>innerWidth+3)throw Error('Horizontal overflow');
+  const register=document.getElementById('auth-mode-signup');
+  if(!register||register.disabled)throw Error('Registration not selectable in MOCK');
+  register.click();
+  await until(()=>gate.getState().mode==='signup');
+  fill('auth-email','nuevo@example.test');
+  fill('auth-password','PruebaValidada1234');
+  fill('auth-confirm','PruebaValidada1234');
+  sendForm();
+  await until(()=>gate.getState().mode==='confirm');
+  if(gate.getState().opened||gate.getState().verified)throw Error('Opened without confirmation');
+  if(!document.body.textContent.includes('Verifica tu correo'))throw Error('Confirmation screen missing');
+  sendForm();
+  await until(()=>events.includes('resend'));
+  if(gate.getState().opened)throw Error('Resend auto-opened scores');
+  document.getElementById('auth-mode-login').click();
+  await until(()=>gate.getState().mode==='login');
+  fill('auth-email','nuevo@example.test');fill('auth-password','PruebaValidada1234');sendForm();
+  await until(()=>events.includes('signout'));
+  if(gate.getState().verified||gate.getState().opened)throw Error('Unconfirmed account entered');
+  emailConfirmed=true;
+  fill('auth-email','nuevo@example.test');fill('auth-password','PruebaValidada1234');sendForm();
+  await until(()=>gate.getState().verified);
+  if(gate.getState().opened||gate.getState().owner!==A)throw Error('Missing mock owner A');
+  if(!events.includes('load'))throw Error('Private repository not checked');
+  document.getElementById('auth-mode-recovery').click();
+  await until(()=>gate.getState().mode==='recovery');
+  fill('auth-email','nuevo@example.test');sendForm();
+  await until(()=>events.includes('reset'));
+  if(gate.getState().opened)throw Error('Recovery auto-opened scores');
+  onEvent('PASSWORD_RECOVERY',{access_token:'fake'});
+  await until(()=>gate.getState().mode==='update');
+  if(gate.getState().opened)throw Error('Recovery callback launched app');
+  fill('auth-password','NuevaContrasena1234');
+  fill('auth-confirm','NuevaContrasena1234');sendForm();
+  await until(()=>events.includes('update')&&gate.getState().mode==='login');
+  if(gate.getState().verified||gate.getState().opened)throw Error('Password reset retained authorization');
+  owner=B;email='segundo@example.test';
+  fill('auth-email','segundo@example.test');fill('auth-password','PruebaValidada1234');sendForm();
+  await until(()=>gate.getState().verified&&gate.getState().owner===B);
+  if(gate.getState().opened)throw Error('Owner B opened scores without application wiring');
+  await gate.logout();
+  if(gate.getState().verified||gate.getState().owner)throw Error('Logout retained owner');
+  if(document.querySelector('script[src$="app.js"]'))throw Error('Real scores app loaded');
+  if(document.documentElement.scrollWidth>innerWidth+3)throw Error('Overflow after forms');
+  document.body.dataset.authEmailUi='PASS';
+  document.body.dataset.flows=events.join('-');
+ }catch(e){
+  document.body.dataset.authEmailUi='FAIL';
+  document.body.dataset.authEmailError=String(e&&e.stack||e);console.error(e);
+ }
+})();
+</script>
+</body></html>

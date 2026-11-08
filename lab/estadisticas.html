@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eff7fc">
+<title>MI BOWLING · Estadísticas de bolos LAB</title>
+<link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../stats-bolos.css">
+<style>
+body{min-height:100vh;background:#f3f8fb}
+.lab-top{background:#163f66;color:#fff;font:700 12px/1.4 system-ui,sans-serif;padding:11px 15px;text-align:center}
+.lab-header{display:flex;justify-content:space-between;gap:16px;align-items:center;max-width:1150px;margin:0 auto;padding:18px 15px 8px}
+.lab-brand{font:850 clamp(17px,4vw,24px)/1.2 system-ui,sans-serif;color:#163d63;letter-spacing:-.5px}
+.lab-profiles{display:flex;gap:7px;flex-wrap:wrap}
+.lab-profiles button{border:1px solid #c8e0ef;background:#fff;color:#275876;border-radius:10px;min-height:44px;padding:9px 12px;cursor:pointer;font:bold 12px system-ui}
+.lab-profiles button.active{background:#067cd1;color:#fff;border-color:#067cd1}
+.lab-note{max-width:1150px;margin:0 auto;padding:5px 15px 9px;font:12px/1.5 system-ui;color:#5c7285}
+.lab-body{max-width:1150px;margin:0 auto;padding:0 14px 32px}
+.lab-body .pinmap-screen{margin-top:6px}
+@media(max-width:520px){.lab-header{flex-wrap:wrap;gap:10px}.lab-profiles{width:100%}.lab-profiles button{flex:1}.lab-body{padding:0 10px 22px}}
+</style>
+</head>
+<body>
+<div class="lab-top">🧪 LABORATORIO · Datos exclusivamente ficticios · Sin conexión con tus partidas ni con la aplicación publicada</div>
+<header class="lab-header">
+ <div class="lab-brand">🎳 MI BOWLING</div>
+ <div class="lab-profiles" role="group" aria-label="Jugador de prueba">
+  <button type="button" id="lab-player-a" aria-pressed="true" class="active" onclick="setDemoPlayer('a')">Jugador A</button>
+  <button type="button" id="lab-player-b" aria-pressed="false" onclick="setDemoPlayer('b')">Jugador B · Nuevo</button>
+ </div>
+</header>
+<p class="lab-note">Prueba el mapa de bolos, las cuatro modalidades y los filtros. Cambia al jugador B para comprobar que empieza sin estadísticas. No se almacena ningún dato.</p>
+<main id="app" class="lab-body"></main>
+<script src="../stats-bolos.js"></script>
+<script>
+'use strict';
+let statsPeriod='all';
+let demoPlayer='a';
+const today=new Date();
+function dateISO(year,month){return year+'-'+String(month).padStart(2,'0')+'-08'}
+const thisMonth=today.getMonth()+1,year=today.getFullYear();
+const thisDate=dateISO(year,thisMonth),lastYear=dateISO(year-1,8);
+function makeFirst(index,date){
+ const fallen=[1,2,3,4,5,6,7,8,9,10].filter(pin=>((index*7+pin*3)%11)>((pin===10||pin===7)?4:2));
+ return {pins:fallen,date};
+}
+function makeOpp(index,date){
+ const patterns=[[10],[7],[4,5],[7,10],[2,4,5],[3],[6,10],[1,2]];
+ const left=patterns[index%patterns.length];
+ const second=left.filter(pin=>(index+pin)%3!==0);
+ return {left,second,converted:left.every(pin=>second.includes(pin)),date};
+}
+const demoData={
+ a:{
+   first:Array.from({length:36},(_,i)=>makeFirst(i,i<28?thisDate:lastYear)),
+   opportunities:Array.from({length:30},(_,i)=>makeOpp(i,i<24?thisDate:lastYear))
+ },
+ b:{first:[],opportunities:[]}
+};
+function periodMatch(date){
+ if(statsPeriod==='all')return true;
+ if(statsPeriod==='month')return date.slice(0,7)===thisDate.slice(0,7);
+ if(statsPeriod==='quarter')return date.slice(0,4)===String(year)&&Math.ceil(Number(date.slice(5,7))/3)===Math.ceil(thisMonth/3);
+ if(statsPeriod==='year')return date.slice(0,4)===String(year);
+ return true;
+}
+function render(){
+ const data=demoData[demoPlayer];
+ const subset={
+   first:data.first.filter(r=>periodMatch(r.date)),
+   opportunities:data.opportunities.filter(r=>periodMatch(r.date))
+ };
+ document.getElementById('app').innerHTML=MiBowlingPinStats.html(subset,{
+   period:statsPeriod,profileName:demoPlayer==='a'?'Jugador A · Datos ficticios':'Jugador B · Datos ficticios'
+ });
+ document.body.dataset.demoPlayer=demoPlayer;
+ document.body.dataset.demoMode=MiBowlingPinStats.getMode();
+}
+function setDemoPlayer(value){
+ if(value!=='a'&&value!=='b')return;
+ demoPlayer=value;
+ for(const id of ['a','b']){
+  const button=document.getElementById('lab-player-'+id);
+  button.classList.toggle('active',value===id);
+  button.setAttribute('aria-pressed',String(value===id));
+ }
+ MiBowlingPinStats.reset();
+ render();
+}
+render();
+if(location.search.includes('smoke=1')){
+ try{
+  if(document.querySelectorAll('.pinmap-pin').length!==10)throw Error('Faltan bolos');
+  MiBowlingPinStats.setMode('single');
+  if(!document.getElementById('pinmap-screen').textContent.includes('Spare de bolo único'))throw Error('Sin modo single');
+  setDemoPlayer('b');
+  if(MiBowlingPinStats.compute(demoData.b,'first').overallRate!==null)throw Error('Jugador B contaminado');
+  if(!document.getElementById('app').textContent.includes('Sin datos'))throw Error('Sin estado vacío');
+  setDemoPlayer('a');
+  if(MiBowlingPinStats.compute(demoData.a,'first').events!==36)throw Error('Jugador A perdido');
+  if(document.documentElement.scrollWidth>innerWidth+3)throw Error('Desbordamiento horizontal');
+  document.body.dataset.demoSmoke='PASS';
+ }catch(err){
+  document.body.dataset.demoSmoke='FAIL';
+  document.body.dataset.demoError=String(err&&err.stack||err);console.error(err);
+ }
+}
+</script>
+</body></html>
