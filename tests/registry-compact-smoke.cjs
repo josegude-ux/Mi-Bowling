@@ -9,7 +9,7 @@ const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 new Function(app);
-const start=app.indexOf('function registryPinMini(');
+const start=app.indexOf('function registryFrameMissedPins(');
 const end=app.indexOf('function changeBall(',start);
 assert(start>=0 && end>start,'Función de registro localizado');
 const PINS=[1,2,3,4,5,6,7,8,9,10],RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
@@ -50,6 +50,33 @@ for(const pair of [null,[7,8]]){
   assert.equal((html.match(/<div\b/g)||[]).length,(html.match(/<\/div>/g)||[]).length,'Contenedores equilibrados');
  }
 }
+// Los errores de la segunda tirada se colorean solo cuando se cierra el frame.
+const miniContext={
+ PINS,RACK,rollsIn:(g,f)=>g.rolls.filter(r=>r.frame===f),
+ complete:()=>true
+};
+const miniCode=app.slice(app.indexOf('function registryFrameMissedPins('),app.indexOf('function registry(){'));
+const mk=new Function(...Object.keys(miniContext),miniCode+'return {registryPinMini,registryFrameMissedPins};')(...Object.values(miniContext));
+const buildGame=rolls=>({rolls});
+const first={frame:1,ball:1,pins:[1,2,3,4,5,6,7,8]}, secondMiss={frame:1,ball:2,pins:[9]}, secondSpare={frame:1,ball:2,pins:[9,10]};
+assert.equal(mk.registryFrameMissedPins(buildGame([first]),1),null,'Primera tirada nunca señala rojo');
+assert.deepEqual(mk.registryFrameMissedPins(buildGame([first,secondMiss]),1),[10],'Bolo 10 restante al cerrar');
+assert.deepEqual(mk.registryFrameMissedPins(buildGame([first,secondSpare]),1),[],'Spare no deja rojos');
+assert.equal(mk.registryFrameMissedPins(buildGame([{frame:1,ball:1,pins:[...PINS]}]),1),null,'Strike no marca rojos');
+assert.equal(mk.registryFrameMissedPins(buildGame([]),1),null,'Sin tirar no marca rojos');
+assert.deepEqual(mk.registryFrameMissedPins(buildGame([{frame:10,ball:1,pins:[1,2,3,4,5,6,7,8]},{frame:10,ball:2,pins:[9]}]),10),[10],'Décimo abierto al terminar');
+const secondOther={frame:1,ball:2,pins:[]};
+assert.deepEqual(mk.registryFrameMissedPins(buildGame([first,secondOther]),1),[9,10],'Dos bolos fallados son dos rojos');
+const htmlOpen=mk.registryPinMini(buildGame([first,secondMiss]));
+assert.equal((htmlOpen.match(/class="registry-v4-mini-dot missed"/g)||[]).length,1,'Un solo punto rojo');
+assert(htmlOpen.includes('data-pin="10" aria-hidden="true" class="registry-v4-mini-dot missed"'),'Posición del bolo 10 en rojo');
+const htmlFirst=mk.registryPinMini(buildGame([first]));
+assert.equal((htmlFirst.match(/class="registry-v4-mini-dot missed"/g)||[]).length,0,'No rojo antes de segunda tirada');
+const htmlSpare=mk.registryPinMini(buildGame([first,secondSpare]));
+assert.equal((htmlSpare.match(/class="registry-v4-mini-dot missed"/g)||[]).length,0,'No rojo con spare');
+assert(css.includes('.registry-v4 .registry-v4-mini-dot.missed'),'Estilo rojo definido');
+assert(app.includes('Rojo: bolos que quedaron en pie al acabar la segunda tirada.'),'Leyenda correcta');
+
 const finished=render([7,8],ONE,true);
 assert(finished.includes('registry-v4-score')&&finished.includes('class="finished"'),'Marcador final disponible');
 assert(!finished.includes('registry-v4-rack-wrap'),'No mostrar selector después de terminar');
@@ -68,7 +95,7 @@ assert(app.includes('aria-pressed="${selection.includes(p)}"'),'Estado accesible
 assert(app.includes('registry-v4-quick-caption'),'Advertencia sobre atajos automáticos');
 assert(css.includes('.registry-v4-quick.quick-large .btn'),'Respeta botones grandes');
 assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Sin migración de datos');
-assert(app.includes("const APP_VERSION='3.3.6-prueba'"),'Versión de laboratorio');
-assert(index.includes('app.js?v=336prueba')&&index.includes('styles.css?v=336prueba'),'Referencias coherentes');
-assert(sw.includes('mi-bowling-analitica-v3-3-6-prueba'),'Caché de LAB');
+assert(app.includes("const APP_VERSION='3.3.7-prueba'"),'Versión de laboratorio');
+assert(index.includes('app.js?v=337prueba')&&index.includes('styles.css?v=337prueba'),'Referencias coherentes');
+assert(sw.includes('mi-bowling-analitica-v3-3-7-prueba'),'Caché de LAB');
 console.log('MI BOWLING LAB: registro compacto validado (4 estados, 10 frames, controles, datos, caché).');

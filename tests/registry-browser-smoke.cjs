@@ -142,6 +142,34 @@ async function runView(browser,engine,width,height,origin){
   await context.close();
  }
 }
+async function runMissedFrame(browser,engine,origin){
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+ const page=await context.newPage();
+ try{
+  await page.goto(origin,{waitUntil:'load'});
+  await page.evaluate(db=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db)),fixture);
+  await page.reload({waitUntil:'load'});
+  await page.evaluate(()=>{activeId='LAB-SESION';go('registro');});
+  const first=page.locator('.registry-v4-mini-frame').first();
+  await page.getByRole('button',{name:/Bolo 9:/}).click();
+  await page.getByRole('button',{name:/Bolo 10:/}).click();
+  await page.locator('#quick-record').click();
+  assert.equal(await first.locator('.missed').count(),0,'Primera tirada: sin rojo');
+  await page.getByRole('button',{name:/Bolo 10:/}).click();
+  await page.locator('#quick-record').click();
+  assert.equal(await first.locator('.missed').count(),1,'Solo bolo 10 sin derribar');
+  assert.equal(await first.locator('[data-pin="10"].missed').count(),1,'Pin correcto marcado en rojo');
+  assert.equal((await dbFromPage(page)).sessions[0].games[0].rolls.length,2,'Segunda tirada guardada');
+  await page.screenshot({path:path.join(results,engine+'-390-rojo-segunda.png'),fullPage:true});
+  page.once('dialog',async dlg=>dlg.accept());
+  await page.getByRole('button',{name:/Deshacer último lanzamiento/}).click();
+  assert.equal(await first.locator('.missed').count(),0,'Deshacer: no conservar rojo anterior');
+  await page.locator('#quick-record').click();
+  assert.equal(await first.locator('.missed').count(),0,'Spare: ningún bolo rojo');
+  console.log('OK '+engine+' indicadores rojos: cierre, deshacer y spare.');
+ }finally{await context.close();}
+}
+
 async function runOffline(browser,origin){
  // Contexto nuevo, Service Worker real: valida primera instalación y uso sin red.
  const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});
@@ -153,7 +181,7 @@ async function runOffline(browser,origin){
   await page.waitForTimeout(350);
   assert.equal(navigations.length,1,'No debe recargar al tomar el control por primera vez');
   const cacheNames=await page.evaluate(()=>caches.keys());
-  assert(cacheNames.some(x=>x.includes('v3-3-6-prueba')),'Caché versionada disponible');
+  assert(cacheNames.some(x=>x.includes('v3-3-7-prueba')),'Caché versionada disponible');
   await page.evaluate(db=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));},fixture);
   await context.setOffline(true);
   await page.reload({waitUntil:'load'});
@@ -227,6 +255,7 @@ async function runBackupRoundTrip(browser,origin){
    for(const [w,h] of [[320,640],[390,844],[768,1024],[1280,900]]){
     await runView(browser,engine,w,h,origin);passed++;
    }
+   await runMissedFrame(browser,engine,origin);
    if(engine==='chromium'){await runOffline(browser,origin);await runBackupRoundTrip(browser,origin);}
   }
   assert.equal(passed,8);

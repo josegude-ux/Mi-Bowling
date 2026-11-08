@@ -1,6 +1,6 @@
 'use strict';
 /* Mi Bowling · versión analítica local. Sin dependencias ni cuentas. */
-const APP_VERSION='3.3.6-prueba';
+const APP_VERSION='3.3.7-prueba';
 const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1';
 const PINS=[1,2,3,4,5,6,7,8,9,10], RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
 const $=id=>document.getElementById(id);
@@ -242,11 +242,21 @@ function laneKeyboard(event,key){
  }
 }
 
+function registryFrameMissedPins(g,frame){
+ const fr=rollsIn(g,frame);
+ if(fr.length<2||!fr[0]||fr[0].pins.length===10)return null;
+ // La segunda tirada debe haber terminado el frame: en el 10º puede haber un bonus.
+ if(frame===10&&(fr.length!==2||fr[0].pins.length+fr[1].pins.length===10))return null;
+ const hit=new Set([...fr[0].pins,...fr[1].pins]);
+ return PINS.filter(pin=>!hit.has(pin));
+}
 function registryPinMini(g){
- return `<div class="registry-v4-pin-history" aria-label="Bolos restantes tras el primer lanzamiento de cada frame">${Array.from({length:10},(_,i)=>{
-  const f=i+1,first=rollsIn(g,f)[0],standing=first?PINS.filter(p=>!first.pins.includes(p)):[],split=!!first&&isSplit(standing);
-  const rows=RACK.map(row=>`<span class="registry-v4-mini-row">${row.map(pin=>`<i aria-hidden="true" class="registry-v4-mini-dot ${!first?'unplayed':standing.includes(pin)?split?'split':'standing':'fallen'}"></i>`).join('')}</span>`).join('');
-  return `<span class="registry-v4-mini-frame" title="Frame ${f}: ${first?standing.length+' bolos en pie tras la primera tirada':'sin registrar'}">${rows}</span>`;
+ return `<div class="registry-v4-pin-history" aria-label="Bolos que quedaron en pie al finalizar cada frame">${Array.from({length:10},(_,i)=>{
+  const frame=i+1,fr=rollsIn(g,frame),missed=registryFrameMissedPins(g,frame);
+  const closed=frame===10?complete(g):!!fr[0]&&(fr[0].pins.length===10||fr.length>=2);
+  const status=!closed?'sin terminar':missed===null?'completado':missed.length?missed.length+' bolo(s) en pie tras la segunda tirada':'ningún bolo restante';
+  const rows=RACK.map(row=>`<span class="registry-v4-mini-row">${row.map(pin=>`<i data-pin="${pin}" aria-hidden="true" class="registry-v4-mini-dot ${!closed?'unplayed':missed?.includes(pin)?'missed':'fallen'}"></i>`).join('')}</span>`).join('');
+  return `<span class="registry-v4-mini-frame" title="Frame ${frame}: ${status}" aria-label="Frame ${frame}: ${status}">${rows}</span>`;
  }).join('')}</div>`;
 }
 
@@ -254,7 +264,7 @@ function registry(){const s=session();if(!s)return `<div class="card"><h2>Ningun
  <div class="row wrap mb12"><span class="pill ${s.type==='oficial'?'orange':''}">${s.type==='oficial'?'🎳 Oficial':'👣 Entrenamiento'}</span><span class="pill gray">${lane.pair?`Par ${lane.pair.join('–')} · Pista ${lane.lane}`:lane.lane?`Pista ${lane.lane}`:'Pista no indicada'}</span></div>
 
  
-  <div class="card compact-score registry-v4-score"><div class="card-head"><h2>Marcador · Partida ${s.games.length}</h2><span class="pill">${complete(g)?score(g):'Parcial '+score(g)} pts</span></div>${scoreStrip(g,n)}${registryPinMini(g)}<div class="score-actions-row mt12">${lane.pair?`<span class="hint">${n.done?'Última pista':`Frame ${n.frame} ·`} ${lane.lane?`Pista ${lane.lane}`:'Sin pista'}. Alternancia por frame.</span>`:''}<div class="score-action-buttons"><button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button><button type="button" class="btn outline" onclick="undoRoll()" ${g.rolls.length?'':'disabled'} aria-label="Deshacer último lanzamiento">↶ Deshacer último lanzamiento</button></div></div></div>
+  <div class="card compact-score registry-v4-score"><div class="card-head"><h2>Marcador · Partida ${s.games.length}</h2><span class="pill">${complete(g)?score(g):'Parcial '+score(g)} pts</span></div>${scoreStrip(g,n)}${registryPinMini(g)}<p class="registry-v4-mini-legend"><i aria-hidden="true"></i> Rojo: bolos que quedaron en pie al acabar la segunda tirada.</p><div class="score-actions-row mt12">${lane.pair?`<span class="hint">${n.done?'Última pista':`Frame ${n.frame} ·`} ${lane.lane?`Pista ${lane.lane}`:'Sin pista'}. Alternancia por frame.</span>`:''}<div class="score-action-buttons"><button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button><button type="button" class="btn outline" onclick="undoRoll()" ${g.rolls.length?'':'disabled'} aria-label="Deshacer último lanzamiento">↶ Deshacer último lanzamiento</button></div></div></div>
 ${editPair?pairEditor(s,g,n):''}
 ${n.done?finishedGame(s,g,completed):`<div class="card registry-v4-roll"><div class="game-heading"><div><h1>Frame ${n.frame} · Tirada ${n.ball}</h1></div><span class="pill">${selection.length} en pie</span></div>
 <p class="registry-v4-pin-caption">Toca los <strong>bolos que quedan en pie</strong>.<small>Si no marcas ninguno, anotarás todos derribados.</small></p><div class="registry-v4-rack-wrap">${rackUI(n.available)}</div>
