@@ -1,6 +1,7 @@
 'use strict';
 // Browser regression isolated from production. Requires: playwright, local files.
 // Uses only fictitious sessions in fresh browser contexts.
+// UI measurements intentionally block SW takeover; PWA cache is checked separately.
 const assert = require('node:assert/strict');
 const http = require('node:http');
 const fs = require('node:fs');
@@ -47,7 +48,7 @@ function assertNoHorizontalOverflow(page){
 }
 async function runView(browser,engine,width,height,origin){
  const context = await browser.newContext({viewport:{width,height},
-  isMobile:width<700,hasTouch:width<700,deviceScaleFactor:1});
+  isMobile:width<700,hasTouch:width<700,deviceScaleFactor:1,serviceWorkers:'block'});
  const page = await context.newPage();
  const errors=[];
  page.on('pageerror',e=>errors.push(e.message));
