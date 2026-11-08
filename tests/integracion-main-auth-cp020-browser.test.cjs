@@ -131,7 +131,7 @@ async function checkVisual(page,letter){
 async function checkMainCalendarAndLeague(page){
  await page.locator('#lab-home').click();
  await page.locator('#app .bowling-home').waitFor();
- assert.ok((await page.locator('#app').textContent()).includes('Bowling'));
+ assert.ok((await page.locator('#app').textContent()).toLowerCase().includes('bowling'));
  await page.locator('#lab-calendar').click();
  await page.waitForFunction(()=>window.MiBowlingIntegrationI2.getState().view==='calendar');
  const calendar=(await page.locator('#app').textContent()).toLowerCase();
