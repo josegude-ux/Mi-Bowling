@@ -19,7 +19,7 @@ function personal(value){
 function create({repository,owner,read,onStatus=()=>{},debounceMs=100}={}){
  if(!UUID.test(owner||'')||typeof read!=='function'||
     !repository||typeof repository.load!=='function'||typeof repository.write!=='function')
-  throw Error('I3: falta repositorio privado, propietario o lector de memoria');
+  throw Error('I3: contrato inválido (UUID='+UUID.test(owner||'')+', read='+typeof read+', load='+typeof repository?.load+', write='+typeof repository?.write+')');
  if(!Number.isFinite(debounceMs)||debounceMs<0||debounceMs>10000)
   throw Error('I3: espera de autosave inválida');
  let started=false,closed=false,online=true,revision=null,remoteText=null;
