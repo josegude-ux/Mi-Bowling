@@ -60,6 +60,8 @@ const scoreHtml=scoreStrip({rolls:ONE},{frame:5});
 assert.equal((scoreHtml.match(/class="frame-cell/g)||[]).length,10,'Marcador completo de diez frames');
 assert(css.includes('grid-template-columns:repeat(10,minmax(0,1fr))'),'Marcador responsive de 10 frames');
 assert(css.includes('.registry-v4 .pin'),'Bolos grandes en la pantalla de registro');
+assert(app.includes("classList.toggle('registry-screen',tab==='registro')"),'Modo anotación activado solo en registro');
+assert(css.includes('body.registry-screen .bottom-nav{display:none!important}'),'Navegación inferior oculta durante anotación');
 assert(app.includes('aria-pressed="${selection.includes(p)}"'),'Estado accesible en bolos');
 assert(app.includes('registry-v4-quick-caption'),'Advertencia sobre atajos automáticos');
 assert(css.includes('.registry-v4-quick.quick-large .btn'),'Respeta botones grandes');

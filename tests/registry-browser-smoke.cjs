@@ -58,6 +58,11 @@ async function runView(browser,engine,width,height,origin){
   await page.reload({waitUntil:'load'});
   await page.evaluate(()=>{activeId='LAB-SESION';go('registro');});
   await page.locator('.registry-v4-score').waitFor();
+  assert.equal(await page.locator('#bottom-nav').isVisible(),false,'Registro sin navegación fija superpuesta');
+  await page.evaluate(()=>go('inicio'));
+  assert(await page.locator('#bottom-nav').isVisible(),'Navegación conservada fuera del registro');
+  await page.evaluate(()=>go('registro'));
+
   assert.equal(await page.locator('.score-strip .frame-cell').count(),10, '10 frames');
   assert.equal(await page.locator('.registry-v4-mini-frame').count(),10,'10 miniaturas');
   assert.equal(await page.locator('.pin-layout button.pin').count(),10,'10 bolos');

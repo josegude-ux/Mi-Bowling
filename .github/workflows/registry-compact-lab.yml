@@ -12,6 +12,10 @@ on:
       - '.github/workflows/registry-compact-lab.yml'
   workflow_dispatch:
 
+concurrency:
+  group: bowling-registro-lab-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
