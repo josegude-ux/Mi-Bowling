@@ -36,3 +36,14 @@ for(const [width,height] of layouts){
   }
  }
 }
+
+const demo=pathToFileURL(path.join(__dirname,'..','lab','perfiles-estadisticas.html')).href+'?smoke=1';
+const preview=cp.spawnSync(chrome,[
+ '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
+ '--allow-file-access-from-files','--disable-extensions','--window-size=390,844',
+ '--virtual-time-budget=5500','--dump-dom',demo
+],{encoding:'utf8',timeout:35000,maxBuffer:5*1024*1024});
+assert.equal(preview.status,0,'No se pudo cargar la demo integrada');
+assert.ok(preview.stdout.includes('data-demo-smoke="PASS"'),
+ 'Demo LAB integrated failure: '+(preview.stdout.match(/data-demo-error="([^"]*)"/)?.[1]||preview.stdout.slice(-1600)));
+console.log('OK · Demo de usuarios reales y precisión de diez bolos sin tocar producción');
