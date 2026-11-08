@@ -41,7 +41,7 @@ function doc(){
  return {status,button,node,document:{getElementById:()=>node},handlers};
 }
 function context(){
- const win={console,window:null};win.window=win;
+ const win={console,URL,window:null};win.window=win;
  vm.createContext(win);
  for(const file of ['auth-supabase-adapter.js','auth-private-repository.js','auth-lab.js','auth-boot.js'])
   vm.runInContext(src(file),win,{filename:file});
