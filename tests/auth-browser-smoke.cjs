@@ -9,6 +9,7 @@ if(!chrome)for(const n of ['google-chrome','google-chrome-stable','chromium','ch
 }
 assert.ok(chrome,'Chromium missing');
 const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
+const mock=pathToFileURL(path.join(__dirname,'auth-browser-mock.html')).href;
 for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
  const result=cp.spawnSync(chrome,[
   '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
@@ -25,4 +26,14 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
  const scan=result.stdout.match(/<body[\s\S]*?<\/body>/)?.[0]||'';
  assert.ok(scan.includes('auth-stage'),'Auth-only screen missing');
  console.log('OK · '+width+'x'+height+' · Login visible; no provider, no data access, no app boot');
+ const auth=cp.spawnSync(chrome,[
+  '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
+  '--allow-file-access-from-files','--disable-extensions','--window-size='+width+','+height,
+  '--virtual-time-budget=5000','--dump-dom',mock
+ ],{encoding:'utf8',timeout:25000,maxBuffer:3*1024*1024});
+ assert.equal(auth.status,0,'Chromium fictitious login '+width);
+ assert.ok(auth.stdout.includes('data-auth-mock-test="PASS"'),
+  'Mock login '+width+': '+(auth.stdout.match(/data-auth-mock-error="([^"]*)"/)?.[1]||auth.stdout.slice(-1200)));
+ console.log('OK · '+width+'x'+height+' · Login A/B mocked, offline denied, logout clears identity');
+
 }
