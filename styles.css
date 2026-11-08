@@ -316,3 +316,7 @@ body.home-screen .app-main{max-width:1440px;padding:18px clamp(14px,3vw,32px) ca
 .registry-v4-quick-caption{font-size:11px;color:#607b93;line-height:1.35;margin:12px 0 3px}
 .registry-v4-quick.quick-large .btn{min-height:56px!important;font-size:14px!important}
 .registry-v4-quick.quick-compact .btn{min-height:42px!important;font-size:11px!important}
+
+/* UI LAB · Durante la anotación no tapar bolos ni botón Registrar con la barra fija. */
+body.registry-screen .bottom-nav{display:none!important}
+body.registry-screen .app-main{padding-bottom:calc(26px + env(safe-area-inset-bottom))}
