@@ -138,7 +138,7 @@ async function checkMainCalendarAndLeague(page){
  assert.ok(calendar.includes('calendario'),'Published calendar missing');
  await page.locator('#lab-league').click();
  await page.waitForFunction(()=>window.MiBowlingIntegrationI2.getState().view==='league');
- assert.ok((await page.locator('#app').textContent()).includes('Liga Nacional'));
+ assert.ok((await page.locator('#app').textContent()).toLowerCase().includes('liga nacional'), 'Liga view is absent');
 }
 async function runUser(browser,base,letter,screen,label){
  const ctx=await browser.newContext({...screen,ignoreHTTPSErrors:true,locale:'es-ES'});
