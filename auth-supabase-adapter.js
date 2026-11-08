@@ -21,7 +21,9 @@ function create(client){
   async signIn(email,password){
    const data=result(await client.auth.signInWithPassword({email,password}),'Inicio de sesión');
    // A session is not proof of email confirmation or account ownership.
-   return data.session||null;
+   // However, login must actually return a token before remote verification.
+   if(!data.session?.access_token)throw Error('El proveedor no ha emitido una sesión válida');
+   return data.session;
   },
   async getVerifiedUser(){
    // Unlike getSession, getUser makes a remote verification request.
