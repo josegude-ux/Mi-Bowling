@@ -54,24 +54,37 @@ function readBallSelections(){
  return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}
  catch{return {}}
 }
-let ballSelections=readBallSelections();
+let ballSelections=readBallSelections(),ballSelectionSaveError=false;
+function latestBallSelections(){
+ // Combinar con la copia local más reciente; si hubo fallo de cuota, conservar memoria.
+ if(!ballSelectionSaveError)ballSelections=readBallSelections();
+ return ballSelections;
+}
 function cleanSelectedBallIds(ids){
  if(!Array.isArray(ids))return [];
  return [...new Set(ids)].filter(id=>typeof id==='string'&&db.balls.some(b=>b.id===id&&!b.retired));
 }
 function selectedBallsFor(key){
- return Object.prototype.hasOwnProperty.call(ballSelections,key)?cleanSelectedBallIds(ballSelections[key]):null;
+ const current=latestBallSelections();
+ return Object.prototype.hasOwnProperty.call(current,key)?cleanSelectedBallIds(current[key]):null;
 }
 function persistBallSelections(next){
  ballSelections=next;
- try{localStorage.setItem(BALL_SELECTION_KEY,JSON.stringify(next))}
- catch{alert('No se pudo guardar la selección para la próxima apertura. Podrás seguir jugando durante esta sesión.')}
+ try{localStorage.setItem(BALL_SELECTION_KEY,JSON.stringify(next));ballSelectionSaveError=false}
+ catch{ballSelectionSaveError=true;alert('No se pudo guardar la selección para la próxima apertura. Podrás seguir jugando durante esta sesión.')}
 }
+// Los cambios de otra pestaña se reflejan sin reemplazar borradores ni tiradas en curso.
+window.addEventListener('storage',event=>{
+ if(event.key!==BALL_SELECTION_KEY||ballSelectionSaveError)return;
+ ballSelections=readBallSelections();
+ if(tab==='bolas'&&!ballEditingId)render();
+});
 function toggleSelectedBall(id,checked){
  if(!db.balls.some(b=>b.id===id&&!b.retired))return;
- const chosen=new Set(selectedBallsFor(ballPickTarget)||[]);
+ const current=latestBallSelections();
+ const chosen=new Set(Object.prototype.hasOwnProperty.call(current,ballPickTarget)?cleanSelectedBallIds(current[ballPickTarget]):[]);
  if(checked)chosen.add(id);else chosen.delete(id);
- persistBallSelections({...ballSelections,[ballPickTarget]:cleanSelectedBallIds([...chosen])});
+ persistBallSelections({...current,[ballPickTarget]:cleanSelectedBallIds([...chosen])});
  render();
 }
 function captureNewSessionDraft(){
@@ -110,12 +123,14 @@ function closeBallPicker(){
  if(back==='registro'&&pins){selection=pins;render()}
 }
 function transferBallSelectionToSession(id){
- const picked=selectedBallsFor(BALL_SELECTION_NEXT);if(picked===null)return;
- const next={...ballSelections,[id]:picked};delete next[BALL_SELECTION_NEXT];
+ const current=latestBallSelections();
+ const picked=Object.prototype.hasOwnProperty.call(current,BALL_SELECTION_NEXT)?cleanSelectedBallIds(current[BALL_SELECTION_NEXT]):null;
+ if(picked===null)return;
+ const next={...current,[id]:picked};delete next[BALL_SELECTION_NEXT];
  persistBallSelections(next);
 }
 function removeRetiredBallFromSelections(id){
- const next={...ballSelections};
+ const next={...latestBallSelections()};
  let changed=false;
  for(const [scope,ids] of Object.entries(next)){
   if(!Array.isArray(ids)||!ids.includes(id))continue;
@@ -479,7 +494,7 @@ function addGame(){const s=session(),prev=game(s);if(!complete(prev))return aler
  s.games.push(g);save();selection=[];showNext=false;render()}
 let historyOpenDay='';
 function history(){const rows=[...db.sessions].filter(s=>s.type===historyMode).sort((a,b)=>b.date.localeCompare(a.date));let groups={};for(const s of rows)(groups[s.date]??=[]).push(s);return `${head('Historial','')}<div class="seg mb16"><button class="${historyMode==='entrenamiento'?'active':''}" onclick="historyMode='entrenamiento';historyOpenDay='';render()">👣 Entrenamientos</button><button class="${historyMode==='oficial'?'active':''}" onclick="historyMode='oficial';historyOpenDay='';render()">🏅 Competiciones</button></div>${Object.entries(groups).map(([date,ss])=>{const key=historyMode+date,open=historyOpenDay===key,count=ss.reduce((n,s)=>n+s.games.length,0),venues=[...new Set(ss.map(s=>s.venue).filter(Boolean))].join(' · ')||'Bolera sin indicar';return `<div class="card v25-day"><button class="v25-day-head" onclick="historyOpenDay=${open?"''":`'${key}'`};render()"><span class="v25-day-icon">${historyMode==='entrenamiento'?'👣':'🏅'}</span><span><strong>${esc(date)}</strong><small>${count} partidas · ${esc(venues)}</small></span><b>${open?'⌃':'⌄'}</b></button>${open?ss.map(s=>`<div class="v25-day-session"><strong>${esc(s.title|| (s.type==='oficial'?'Competición':'Entrenamiento'))}</strong><small>${s.games.length} partidas</small>${s.games.map((g,i)=>`<div class="v25-day-game"><span>Partida ${i+1}</span><b>${complete(g)?score(g):'En curso'}</b></div>`).join('')}<div class="actions"><button class="btn primary" onclick="openSession('${s.id}')">${s.games.some(g=>!complete(g))?'Continuar':'Abrir'}</button><button class="btn outline" onclick="activeId='${s.id}';go('detalle')">Informe</button><button class="btn warn" onclick="deleteSession('${s.id}')">Eliminar</button></div></div>`).join(''):''}</div>`}).join('')||'<div class="card empty">Sin jornadas registradas</div>'}`}
-function deleteSession(id){const s=db.sessions.find(x=>x.id===id);if(!s)return;if(!confirm(`¿Borrar ${s.title||'esta sesión'} y TODOS sus lanzamientos? No se puede deshacer.`))return;db.sessions=db.sessions.filter(x=>x.id!==id);if(Object.prototype.hasOwnProperty.call(ballSelections,id)){const selections={...ballSelections};delete selections[id];persistBallSelections(selections)}if(activeId===id)activeId=null;save();render()}
+function deleteSession(id){const s=db.sessions.find(x=>x.id===id);if(!s)return;if(!confirm(`¿Borrar ${s.title||'esta sesión'} y TODOS sus lanzamientos? No se puede deshacer.`))return;db.sessions=db.sessions.filter(x=>x.id!==id);const current=latestBallSelections();if(Object.prototype.hasOwnProperty.call(current,id)){const selections={...current};delete selections[id];persistBallSelections(selections)}if(activeId===id)activeId=null;save();render()}
 function detail(){const s=session();if(!s)return go('historial');return `${head(s.title||'Sesión',`${s.date} · ${s.venue||'Bolera sin especificar'}`,`<button class="btn outline" onclick="go('historial')">Volver</button>`)}
  <div class="card"><div class="row"><span class="pill ${s.type==='oficial'?'orange':''}">${s.type==='oficial'?'🎳 Competición':'👣 Entrenamiento'}</span><span class="hint">${s.games.filter(complete).length} completas${s.goal?' · Objetivo: '+esc(s.goal.kind):''}</span></div>${s.pattern?`<p class="hint">Patrón: ${esc(s.pattern)} · <button class="btn outline" onclick="selectedPatternId='${esc(s.patternId)}';go('patrones')">Consultar patrón</button></p><label class="field">Observaciones sobre aceite / reacción</label><textarea class="input note" id="oil-session-note" onchange="savePatternNote('${s.id}',this.value)">${esc(s.patternNotes||'')}</textarea>`:''}${s.notes?`<p>${esc(s.notes)}</p>`:''}</div>
  ${s.games.map((g,i)=>`<div class="card"><div class="card-head"><h2>Partida ${i+1}</h2><span class="pill">${complete(g)?score(g)+' pts':'En curso'}</span></div>${s.type==='entrenamiento'?`<label class="switch stats-checkbox"><input type="checkbox" ${g.includeStats!==false?'checked':''} onchange="toggleGameStats('${g.id}',this.checked)"> Incluir en estadísticas</label>`:''}${scoreStrip(g,{frame:null})}
