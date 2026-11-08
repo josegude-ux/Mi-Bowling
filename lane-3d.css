@@ -1,0 +1,46 @@
+/* MI BOWLING · Perspectiva 3D interactiva · LAB R2 · opción A
+   Superficie clara / azul coherente con estilo VISURA INVENTA. */
+.shot-editor-layout{grid-template-columns:minmax(0,1.8fr) minmax(238px,.85fr);align-items:start;gap:16px}
+.shot-stage{min-width:0}
+.lane3d-head{display:flex;flex-direction:column;gap:12px;margin:0 0 10px}
+.lane3d-head h4{font-size:18px;line-height:1.25;letter-spacing:-.4px;margin:2px 0 0;color:#143753}
+.lane3d-eyebrow{color:#0087a7;font-size:10px;letter-spacing:1.3px;font-weight:850}
+.lane3d-switch{display:inline-flex;align-self:stretch;gap:4px;padding:4px;border:1px solid #d7e7f0;border-radius:13px;background:#f3f8fc}
+.lane3d-toggle{flex:1;padding:10px 12px;font-size:12px;font-weight:800;color:#4c6c84;border-radius:9px;background:transparent;min-height:42px}
+.lane3d-toggle.active,.lane3d-toggle[aria-pressed="true"]{background:#fff;color:#087b99;box-shadow:0 2px 9px rgba(0,60,90,.11)}
+.lane3d-toggle:focus-visible,.lane3d-camera button:focus-visible{outline:3px solid #21a8be;outline-offset:2px}
+.lane3d-frame{position:relative;overflow:hidden;border-radius:17px;border:1px solid #d1e3f0;background:linear-gradient(180deg,#dcecfb,#eef8ff);box-shadow:0 8px 20px rgba(34,91,133,.10)}
+.lane3d-canvas{display:block;width:100%;height:clamp(330px,50vw,500px);touch-action:none;cursor:grab;outline:none}
+.lane3d-canvas:active{cursor:grabbing}
+.lane3d-canvas:focus-visible{outline:3px solid #028cb6;outline-offset:-3px}
+.lane3d-camera{display:flex;position:absolute;left:12px;top:12px;gap:5px;z-index:2;padding:5px;border:1px solid #dae9f1;border-radius:13px;background:rgba(255,255,255,.9);box-shadow:0 4px 12px #255a7614;backdrop-filter:blur(8px)}
+.lane3d-camera button{background:#f2f7fc;border-radius:9px;min-height:36px;min-width:37px;color:#215574;font-size:19px;font-weight:700}
+.lane3d-camera button:hover{background:#e2f3f8}
+.lane3d-footer{display:flex;gap:6px;justify-content:space-between;flex-wrap:wrap;padding:8px 11px;background:rgba(255,255,255,.96);color:#50718b;font-size:10px;line-height:1.4}
+.lane3d-footer span:first-child{font-weight:800;color:#1b5975}
+.shot-stage.lane-view-3d .shot-visual{display:none}
+.shot-stage.lane-view-2d .lane3d-frame{display:none}
+.shot-stage.lane-view-2d .shot-visual{max-width:400px;margin:0 auto}
+.shot-controls{padding-top:8px}
+.shot-stage .shot-visual{width:100%}
+@media(max-width:850px){
+  .shot-editor-layout{grid-template-columns:minmax(0,1fr)}
+  .shot-controls{padding-top:0}
+  .shot-controls>.hint{max-width:600px}
+}
+@media(max-width:640px){
+  .lane3d-head h4{font-size:16px}
+  .lane3d-canvas{height:340px}
+  .lane3d-camera{left:8px;top:8px;gap:3px;padding:4px}
+  .lane3d-camera button{min-width:34px;min-height:34px}
+  .lane3d-footer{font-size:10px}
+  .shot-editor{padding:11px 9px}
+}
+@media(max-width:370px){
+  .lane3d-toggle{font-size:11px;padding:8px 5px}
+  .lane3d-canvas{height:325px}
+  .lane3d-footer{flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+ .lane3d-toggle,.lane3d-camera button{transition:none}
+}
