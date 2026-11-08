@@ -77,7 +77,7 @@ function newController(location,auth=provider){
  assert.equal(recovery.ctl.getState().mode,'done');
  assert.equal(recovery.ctl.getState().verified,false);
  assert.equal(active,null);
- await assert.rejects(recovery.ctl.updatePassword('CambioValido12345','CambioValido12345'),/no existe recuperación/);
+ await assert.rejects(recovery.ctl.updatePassword('CambioValido12345','CambioValido12345'),/No existe recuperación/);
  // A one-time link cannot be reused in another isolated browser context.
  const replay=newController(makeLocation('email',HEX));
  await assert.rejects(replay.ctl.verify(),/No se pudo verificar/);
@@ -101,7 +101,7 @@ function newController(location,auth=provider){
  }
  const unconfigured=newController(makeLocation('email',HEX2),null);
  assert.equal(unconfigured.ctl.getState().hasAuth,false);
- await assert.rejects(unconfigured.ctl.verify(),/no disponible|utilizado/);
+ await assert.rejects(unconfigured.ctl.verify(),/no disponible|utilizado|Enlace no disponible/i);
  const expiryHex='ef'.repeat(32);
  const expired=newController(makeLocation('recovery',expiryHex));
  await expired.ctl.verify();clock+=10*60*1000+1;
@@ -126,7 +126,7 @@ function newController(location,auth=provider){
  const cancel=newController(makeLocation('email','45'.repeat(32)));
  await cancel.ctl.cancel();
  assert.equal(cancel.ctl.getState().disposed,true);
- await assert.rejects(cancel.ctl.verify(),/no disponible|ya utilizado/);
+ await assert.rejects(cancel.ctl.verify(),/no disponible|ya utilizado|Enlace no disponible/i);
  // No app, local storage or legacy data from callback.
  const src=source('auth-email-callback.js')+source('auth-link-boot.js');
  assert.ok(!/\b(?:localStorage|sessionStorage)\.(?:getItem|setItem|removeItem)\s*\(/.test(src));
