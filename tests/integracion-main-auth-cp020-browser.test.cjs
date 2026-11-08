@@ -117,7 +117,7 @@ async function checkVisual(page,letter){
  assert.equal(await page.locator('#lab-pinmap .pinmap-pin').count(),10,'Visual 10-pin rack absent');
  const count=await page.evaluate(()=>MiBowlingPinStats.compute(
   Function("return periodAggregate(aggregate('entrenamiento',''))")(),'first').events);
- if(letter==='A')assert.equal(count,10,'A expected ten first balls');
+ if(letter==='A')assert.equal(count,11,'A has ten first balls plus one full-rack bonus on tenth-frame spare');
  if(letter==='B')assert.equal(count,0,'B new account must remain empty');
  if(letter==='C')assert.equal(count,0,'C official scores must not appear under training');
  await page.locator('#lab-pinmap .pinmap-tabs button').nth(1).click();
