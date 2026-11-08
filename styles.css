@@ -458,3 +458,35 @@ body.home-screen .app-main{max-width:1440px}
  .bowling-home-tool-grid button.bowling-home-tool-card{min-height:72px;padding:10px 14px}
 }
 @media(prefers-reduced-motion:reduce){.bowling-home-tool-grid button.bowling-home-tool-card{transition:none}}
+
+/* CP-020 · Calendario oficial FGB provisional; datos personales separados y sin escrituras. */
+.calendar-filters{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0 14px}
+.calendar-filter{min-height:44px;padding:8px 12px;border:1px solid #c9dcf1;border-radius:999px;background:#f8fbff;color:#194e78;font-weight:750;font-size:12px;flex:1 0 auto}
+.calendar-filter.active{background:#0b5d9f;color:#fff;border-color:#0b5d9f;box-shadow:0 3px 9px #0d6fb82a}
+.calendar-filter:focus-visible{outline:3px solid #19acd2;outline-offset:2px}
+.calendar-competition-summary{margin:-10px 0 8px;color:#687e95;font-size:12px}
+.calendar-legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:13px;font-size:12px;color:#526e88}
+.calendar-legend span{display:inline-flex;gap:5px;align-items:center}
+.calendar-legend i,.calendar-markers i{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none}
+.calendar-dot-gallego{background:#43a95c!important}
+.calendar-dot-nacional{background:#2177d4!important}
+.calendar-dot-personal{background:#15a9b6!important}
+.calendar-markers{display:flex;gap:2px;justify-content:center;align-items:center;min-height:7px}
+.calendar-day .calendar-markers i{width:6px;height:6px}
+.calendar-day.selected .calendar-markers i{box-shadow:0 0 0 1px #fff}
+.calendar-official{display:flex;align-items:center;gap:12px;justify-content:space-between;border-radius:13px;padding:12px 14px;margin-top:10px;background:#f8fafc;border-left:4px solid #2177d4;border-top:1px solid #e8f0f8;border-right:1px solid #e8f0f8;border-bottom:1px solid #e8f0f8}
+.calendar-official-gallego{background:#eff9f0;border-left-color:#43a95c}
+.calendar-official-nacional{background:#eff6fe;border-left-color:#2177d4}
+.calendar-official>div{min-width:0;display:flex;flex-direction:column;gap:5px}
+.calendar-official strong{font-size:14px;line-height:1.28;color:#123a60}
+.calendar-official small{font-size:12px;line-height:1.5;color:#667c90}
+.calendar-category{font-size:11px;letter-spacing:.2px;color:#2d9054;font-weight:800}
+.calendar-official-nacional .calendar-category{color:#236bb9}
+.calendar-provisional{flex:none;padding:5px 8px;border:1px solid #cddfee;border-radius:9px;background:#fff;color:#647d94;font-size:10px;font-weight:740}
+.calendar-source{max-width:780px;margin:10px auto 13px;color:#667e97;font-size:12px;line-height:1.45}
+@media(max-width:370px){
+ .calendar-filter{font-size:11px;padding:7px 9px}
+ .calendar-official{flex-wrap:wrap;gap:8px}
+ .calendar-provisional{margin-left:auto}
+ .calendar-day .calendar-markers i{width:5px;height:5px}
+}

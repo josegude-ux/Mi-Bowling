@@ -22,6 +22,9 @@ on:
       - 'icon-estadisticas-3d.svg'
       - 'tests/home-refinement-smoke.cjs'
       - 'tests/home-calendar-smoke.cjs'
+      - 'official-calendar-2026-2027.js'
+      - 'data/calendario-fgb-2026-2027.json'
+      - 'tests/official-calendar-smoke.cjs'
       - 'tests/registry-compact-smoke.cjs'
       - '.github/workflows/registry-compact-lab.yml'
   workflow_dispatch:
@@ -35,7 +38,7 @@ permissions:
 
 jobs:
   validar-registro:
-    if: github.head_ref == 'design/inicio-visura-refinamiento-3d-20261108' || github.head_ref == 'design/inicio-visura-calendario-20261108' || github.head_ref == 'design/icono-mi-bowling-visura-20261108' || github.head_ref == 'design/registro-compacto-r1-20261108' || github.head_ref == 'fix/mini-pins-black-red-after-second-20261108' || github.head_ref == 'fix/mini-bolos-rojos-fin-frame-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/fix/mini-bolos-rojos-fin-frame-20261108'
+    if: github.head_ref == 'feature/calendario-fgb-2026-2027-lab-20261108' || github.head_ref == 'design/inicio-visura-refinamiento-3d-20261108' || github.head_ref == 'design/inicio-visura-calendario-20261108' || github.head_ref == 'design/icono-mi-bowling-visura-20261108' || github.head_ref == 'design/registro-compacto-r1-20261108' || github.head_ref == 'fix/mini-pins-black-red-after-second-20261108' || github.head_ref == 'fix/mini-bolos-rojos-fin-frame-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/fix/mini-bolos-rojos-fin-frame-20261108'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -53,6 +56,8 @@ jobs:
         run: node tests/home-calendar-smoke.cjs
       - name: Verificar ajustes visuales CP-019
         run: node tests/home-refinement-smoke.cjs
+      - name: Comprobar 31 fechas FGB y separación de calendario
+        run: node tests/official-calendar-smoke.cjs
       - name: Pruebas de lógica existentes
         run: |
           node tests/visual-lab-smoke.cjs

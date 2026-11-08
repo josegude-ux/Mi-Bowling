@@ -16,8 +16,8 @@ for(const filename of ['home-registro.jpg','home-partidas.jpg','home-estadistica
  assert(bytes.length>20000&&bytes.length<150000,'Imagen ligera con contenido');
  assert(sw.includes("'./"+filename+"'"),'Disponible sin conexión: '+filename);
 }
-assert(index.includes('styles.css?v=338visref1')&&index.includes('app.js?v=338visref1'),'Recursos PWA actualizados');
-assert(sw.includes('mi-bowling-analitica-v3-3-8-prueba-visref1'),'Caché distinta de producción previa');
+assert(index.includes('styles.css?v=338fgb1')&&index.includes('app.js?v=338fgb1'),'Recursos PWA actualizados');
+assert(sw.includes('mi-bowling-analitica-v3-3-8-prueba-fgbcalendar1'),'Caché distinta de producción previa');
 const begin=app.indexOf('let calendarMonth='),end=app.indexOf("let newMode=",begin);
 assert(begin>0&&end>begin,'Bloque de calendario encontrado');
 const fixture={sessions:[
