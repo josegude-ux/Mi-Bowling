@@ -266,6 +266,29 @@ async function parallelTabsSelectionScenario(browser,engine,origin){
   await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
   assert.equal(await second.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').isChecked(),true,
    'La selección final Beta queda disponible en la segunda pestaña');
+  // La pestaña A conserva el formulario sin re-render mientras B cambia el check.
+  // Al crear sesión debe prevalecer el conjunto vigente, no una opción obsoleta.
+  await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').check();
+  await first.getByRole('button',{name:'Nueva',exact:true}).click();
+  await first.locator('#s-ball').selectOption('lab-a');
+  await first.locator('#s-venue').fill('Bolera LAB entre pestañas');
+  await first.locator('#s-title').fill('Sesión ficticia con selección cambiada');
+  await second.waitForFunction(()=>{
+   const card=[...document.querySelectorAll('.ball-card')].find(el=>el.textContent.includes('Alpha'));
+   return card?.querySelector('.ball-session-toggle input')?.checked===true;
+  },null,{timeout:10000});
+  await second.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').uncheck();
+  assert.equal(await first.locator('#s-ball').inputValue(),'lab-a','Borrador de A no se pierde ni re-renderiza');
+  assert.deepEqual((await getData(first)).picks.__next__,['lab-b'],'El check de B ha retirado Alpha');
+  await first.locator('#newSessionForm button[type=submit]').click();
+  data=await getData(first);
+  const current=data.db.sessions.at(-1);
+  assert.equal(current.venue,'Bolera LAB entre pestañas','Borrador de bolera preservado');
+  assert.equal(current.title,'Sesión ficticia con selección cambiada','Título preservado');
+  assert.deepEqual(data.picks[current.id],['lab-b'],'La sesión hereda selección vigente sin Alpha');
+  assert.equal(current.currentBallId,'','No guarda bola excluida de la selección en otra pestaña');
+  assert.equal(data.db.sessions[0].games[0].rolls[0].ballId,'lab-b','Historial original sin cambios');
+  assert.deepEqual(data.db.balls,fixture.balls,'Las fichas del arsenal no se modifican');
   assert.deepEqual(errors,[],'Sin errores JavaScript en dos pestañas');
   console.log('OK '+engine+' 390px: dos pestañas conservan selecciones del mismo arsenal y evitan sobreescritura');
  }finally{await context.close()}
