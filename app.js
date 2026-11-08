@@ -325,7 +325,9 @@ function ballSelect(id,name,selected){
 }
 function createSession(e){e.preventDefault();if(newMode==='oficial'&&competitionFormat==='liga'){launchLeagueFromNew();return}const f=new FormData(e.currentTarget);const typ=f.get('type');const pair=normalPair(f.get('pair')),start=pair?(intLane(f.get('startLane'))||pair[0]):null;
  if(pair&&!pair.includes(start))return alert('La pista inicial debe pertenecer al par elegido.');
- const s={id:uid(),type:typ,date:String(f.get('date')),title:String(f.get('title')||'').trim(),venue:String(f.get('venue')||'').trim(),pattern:db.patterns.find(p=>p.id===f.get('patternId'))?.name||'',patternId:String(f.get('patternId')||''),patternNotes:'',goal:typ==='entrenamiento'&&String(f.get('goalKind')||'')?{kind:String(f.get('goalKind')),target:Math.max(1,Math.min(100,Number(f.get('goalTarget'))||80))}:null,notes:String(f.get('notes')||'').trim(),currentBallId:String(f.get('ballId')||''),currentLine:cleanLine({}),lane:start,games:[{id:uid(),includeStats:true,pair,startLane:start,segments:[],rolls:[]}]};
+ const requestedBallId=String(f.get('ballId')||''),allowedBalls=selectedBallsFor(BALL_SELECTION_NEXT);
+ const initialBallId=allowedBalls!==null&&!allowedBalls.includes(requestedBallId)?'':requestedBallId;
+ const s={id:uid(),type:typ,date:String(f.get('date')),title:String(f.get('title')||'').trim(),venue:String(f.get('venue')||'').trim(),pattern:db.patterns.find(p=>p.id===f.get('patternId'))?.name||'',patternId:String(f.get('patternId')||''),patternNotes:'',goal:typ==='entrenamiento'&&String(f.get('goalKind')||'')?{kind:String(f.get('goalKind')),target:Math.max(1,Math.min(100,Number(f.get('goalTarget'))||80))}:null,notes:String(f.get('notes')||'').trim(),currentBallId:initialBallId,currentLine:cleanLine({}),lane:start,games:[{id:uid(),includeStats:true,pair,startLane:start,segments:[],rolls:[]}]};
  db.sessions.push(s);activeId=s.id;save();transferBallSelectionToSession(s.id);go('registro')}
 function openSession(id){if(!db.sessions.some(s=>s.id===id))return;activeId=id;go('registro')}
 // Split: el bolo 1 debe haber caído y los bolos restantes forman grupos separados.
