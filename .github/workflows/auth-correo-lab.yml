@@ -1,4 +1,4 @@
-name: MI BOWLING · Auth / RLS / migración con respaldos · LAB A6
+name: MI BOWLING · Auth + respaldos + IndexedDB · LAB A7
 on:
   push:
     branches:
@@ -18,6 +18,11 @@ on:
       - tests/rls-mock-server.cjs
       - tests/auth-three-users-rls-a5.test.cjs
       - auth-legacy-migration-lab.js
+      - auth-idb-pdf-reader-lab.js
+      - lab/migracion-a7.html
+      - lab/migracion-a7.css
+      - lab/migracion-a7-demo.js
+      - tests/auth-indexeddb-webkit-a7.test.cjs
       - tests/auth-migration-a6.test.cjs
       - tests/private-pdf-store-mock.cjs
       - auth-private-repository.js
@@ -56,6 +61,8 @@ jobs:
           node --check tests/rls-mock-server.cjs
           node --check tests/auth-three-users-rls-a5.test.cjs
           node tests/auth-three-users-rls-a5.test.cjs
+          node --check auth-idb-pdf-reader-lab.js
+          node --check lab/migracion-a7-demo.js
           node --check auth-legacy-migration-lab.js
           node --check tests/auth-migration-a6.test.cjs
           node --check tests/private-pdf-store-mock.cjs
@@ -95,13 +102,17 @@ jobs:
         run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
       - name: Instalar binario WebKit y bibliotecas nativas para CI
         run: ./node_modules/.bin/playwright install --with-deps webkit
-      - name: Verificar flujos de enlaces en WebKit real
-        run: node tests/auth-webkit-a4.test.cjs
+      - name: Verificar flujos de enlaces WebKit A4 y IndexedDB A7
+        run: |
+          node tests/auth-webkit-a4.test.cjs
+          node tests/auth-indexeddb-webkit-a7.test.cjs
       - name: Capturas WebKit (ficticias)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mi-bowling-auth-webkit-a4
-          path: tests/artifacts-webkit-a4/*.png
+          name: mi-bowling-auth-webkit-a7
+          path: |
+            tests/artifacts-webkit-a4/*.png
+            tests/artifacts-migration-a7/*.png
           retention-days: 14
           if-no-files-found: warn
