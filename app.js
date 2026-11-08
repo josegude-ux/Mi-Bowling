@@ -482,7 +482,10 @@ function pairChangeHint(){let p=normalPair($('new-pair')?.value);$('new-pair-sta
 function changePair(frame){const s=session(),g=game(s),p=normalPair($('new-pair').value),start=intLane($('new-pair-start').value);if(!p||!p.includes(start))return alert('Introduce un par válido y la pista donde empiezas.');g.segments=(g.segments||[]).filter(x=>x.fromFrame<frame);g.segments.push({fromFrame:frame,pair:p,startLane:start});save();editPair=false;render()}
 function togglePin(pin){const s=session(),n=next(game(s));if(n.done||!n.available.includes(pin))return;selection=selection.includes(pin)?selection.filter(x=>x!==pin):[...selection,pin];render()}
 function recordRoll(isFoul=false){const s=session();if(!s)return;const g=game(s),n=next(g);if(n.done)return;if(selection.some(p=>!n.available.includes(p)))return alert('Has seleccionado algún bolo que ya estaba derribado.');
- const chosen=$('roll-ball')?.value||'';if(chosen&&!db.balls.some(x=>x.id===chosen))return alert('La bola ya no existe en el catálogo.');s.currentBallId=chosen;
+ const requestedBall=$('roll-ball')?.value||'';
+ const selectedForSession=selectedBallsFor(s.id);
+ const chosen=selectedForSession!==null&&!selectedForSession.includes(requestedBall)?'':requestedBall;
+ if(chosen&&!db.balls.some(x=>x.id===chosen))return alert('La bola ya no existe en el catálogo.');s.currentBallId=chosen;
  for(const k of ['approach','arrow','breakpoint'])if($(k))s.currentLine[k]=$(k).value.trim();
  const where=currentLane(g,n.frame);g.rolls.push({frame:n.frame,ball:n.ball,pins:n.available.filter(p=>!selection.includes(p)).sort((a,b)=>a-b),ballId:chosen,line:cleanLine(s.currentLine),lane:where.lane,pair:where.pair?[...where.pair]:null,foul:!!isFoul,createdAt:new Date().toISOString()});selection=[];save();render()}
 function undoRoll(){const s=session(),g=game(s);if(!g.rolls.length)return;if(!confirm('¿Eliminar el último lanzamiento?'))return;g.rolls.pop();selection=[];save();render()}
