@@ -352,3 +352,6 @@ body.registry-screen .app-main{padding-bottom:calc(26px + env(safe-area-inset-bo
 .registry-v4-mini-legend .registry-v4-legend-red{background:#cf1839}
 @media(max-width:580px){.registry-v4 .registry-v4-mini-dot.standing{width:4.5px;height:4.5px}}
 @media(max-width:350px){.registry-v4 .registry-v4-mini-dot.standing{width:4px;height:4px}}
+/* Icono oficial MI BOWLING: encabezado y menú inicio, sin alterar diseño funcional. */
+.brand-mark,.bowling-home-mark{overflow:hidden;isolation:isolate}
+.brand-mark img,.bowling-home-mark img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}

@@ -7,6 +7,11 @@ on:
       - 'styles.css'
       - 'index.html'
       - 'sw.js'
+      - 'icon-180.png'
+      - 'icon-192.png'
+      - 'icon-512.png'
+      - 'manifest.json'
+      - 'tests/icon-smoke.cjs'
       - 'tests/registry-browser-smoke.cjs'
       - 'tests/registry-compact-smoke.cjs'
       - '.github/workflows/registry-compact-lab.yml'
@@ -21,7 +26,7 @@ permissions:
 
 jobs:
   validar-registro:
-    if: github.head_ref == 'design/registro-compacto-r1-20261108' || github.head_ref == 'fix/mini-pins-black-red-after-second-20261108' || github.head_ref == 'fix/mini-bolos-rojos-fin-frame-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/fix/mini-bolos-rojos-fin-frame-20261108'
+    if: github.head_ref == 'design/icono-mi-bowling-visura-20261108' || github.head_ref == 'design/registro-compacto-r1-20261108' || github.head_ref == 'fix/mini-pins-black-red-after-second-20261108' || github.head_ref == 'fix/mini-bolos-rojos-fin-frame-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/fix/mini-bolos-rojos-fin-frame-20261108'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -33,6 +38,8 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium webkit
+      - name: Iconos y recursos PWA
+        run: node tests/icon-smoke.cjs
       - name: Pruebas de lógica existentes
         run: |
           node tests/visual-lab-smoke.cjs

@@ -93,7 +93,7 @@ function home(){
  return [
   '<section class="bowling-home" aria-label="Inicio de Mi Bowling">',
   '<header class="bowling-home-header">',
-   '<button type="button" class="bowling-home-brand" data-target="inicio" onclick="go(this.dataset.target)" aria-label="Ir al inicio"><span class="bowling-home-mark" aria-hidden="true">🎳</span><span class="bowling-home-wordmark"><span>MI <strong>BOWLING</strong></span><small>ANALÍTICA</small></span></button>',
+   '<button type="button" class="bowling-home-brand" data-target="inicio" onclick="go(this.dataset.target)" aria-label="Ir al inicio"><span class="bowling-home-mark" aria-hidden="true"><img src="./icon-192.png?v=338icon1" alt="" width="58" height="58"></span><span class="bowling-home-wordmark"><span>MI <strong>BOWLING</strong></span><small>ANALÍTICA</small></span></button>',
    '<span class="bowling-home-device"><span aria-hidden="true" class="bowling-home-status-dot"></span>En tu dispositivo</span>',
    '<button type="button" class="bowling-home-settings" data-target="ajustes" onclick="go(this.dataset.target)" aria-label="Ajustes"><span aria-hidden="true">⚙</span><small>Ajustes</small></button>',
   '</header>',
