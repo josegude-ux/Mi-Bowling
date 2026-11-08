@@ -52,6 +52,9 @@
 <script>
 (function(){
 try{
+  activeId='sample-one';go('registro');
+  if(document.querySelectorAll('.registry-v4-mini-frame').length!==10)throw Error('Regresión en las diez miniaturas de anotación');
+  if(document.querySelectorAll('.pin-layout button.pin').length!==10)throw Error('Regresión en los diez bolos del registro');
   statPane='bolos';go('estadisticas');
   let map=document.getElementById('pinmap-screen');
   if(!map)throw Error('El mapa no aparece en estadísticas');
