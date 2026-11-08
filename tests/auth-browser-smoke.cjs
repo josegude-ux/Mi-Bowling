@@ -10,6 +10,7 @@ if(!chrome)for(const n of ['google-chrome','google-chrome-stable','chromium','ch
 assert.ok(chrome,'Chromium missing');
 const url=pathToFileURL(path.join(__dirname,'..','index.html')).href;
 const mock=pathToFileURL(path.join(__dirname,'auth-browser-mock.html')).href;
+const emailMock=pathToFileURL(path.join(__dirname,'auth-browser-email.html')).href;
 for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
  const result=cp.spawnSync(chrome,[
   '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
@@ -35,5 +36,15 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
  assert.ok(auth.stdout.includes('data-auth-mock-test="PASS"'),
   'Mock login '+width+': '+(auth.stdout.match(/data-auth-mock-error="([^"]*)"/)?.[1]||auth.stdout.slice(-1200)));
  console.log('OK · '+width+'x'+height+' · Login A/B mocked, offline denied, logout clears identity');
+ const forms=cp.spawnSync(chrome,[
+  '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
+  '--allow-file-access-from-files','--disable-extensions','--window-size='+width+','+height,
+  '--virtual-time-budget=7000','--dump-dom',emailMock
+ ],{encoding:'utf8',timeout:40000,maxBuffer:4*1024*1024});
+ assert.equal(forms.status,0,'Chromium email workflow '+width);
+ assert.ok(forms.stdout.includes('data-auth-email-ui="PASS"'),
+  'Email and recovery UI '+width+': '+(forms.stdout.match(/data-auth-email-error="([^"]*)"/)?.[1]||forms.stdout.slice(-1400)));
+ console.log('OK · '+width+'x'+height+' · Registration pending, confirmation resend, unconfirmed denied, recovery and new login');
+
 
 }
