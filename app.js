@@ -1,6 +1,6 @@
 'use strict';
 /* Mi Bowling · versión analítica local. Sin dependencias ni cuentas. */
-const APP_VERSION='3.3.5-prueba';
+const APP_VERSION='3.3.6-lab';
 const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1';
 const PINS=[1,2,3,4,5,6,7,8,9,10], RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
 const $=id=>document.getElementById(id);
@@ -241,16 +241,18 @@ function laneKeyboard(event,key){
  }
 }
 
-function registry(){const s=session();if(!s)return `<div class="card"><h2>Ninguna sesión abierta</h2><button class="btn primary" onclick="go('nueva')">Crear sesión</button></div>`;const g=game(s),n=next(g),lane=n.done?currentLane(g,10):currentLane(g,n.frame),completed=s.games.filter(complete).length;return `${head(s.title|| (s.type==='oficial'?'Competición oficial':'Entrenamiento'),`Partida ${s.games.length} · ${s.date}`,`<button class="btn outline" onclick="ligaReturn?ligaBack():go('historial')">${ligaReturn?'← Volver a Liga':'Salir'}</button>`)}
+function registry(){const s=session();if(!s)return `<div class="card"><h2>Ninguna sesión abierta</h2><button class="btn primary" onclick="go('nueva')">Crear sesión</button></div>`;const g=game(s),n=next(g),lane=n.done?currentLane(g,10):currentLane(g,n.frame),completed=s.games.filter(complete).length;return `<section class="registry-v4">${head(s.title|| (s.type==='oficial'?'Competición oficial':'Entrenamiento'),`Partida ${s.games.length} · ${s.date}`,`<button class="btn outline" onclick="ligaReturn?ligaBack():go('historial')">${ligaReturn?'← Volver a Liga':'Salir'}</button>`)}
  <div class="row wrap mb12"><span class="pill ${s.type==='oficial'?'orange':''}">${s.type==='oficial'?'🎳 Oficial':'👣 Entrenamiento'}</span><span class="pill gray">${lane.pair?`Par ${lane.pair.join('–')} · Pista ${lane.lane}`:lane.lane?`Pista ${lane.lane}`:'Pista no indicada'}</span></div>
 
- ${editPair?pairEditor(s,g,n):''}
- ${n.done?finishedGame(s,g,completed):`<div class="card"><div class="game-heading"><div><h1>Frame ${n.frame} · Tirada ${n.ball}</h1></div><span class="pill">${selection.length} en pie</span></div>
-${rackUI(n.available)}
- <button class="btn primary big block mt12" onclick="recordRoll()" id="quick-record">${selection.length===0?(n.available.length===10?'✕ Strike':'✓ Derribados todos'):`Registrar ${n.available.length-selection.length} derribados →`}</button>
- ${quickLayout==='large'?'':''}<div class="actions mt12 v25-actions ${quickLayout==='compact'?'quick-compact':quickLayout==='large'?'quick-large':''}" data-quickbar><button class="btn" onclick="fastRoll(true)">Todos en pie</button><button class="btn" onclick="fastRoll(false)">Todos derribados</button><button class="btn foul-btn" onclick="foulRoll()">F · Falta</button></div>
+ 
+  <div class="card compact-score registry-v4-score"><div class="card-head"><h2>Marcador · Partida ${s.games.length}</h2><span class="pill">${complete(g)?score(g):'Parcial '+score(g)} pts</span></div>${scoreStrip(g,n)}<div class="score-actions-row mt12">${lane.pair?`<span class="hint">${n.done?'Última pista':`Frame ${n.frame} ·`} ${lane.lane?`Pista ${lane.lane}`:'Sin pista'}. Alternancia por frame.</span>`:''}<div class="score-action-buttons"><button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button><button type="button" class="btn outline" onclick="undoRoll()" ${g.rolls.length?'':'disabled'} aria-label="Deshacer último lanzamiento">↶ Deshacer último lanzamiento</button></div></div></div>
+${editPair?pairEditor(s,g,n):''}
+${n.done?finishedGame(s,g,completed):`<div class="card registry-v4-roll"><div class="game-heading"><div><h1>Frame ${n.frame} · Tirada ${n.ball}</h1></div><span class="pill">${selection.length} en pie</span></div>
+<p class="registry-v4-pin-caption">Toca los <strong>bolos que quedan en pie</strong>.</p><div class="registry-v4-rack-wrap">${rackUI(n.available)}</div>
+ <button class="btn primary big block mt12 registry-v4-record" onclick="recordRoll()" id="quick-record">${selection.length===0?(n.available.length===10?'✕ Strike':'✓ Derribados todos'):`Registrar ${n.available.length-selection.length} derribados →`}</button>
+ ${quickLayout==='large'?'':''}<div class="actions mt12 v25-actions registry-v4-quick ${quickLayout==='compact'?'quick-compact':quickLayout==='large'?'quick-large':''}" data-quickbar><button class="btn" onclick="fastRoll(true)">Todos en pie</button><button class="btn" onclick="fastRoll(false)">Todos derribados</button><button class="btn foul-btn" onclick="foulRoll()">Falta</button><button type="button" class="btn" onclick="selection=[];render()">Limpiar</button></div>
  ${s.type==='entrenamiento'?`<label class="switch stats-checkbox"><input type="checkbox" ${g.includeStats!==false?'checked':''} onchange="toggleGameStats('${g.id}',this.checked)"> Incluir esta partida en estadísticas</label>`:''}
- <div class="card compact-score"><div class="card-head"><h2>Marcador · Partida ${s.games.length}</h2><span class="pill">${complete(g)?score(g):'Parcial '+score(g)} pts</span></div>${scoreStrip(g,n)}<div class="score-actions-row mt12">${lane.pair?`<span class="hint">${n.done?'Última pista':`Frame ${n.frame} ·`} ${lane.lane?`Pista ${lane.lane}`:'Sin pista'}. Alternancia por frame.</span>`:''}<div class="score-action-buttons"><button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button><button type="button" class="btn outline" onclick="undoRoll()" ${g.rolls.length?'':'disabled'} aria-label="Deshacer último lanzamiento">↶ Deshacer último lanzamiento</button></div></div></div>
+
  <div class="card" style="margin:17px 0 12px;background:#f5fbfc"><div class="card-head"><h3>🎳 Bola utilizada</h3><button class="textlink" onclick="go('bolas')">Gestionar bolas →</button></div>${ballSelect('roll-ball','ballId',s.currentBallId).replace('<select ','<select onchange="changeBall(this.value)" ')}
  ${laneVisual(s)}
  <div class="row" style="margin-top:10px"><h3 style="margin:0">Línea de juego</h3><span class="hint">Se recuerda para el siguiente tiro</span></div><div class="form-grid line-grid"><div><label class="field" for="approach">Approach · tabla</label><input id="approach" inputmode="decimal" class="input" placeholder="Ej. 25" value="${esc(s.currentLine.approach)}" onchange="changeLine('approach',this.value)"></div><div><label class="field" for="arrow">Flecha · tabla</label><input id="arrow" inputmode="decimal" class="input" placeholder="Ej. 15" value="${esc(s.currentLine.arrow)}" onchange="changeLine('arrow',this.value)"></div><div><label class="field" for="breakpoint">Breakpoint</label><input id="breakpoint" inputmode="decimal" class="input" placeholder="Opcional" value="${esc(s.currentLine.breakpoint)}" onchange="changeLine('breakpoint',this.value)"></div></div></div>
