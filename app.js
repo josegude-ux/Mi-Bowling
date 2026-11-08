@@ -1,6 +1,6 @@
 'use strict';
 /* Mi Bowling · versión analítica local. Sin dependencias ni cuentas. */
-const APP_VERSION='3.3.1';
+const APP_VERSION='3.3.2-lab';
 const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1';
 const PINS=[1,2,3,4,5,6,7,8,9,10], RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
 const $=id=>document.getElementById(id);
@@ -87,7 +87,34 @@ function metrics(a){return [{icon:'◉',label:'Media',value:a.games.length?fmt(a
 function tile(icon,label,value,detail=''){return `<div class="stat-tile"><div class="label"><span>${icon}</span> ${label}</div><div class="value">${value}</div>${detail?`<div class="detail">${detail}</div>`:''}</div>`}
 function premiumStat(icon,label,val,click='',small=''){return `<button type="button" class="premium-stat" ${click?`onclick="${click}"`:''} ${click?'':'disabled'}><span class="premium-stat-icon">${icon}</span><span class="premium-stat-text"><span class="premium-label">${label}</span><strong>${val}</strong>${small?`<small>${small}</small>`:''}</span></button>`}
 function premiumBars(a){let vals=a.totals.slice(-20);if(!vals.length)return `<div class="premium-empty-chart">Registra partidas de entrenamiento para ver tu evolución.</div>`;const max=300;return `<div class="premium-bars" aria-label="Puntuaciones de las últimas ${vals.length} partidas de entrenamiento">${vals.map((v,i)=>`<div class="premium-bar" title="Partida ${i+1}: ${v} puntos" style="height:${Math.max(5,v/max*100)}%"></div>`).join('')}</div>`}
-function home(){const t=aggregate('entrenamiento'),o=aggregate('oficial');return `<section class="v25-home"><div class="v25-hero"><div class="v25-hero-name">Mi Bowling</div><button class="v26-hero-settings" aria-label="Ajustes" onclick="go('ajustes')">⚙</button><button class="v25-start" onclick="go('nueva')">▶ &nbsp; Empezar partida</button></div><div class="v25-shortcuts"><button onclick="go('bolas')"><span>🎳</span>Mis bolas</button><button onclick="go('estadisticas')"><span>▥</span>Estadísticas</button><button onclick="go('historial')"><span>▤</span>Historial</button></div><div class="card" style="margin:10px 0"><button class="btn outline block" onclick="go('patrones')">💧 Patrones de aceitado</button></div><div class="v25-dashboard"><div><small>Media entrenamiento</small><strong>${t.games.length?fmt(t.avg):'—'}</strong><small>${t.allGames.filter(complete).length} partidas acumuladas</small></div><div><small>Media oficial</small><strong>${o.games.length?fmt(o.avg):'—'}</strong><small>${o.games.length} partidas</small></div></div><button class="v25-history-link" onclick="go('historial')">▤ Historial por jornadas <span>›</span></button><div class="premium-version">Versión instalada: ${APP_VERSION}</div></section>`}
+function home(){
+ const t=aggregate('entrenamiento'),o=aggregate('oficial');
+ return [
+  '<section class="bowling-home" aria-label="Inicio de Mi Bowling">',
+  '<header class="bowling-home-header">',
+   '<button type="button" class="bowling-home-brand" data-target="inicio" onclick="go(this.dataset.target)" aria-label="Ir al inicio"><span class="bowling-home-mark" aria-hidden="true">🎳</span><span class="bowling-home-wordmark"><span>MI <strong>BOWLING</strong></span><small>ANALÍTICA</small></span></button>',
+   '<span class="bowling-home-device"><span aria-hidden="true" class="bowling-home-status-dot"></span>En tu dispositivo</span>',
+   '<button type="button" class="bowling-home-settings" data-target="ajustes" onclick="go(this.dataset.target)" aria-label="Ajustes"><span aria-hidden="true">⚙</span><small>Ajustes</small></button>',
+  '</header>',
+  '<div class="bowling-home-intro"><div><span class="bowling-home-kicker">BIENVENIDO A MI BOWLING</span><h1>Tu juego, bajo control</h1><p>Registra, consulta y analiza tus partidas.</p></div></div>',
+  '<nav class="bowling-home-menu" aria-label="Menú principal">',
+   '<button type="button" class="bowling-home-module bowling-home-module-red" data-target="nueva" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true">🎳</span><strong>Registrar partida</strong><span class="bowling-home-module-desc">Entrenamientos y competiciones, lanzamiento a lanzamiento.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
+   '<button type="button" class="bowling-home-module bowling-home-module-blue" data-target="historial" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true">▤</span><strong>Consultar partidas</strong><span class="bowling-home-module-desc">Revisa tus jornadas, resultados y registros anteriores.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
+   '<button type="button" class="bowling-home-module bowling-home-module-gold" data-target="estadisticas" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true">▥</span><strong>Analizar estadísticas</strong><span class="bowling-home-module-desc">Descubre tu evolución y compara tus puntuaciones.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
+   '<button type="button" class="bowling-home-module bowling-home-module-purple" data-target="bolas" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true">◉</span><strong>Gestionar mis bolas</strong><span class="bowling-home-module-desc">Consulta y organiza tu equipamiento.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
+  '</nav>',
+  '<section class="bowling-home-tools" aria-label="Otras herramientas"><h2>Más herramientas</h2><div class="bowling-home-tool-grid">',
+   '<button type="button" data-target="patrones" onclick="go(this.dataset.target)"><span aria-hidden="true">💧</span><span>Patrones de aceitado</span><b aria-hidden="true">›</b></button>',
+   '<button type="button" data-target="liga" onclick="go(this.dataset.target)"><span aria-hidden="true">🏆</span><span>Liga Nacional</span><b aria-hidden="true">›</b></button>',
+  '</div></section>',
+  '<section class="bowling-home-stats" aria-label="Resumen de resultados"><h2>Tu rendimiento</h2><div class="bowling-home-stat-grid">',
+   '<div><span>Media entrenamiento</span><strong>'+(t.games.length?fmt(t.avg):'—')+'</strong><small>'+t.allGames.filter(complete).length+' partidas completadas</small></div>',
+   '<div><span>Media oficial</span><strong>'+(o.games.length?fmt(o.avg):'—')+'</strong><small>'+o.games.length+' partidas</small></div>',
+  '</div></section>',
+  '<footer class="bowling-home-footer">Datos almacenados en este dispositivo · Versión '+esc(APP_VERSION)+'</footer>',
+ '</section>'
+ ].join('');
+}
 let newMode='entrenamiento';let competitionFormat='habitual';function startWith(type){newMode=type;go('nueva')}
 function chooseSessionType(v){newMode=v;updateSessionFields()}
 function chooseCompetitionFormat(v){competitionFormat=v;updateSessionFields()}
