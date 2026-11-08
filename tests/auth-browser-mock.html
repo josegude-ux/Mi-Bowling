@@ -28,6 +28,7 @@
     return {data:{user:{id:activeUser,email:'a@example.test',email_confirmed_at:'2026-11-08T00:00:00Z'}},error:null};
    },
    async signUp(){throw Error('El LAB no crea cuentas')},
+   async resend(){throw Error('El LAB no envía correos reales')},
    async signOut(){signouts++;return {error:null}},
    async resetPasswordForEmail(){return {data:{},error:null}},
    async updateUser(){return {data:{},error:null}},
