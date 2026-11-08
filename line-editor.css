@@ -20,3 +20,10 @@
 .shot-controls>.hint{grid-column:1/-1;font-size:11px;line-height:1.5;margin:0}
 @media(max-width:640px){.shot-editor-layout{grid-template-columns:1fr}.shot-visual{width:100%;max-width:360px;margin:0 auto}.shot-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:340px){.shot-controls{grid-template-columns:1fr}}
+
+/* Corrección segura de líneas registradas, sin eliminar lanzamientos */
+.shot-log-edit{margin:8px 0 14px;padding:13px;border:1px solid #cde3eb;background:#f2f9fc;border-radius:14px}
+.shot-log-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+.shot-log-fields .shot-field .input{min-width:0}
+@media(max-width:600px){.shot-log-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.roll-log .list-item{flex-wrap:wrap}}
+@media(max-width:340px){.shot-log-fields{grid-template-columns:1fr}}
