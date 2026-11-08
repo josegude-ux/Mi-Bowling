@@ -123,6 +123,28 @@ document.body.dataset.labReady='true';
 <script src="stats-bolos.js?v=1"></script>
 <script src="profiles.js?v=1"></script>
 <script>
-if(document.body.dataset.labReady==='true')MiBowlingProfiles.init();
+if(document.body.dataset.labReady==='true'){
+ MiBowlingProfiles.init();
+ if(new URL(location.href).searchParams.has('smoke')){
+  const button=document.querySelector('[data-open-profile="p-demo-a"]');
+  if(button)button.click();
+  let count=0;
+  const check=()=>{
+   try{
+    if(++count>180)throw Error('La app no abrió el mapa tras seleccionar el perfil');
+    const screen=document.getElementById('pinmap-screen');
+    if(!screen){setTimeout(check,30);return;}
+    if(MiBowlingProfiles.current()?.id!=='p-demo-a')throw Error('Datos del perfil incorrecto');
+    if(document.querySelectorAll('.pinmap-pin').length!==10)throw Error('Formación incompleta');
+    if(document.documentElement.scrollWidth>innerWidth+3)throw Error('Desbordamiento en móvil');
+    document.body.dataset.demoSmoke='PASS';
+   }catch(e){
+    document.body.dataset.demoSmoke='FAIL';
+    document.body.dataset.demoError=String(e);
+    console.error(e);
+   }
+  };setTimeout(check,40);
+ }
+}
 </script>
 </body></html>
