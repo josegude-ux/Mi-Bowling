@@ -233,6 +233,44 @@ async function independentSessionsScenario(browser,engine,origin){
  }finally{await context.close()}
 }
 
+async function parallelTabsSelectionScenario(browser,engine,origin){
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+ const first=await context.newPage(),second=await context.newPage(),errors=[];
+ first.on('pageerror',e=>errors.push('A: '+e.message));
+ second.on('pageerror',e=>errors.push('B: '+e.message));
+ try{
+  await first.goto(origin,{waitUntil:'load'});
+  await first.evaluate(db=>{
+   localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));
+   localStorage.removeItem('mi-bowling-ball-selection-v1');
+  },fixture);
+  await second.goto(origin,{waitUntil:'load'});
+  await first.reload({waitUntil:'load'});
+  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').check();
+  assert.deepEqual((await getData(first)).picks.__next__,['lab-a'],'Pestaña A selecciona Alpha');
+  await second.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').check();
+  let data=await getData(second);
+  assert.deepEqual(data.picks.__next__,['lab-a','lab-b'],
+   'Pestaña B debe conservar la selección Alpha que añadió A y añadir Beta');
+  assert.deepEqual(data.db.balls,fixture.balls,'Dos pestañas no alteran fichas de bola');
+  assert.equal(data.db.sessions.length,1,'Dos pestañas no crean sesiones ficticias');
+  await first.reload({waitUntil:'load'});
+  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  assert.equal(await first.locator('.ball-session-toggle input:checked').count(),2,'Ambas marcas persisten tras recargar A');
+  await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').uncheck();
+  data=await getData(first);
+  assert.deepEqual(data.picks.__next__,['lab-b'],'Desmarcar Alpha no borra Beta de la otra pestaña');
+  await second.reload({waitUntil:'load'});
+  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  assert.equal(await second.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').isChecked(),true,
+   'La selección final Beta queda disponible en la segunda pestaña');
+  assert.deepEqual(errors,[],'Sin errores JavaScript en dos pestañas');
+  console.log('OK '+engine+' 390px: dos pestañas conservan selecciones del mismo arsenal y evitan sobreescritura');
+ }finally{await context.close()}
+}
+
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
@@ -380,7 +418,7 @@ async function run(browser,engine,width,origin){
  try{
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
    const browser=await type.launch({headless:true});
-   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin)}
+   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin)}
    finally{await browser.close()}
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
