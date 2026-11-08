@@ -166,6 +166,73 @@ async function deletionAndMalformedSelectionScenario(browser,engine,origin){
  }finally{await context.close()}
 }
 
+async function independentSessionsScenario(browser,engine,origin){
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+ const page=await context.newPage(),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ try{
+  const sample=JSON.parse(JSON.stringify(fixture));
+  const second=JSON.parse(JSON.stringify(sample.sessions[0]));
+  second.id='lab-otra-sesion';second.title='Segunda sesión ficticia';second.games[0].id='lab-otra-partida';
+  second.games[0].rolls=[];second.currentBallId='lab-b';
+  sample.sessions.push(second);
+  const scopes={'lab-historica':['lab-a'],'lab-otra-sesion':['lab-b'],'__next__':['lab-a']};
+  await page.goto(origin,{waitUntil:'load'});
+  await page.evaluate(({db,picks})=>{
+   localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));
+   localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify(picks));
+  },{db:sample,picks:scopes});
+  await page.reload({waitUntil:'load'});
+  await page.evaluate(()=>openSession('lab-historica'));
+  await ensureExtras(page);
+  assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),
+   ['Sin asignar','Marca LAB Alpha'],'La sesión A muestra solo Alpha');
+  assert.equal(await page.locator('#roll-ball').inputValue(),'','Una bola anterior fuera de selección no se adjudica por error');
+  await page.locator('#quick-record').click();
+  let data=await getData(page);
+  assert.equal(data.db.sessions[0].games[0].rolls[0].ballId,'lab-b','Tiro histórico de A inalterado');
+  assert.equal(data.db.sessions[0].games[0].rolls[1].ballId,'','Nueva tirada de A sin bola excluida');
+  await ensureExtras(page);
+  await page.locator('.registry-v4-extra .textlink').click();
+  assert.equal(await page.locator('.ball-card').filter({hasText:'Alpha'}).locator('input[type=checkbox]').isChecked(),true);
+  assert.equal(await page.locator('.ball-card').filter({hasText:'Beta'}).locator('input[type=checkbox]').isChecked(),false);
+  await page.locator('.ball-card').filter({hasText:'Beta'}).locator('input[type=checkbox]').check();
+  await page.getByRole('button',{name:/Volver al lanzamiento/}).click();
+  data=await getData(page);
+  assert.deepEqual(data.picks['lab-historica'],['lab-a','lab-b'],'A amplía solo su filtro');
+  assert.deepEqual(data.picks['lab-otra-sesion'],['lab-b'],'B preserva filtro anterior');
+  assert.deepEqual(data.picks.__next__,['lab-a'],'Próxima sesión independiente');
+  await page.evaluate(()=>openSession('lab-otra-sesion'));
+  await ensureExtras(page);
+  assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),
+   ['Sin asignar','Marca LAB Beta'],'B solo muestra Beta, no hereda Alpha de A');
+  assert.equal(await page.locator('#roll-ball').inputValue(),'lab-b','B conserva su bola inicial');
+  await page.locator('#quick-record').click();
+  data=await getData(page);
+  assert.equal(data.db.sessions[1].games[0].rolls[0].ballId,'lab-b','Tirada de B usa Beta');
+  assert.equal(data.db.sessions[0].games[0].rolls[0].ballId,'lab-b','Tirada histórica A sigue intacta');
+  await ensureExtras(page);
+  await page.locator('.registry-v4-extra .textlink').click();
+  await page.locator('.ball-card').filter({hasText:'Beta'}).locator('input[type=checkbox]').uncheck();
+  await page.getByRole('button',{name:/Volver al lanzamiento/}).click();
+  data=await getData(page);
+  assert.deepEqual(data.picks['lab-otra-sesion'],[],'B queda con selección vacía independiente');
+  assert.deepEqual(data.picks['lab-historica'],['lab-a','lab-b'],'B no altera selección A');
+  assert.deepEqual(data.picks.__next__,['lab-a'],'Ninguna sesión altera próximo juego');
+  await page.reload({waitUntil:'load'});
+  await page.evaluate(()=>openSession('lab-historica'));
+  await ensureExtras(page);
+  assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),
+   ['Sin asignar','Marca LAB Alpha','Marca LAB Beta'],'A mantiene sus dos opciones tras recarga');
+  await page.evaluate(()=>openSession('lab-otra-sesion'));
+  await ensureExtras(page);
+  assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),
+   ['Sin asignar'],'B mantiene selección vacía tras recarga');
+  assert.deepEqual(errors,[],'Sin errores JS en el cambio entre sesiones');
+  console.log('OK '+engine+' 390px: dos sesiones independientes, bola excluida sin adjudicar, registros y recarga');
+ }finally{await context.close()}
+}
+
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
@@ -313,7 +380,7 @@ async function run(browser,engine,width,origin){
  try{
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
    const browser=await type.launch({headless:true});
-   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin)}
+   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin)}
    finally{await browser.close()}
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
