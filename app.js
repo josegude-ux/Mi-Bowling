@@ -117,7 +117,20 @@ function home(){
  ].join('');
 }
 
-let calendarMonth=today().slice(0,7),calendarSelected=today();
+let calendarMonth=today().slice(0,7),calendarSelected=today(),calendarScope='todos';
+function officialCalendarEvents(){
+ return Array.isArray(globalThis.BOWLING_OFFICIAL_CALENDAR_2026_27)?globalThis.BOWLING_OFFICIAL_CALENDAR_2026_27:[];
+}
+function calendarEventOnDay(event,day){return event.start<=day&&event.end>=day;}
+function calendarOfficialInMonth(month){
+ const [year,m]=month.split('-').map(Number);
+ const last=month+'-'+String(new Date(Date.UTC(year,m,0)).getUTCDate()).padStart(2,'0');
+ return officialCalendarEvents().filter(event=>event.start<=last&&event.end>=month+'-01');
+}
+function setCalendarScope(value){
+ if(!['todos','gallego','nacional','personal'].includes(value))return;
+ calendarScope=value;render();
+}
 function changeCalendarMonth(delta){
  const parts=calendarMonth.split('-').map(Number);
  const d=new Date(Date.UTC(parts[0],parts[1]-1+delta,1));
@@ -131,37 +144,61 @@ function chooseCalendarDay(value){
  render();
 }
 function calendarView(){
- const parts=calendarMonth.split('-').map(Number),year=parts[0],month=parts[1];
+ const [year,month]=calendarMonth.split('-').map(Number);
  const daysInMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
  const first=(new Date(Date.UTC(year,month-1,1)).getUTCDay()+6)%7;
  const monthLabel=new Date(Date.UTC(year,month-1,1)).toLocaleDateString('es-ES',{month:'long',year:'numeric',timeZone:'UTC'});
  const records=db.sessions.filter(s=>typeof s.date==='string'&&s.date.slice(0,7)===calendarMonth);
+ const monthCompetitions=calendarOfficialInMonth(calendarMonth);
+ const filteredCompetitions=calendarScope==='personal'?[]:monthCompetitions.filter(e=>calendarScope==='todos'||e.category===calendarScope);
+ const showPersonal=calendarScope==='todos'||calendarScope==='personal';
  const dateCounts=new Map();
  for(const s of records)dateCounts.set(s.date,(dateCounts.get(s.date)||0)+1);
  const selected=calendarSelected&&calendarSelected.slice(0,7)===calendarMonth?calendarSelected:'';
- const selectedEvents=selected?records.filter(s=>s.date===selected):[];
- let html=head('Calendario','Consulta tus entrenamientos y competiciones por fecha.');
- html+='<section class="calendar-panel" aria-label="Calendario de partidas">';
+ const selectedEvents=selected&&showPersonal?records.filter(s=>s.date===selected):[];
+ const selectedCompetitions=selected?filteredCompetitions.filter(event=>calendarEventOnDay(event,selected)):[];
+ const gallego=monthCompetitions.filter(e=>e.category==='gallego').length,nacional=monthCompetitions.filter(e=>e.category==='nacional').length;
+ let html=head('Calendario','Consulta tus partidas y las competiciones gallegas y nacionales de la temporada 2026-2027.');
+ html+='<section class="calendar-panel" aria-label="Calendario de partidas y competiciones">';
  html+='<div class="calendar-monthbar"><button type="button" class="calendar-chevron" aria-label="Mes anterior" onclick="changeCalendarMonth(-1)">‹</button><h2>'+esc(monthLabel.charAt(0).toUpperCase()+monthLabel.slice(1))+'</h2><button type="button" class="calendar-chevron" aria-label="Mes siguiente" onclick="changeCalendarMonth(1)">›</button></div>';
  html+='<div class="calendar-summary">'+records.length+' sesión(es) registrada(s) este mes</div>';
+ html+='<p class="calendar-competition-summary">'+gallego+' gallegas · '+nacional+' nacionales · calendario provisional 2026-2027</p>';
+ html+='<div class="calendar-filters" role="group" aria-label="Mostrar calendario">';
+ for(const [value,label] of [['todos','Todos'],['gallego','Gallego'],['nacional','Nacional'],['personal','Mis partidas']]){
+  html+='<button type="button" class="calendar-filter'+(calendarScope===value?' active':'')+'" aria-pressed="'+(calendarScope===value?'true':'false')+'" onclick="setCalendarScope(\''+value+'\')">'+label+'</button>';
+ }
+ html+='</div>';
+ html+='<div class="calendar-legend" aria-label="Leyenda"><span><i class="calendar-dot-gallego"></i> Gallego</span><span><i class="calendar-dot-nacional"></i> Nacional</span><span><i class="calendar-dot-personal"></i> Mis partidas</span></div>';
  html+='<div class="calendar-weekdays">'+['L','M','X','J','V','S','D'].map(x=>'<span>'+x+'</span>').join('')+'</div><div class="calendar-grid">';
  for(let i=0;i<first;i++)html+='<span class="calendar-pad" aria-hidden="true"></span>';
  for(let day=1;day<=daysInMonth;day++){
-   const date=calendarMonth+'-'+String(day).padStart(2,'0'),count=dateCounts.get(date)||0;
-   const cls='calendar-day'+(date===selected?' selected':'')+(date===today()?' today':'')+(count?' has-events':'');
-   const label=day+' de '+monthLabel+(count?', '+count+' sesión(es)':' sin sesiones');
-   html+='<button type="button" class="'+cls+'" onclick="chooseCalendarDay('+esc(JSON.stringify(date))+')" aria-label="'+esc(label)+'" aria-pressed="'+(date===selected?'true':'false')+'"><span>'+day+'</span>'+(count?'<i aria-hidden="true"></i>':'')+'</button>';
+  const date=calendarMonth+'-'+String(day).padStart(2,'0');
+  const personal=showPersonal?(dateCounts.get(date)||0):0;
+  const official=filteredCompetitions.filter(e=>calendarEventOnDay(e,date));
+  const categories=[...new Set(official.map(e=>e.category))];
+  const total=personal+official.length;
+  const cls='calendar-day'+(date===selected?' selected':'')+(date===today()?' today':'')+(total?' has-events':'');
+  const details=[personal?personal+' partida(s)':'',official.length?official.length+' competición(es)':''].filter(Boolean).join(', ');
+  const label=day+' de '+monthLabel+(details?', '+details:' sin eventos');
+  const marks=(personal?'<i class="calendar-dot-personal" aria-hidden="true"></i>':'')+categories.map(c=>'<i class="calendar-dot-'+c+'" aria-hidden="true"></i>').join('');
+  html+='<button type="button" class="'+cls+'" onclick="chooseCalendarDay('+esc(JSON.stringify(date))+')" aria-label="'+esc(label)+'" aria-pressed="'+(date===selected?'true':'false')+'"><span>'+day+'</span>'+(marks?'<span class="calendar-markers">'+marks+'</span>':'')+'</button>';
  }
  html+='</div></section>';
- html+='<section class="calendar-agenda" aria-label="Partidas del día seleccionado"><h2>'+(selected?'Partidas del '+esc(selected.split('-').reverse().join('/')):'Selecciona un día')+'</h2>';
- if(!selected)html+='<p class="calendar-empty">Toca un día para consultar las partidas registradas.</p>';
- else if(!selectedEvents.length)html+='<p class="calendar-empty">No hay partidas registradas en esta fecha.</p>';
- else for(const session of selectedEvents){
+ html+='<section class="calendar-agenda" aria-label="Partidas y competiciones del día seleccionado"><h2>'+(selected?'Agenda del '+esc(selected.split('-').reverse().join('/')):'Selecciona un día')+'</h2>';
+ if(!selected)html+='<p class="calendar-empty">Toca un día para consultar partidas o competiciones.</p>';
+ else if(!selectedEvents.length&&!selectedCompetitions.length)html+='<p class="calendar-empty">No hay eventos de esta categoría en la fecha seleccionada.</p>';
+ for(const session of selectedEvents){
   const games=Array.isArray(session.games)?session.games:[],finished=games.filter(complete).length;
   const label=session.title||(session.type==='oficial'?'Competición':'Entrenamiento');
   html+='<article class="calendar-session"><div><strong>'+esc(label)+'</strong><small>'+esc(session.venue||'Bolera sin indicar')+' · '+games.length+' partida(s) · '+finished+' completa(s)</small></div><button class="btn outline" type="button" onclick="openCalendarSession('+esc(JSON.stringify(String(session.id)))+')">Abrir</button></article>';
  }
+ for(const event of selectedCompetitions){
+  const where=event.venue||'Sede no indicada en el PDF';
+  const span=event.start===event.end?event.start.split('-').reverse().join('/'):(event.start.split('-').reverse().join('/')+' – '+event.end.split('-').reverse().join('/'));
+  html+='<article class="calendar-official '+(event.category==='gallego'?'calendar-official-gallego':'calendar-official-nacional')+'"><div><span class="calendar-category">'+(event.category==='gallego'?'Gallego':'Nacional')+'</span><strong>'+esc(event.title)+'</strong><small>'+esc(span)+' · '+esc(where)+'</small></div><span class="calendar-provisional">Provisional</span></article>';
+ }
  html+='</section>';
+ html+='<p class="calendar-source">Fuente: Federación Galega de Bolos · calendario provisional de 17/07/2026. Las fechas pueden cambiar. No son inscripciones ni partidos creados en tu historial.</p>';
  html+='<div class="calendar-actions"><button type="button" class="btn outline" onclick="go(\'nueva\')">+ Nueva partida</button><button type="button" class="btn outline" onclick="go(\'bolas\')">Mis bolas</button></div>';
  return html;
 }
