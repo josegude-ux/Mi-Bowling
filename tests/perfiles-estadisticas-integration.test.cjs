@@ -93,6 +93,39 @@ function active(id,withApp){
  assert.notEqual(ctx.MiBowlingProfiles.pdfDatabase(),'mi-bowling-patrones-pdf-legacy');
  assert.equal(storage.getItem('mi-bowling-profile:'+a.id+':'+BASE),dbA);
  for(const [key,value] of originals)assert.equal(storage.getItem(key),value,'Original conservado '+key);
+ // Restauración real en la capa de 3.3.8: otros perfiles se rechazan antes de cualquier escritura.
+ const bKey=ctx.MiBowlingProfiles.storageKey(BASE);
+ const leagueKey=ctx.MiBowlingProfiles.storageKey('mi-bowling-liga-acta-v32');
+ const rosterKey=ctx.MiBowlingProfiles.storageKey('mi-bowling-liga-rosters-v33');
+ ctx.restoreInput=aBackup;
+ assert.throws(()=>vm.runInContext('restorePlayerData(restoreInput)',ctx),/otro jugador/i);
+ assert.equal(storage.getItem(bKey),null);
+ const bBackup={version:2,hand:'diestro',balls:[{id:'b-ball',brand:'B',model:'Prueba'}],patterns:[],
+   sessions:[{id:'restored-b',date:'2026-11-08',type:'entrenamiento',games:[]}],
+   localPlayer:ctx.MiBowlingProfiles.current(),
+   leagueNational:{matches:[{id:'league-b',players:[]}]},
+   leagueRosters:{own:['Jugador B ficticio']}
+ };
+ ctx.restoreInput=bBackup;
+ vm.runInContext('restorePlayerData(restoreInput)',ctx);
+ assert.match(storage.getItem(bKey),/restored-b/);
+ assert.equal(JSON.parse(storage.getItem(leagueKey)).matches[0].id,'league-b');
+ assert.ok(storage.getItem(rosterKey).includes('Jugador B ficticio'));
+ assert.equal(storage.getItem('mi-bowling-profile:'+a.id+':'+BASE),dbA);
+ // Simular cuota llena durante escritura de partidas: acta y roster deben revertirse.
+ const storedBefore=[storage.getItem(bKey),storage.getItem(leagueKey),storage.getItem(rosterKey)];
+ ctx.restoreInput={...bBackup, sessions:[{id:'b-new-due-to-quota',date:'2026-11-08',games:[]}],
+   leagueNational:{matches:[{id:'overwritten-league',players:[]}]},
+   leagueRosters:{own:['Otra lista']}
+ };
+ const originalSet=storage.setItem.bind(storage);
+ storage.setItem=(key,value)=>{if(key===bKey)throw Error('QuotaExceededError');return originalSet(key,value)};
+ try{
+  assert.throws(()=>vm.runInContext('restorePlayerData(restoreInput)',ctx),/datos anteriores se han restablecido/i);
+ }finally{storage.setItem=originalSet}
+ assert.deepEqual([storage.getItem(bKey),storage.getItem(leagueKey),storage.getItem(rosterKey)],storedBefore);
+ assert.equal(storage.getItem('mi-bowling-profile:'+a.id+':'+BASE),dbA);
+ console.log('OK · Restauración B verificada; rechazo A→B y rollback de acta y roster ante cuota');
  ctx=active('legacy',false);
  assert.equal(ctx.MiBowlingProfiles.validateRestore({version:2,sessions:[],balls:[]}),true,'Only legacy may restore unmarked old backups');
  ctx=active(null,false);
