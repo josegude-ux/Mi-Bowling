@@ -1,4 +1,4 @@
-name: MI BOWLING · Acceso correo y contraseña · LAB A4
+name: MI BOWLING · Auth correo + RLS ficticio · LAB A5
 on:
   push:
     branches:
@@ -15,6 +15,10 @@ on:
       - tests/auth-callback.test.cjs
       - tests/auth-callback-browser.test.cjs
       - tests/auth-webkit-a4.test.cjs
+      - tests/rls-mock-server.cjs
+      - tests/auth-three-users-rls-a5.test.cjs
+      - auth-private-repository.js
+      - docs/sql/BOWLING_AUTH_RLS_A1_REVIEW_ONLY.sql
       - auth-supabase-adapter.js
       - auth-private-repository.js
       - auth-boot.js
@@ -46,6 +50,9 @@ jobs:
           node --check auth-private-repository.js
           node --check auth-boot.js
           node --check tests/auth-lab.test.cjs
+          node --check tests/rls-mock-server.cjs
+          node --check tests/auth-three-users-rls-a5.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
           node --check tests/auth-callback.test.cjs
           node tests/auth-callback.test.cjs
           node --check tests/auth-email-flows.test.cjs
