@@ -62,6 +62,13 @@ async function runView(browser,engine,width,height,origin){
   await page.evaluate(()=>go('inicio'));
   assert(await page.locator('#bottom-nav').isVisible(),'Navegación conservada fuera del registro');
   assert.equal(await page.locator('.bowling-home-module').count(),3,'Tres tarjetas visuales de inicio');
+  assert.equal(await page.locator('.bowling-home-module-icon img').count(),3,'Tres iconos SVG 3D');
+  assert.equal(await page.locator('.bowling-home-tool-card').count(),3,'Tres tarjetas de herramientas homogéneas');
+  assert.equal(await page.locator('.bowling-home-tool-card .bowling-home-tool-copy small').count(),3,'Subtítulos de herramientas');
+  assert(await page.locator('.bowling-home-module-gold').evaluate(el=>getComputedStyle(el).backgroundImage.includes('home-estadisticas-limpio.jpg')),'Imagen de estadísticas sin cifras ficticias');
+  await page.waitForFunction(()=>Array.from(document.querySelectorAll('.bowling-home-module-icon img')).every(img=>img.complete&&img.naturalWidth>0),null,{timeout:10000});
+  assert((await page.locator('.bowling-home-module-icon img').evaluateAll(img=>img.every(x=>x.complete&&x.naturalWidth>0))),'Iconos cargados correctamente');
+
   assert.equal(await page.getByRole('button',{name:'Mis bolas',exact:true}).count(),1,'Mis bolas sigue accesible en herramientas');
   await page.getByRole('button',{name:'Calendario',exact:true}).click();
   await page.evaluate(()=>{calendarMonth='2026-11';calendarSelected='2026-11-08';render()});

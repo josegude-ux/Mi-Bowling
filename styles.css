@@ -368,7 +368,7 @@ body.home-screen .app-main{max-width:1440px}
 .bowling-home-module{min-height:224px;border-radius:24px;padding:22px 24px;background-repeat:no-repeat;background-size:cover,auto 110%;background-position:center,right center;border:1px solid #ffffff80;box-shadow:0 9px 23px #153e6724}
 .bowling-home-module-red{background-color:#9b0920;background-image:linear-gradient(105deg,#9d0826 0%,#9d0927f7 32%,#a5142fb4 55%,#9b093000 86%),url('./home-registro.jpg')}
 .bowling-home-module-blue{background-color:#063d77;background-image:linear-gradient(105deg,#093c77 0%,#073f7df0 32%,#0a6da9a3 56%,#065c9300 88%),url('./home-partidas.jpg')}
-.bowling-home-module-gold{background-color:#9b6305;background-image:linear-gradient(105deg,#a36b00 0%,#ae7600f0 32%,#c48607ae 56%,#89610b00 88%),url('./home-estadisticas.jpg')}
+.bowling-home-module-gold{background-color:#9b6305;background-image:linear-gradient(105deg,#a36b00 0%,#ae7600f0 32%,#c48607ae 56%,#89610b00 88%),url('./home-estadisticas-limpio.jpg')}
 .bowling-home-module-content{min-height:176px;max-width:68%}
 .bowling-home-module-icon{font-size:25px;min-width:32px;filter:drop-shadow(0 2px 3px #0018)}
 .bowling-home-module strong{font-size:clamp(22px,2.5vw,30px);line-height:1.12;text-wrap:balance;text-shadow:0 1px 3px #0003}
@@ -426,3 +426,35 @@ body.home-screen .app-main{max-width:1440px}
 .calendar-actions .btn{min-height:44px}
 @media(max-width:370px){.calendar-weekdays,.calendar-grid{gap:3px}.calendar-day{font-size:13px;min-height:44px}.calendar-session{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){.bottom-nav button.fab .nav-icon,.calendar-chevron{transition:none}}
+
+/* BOWLING · CP-019: iconografía 3D estática, fotografía limpia y herramientas consistentes */
+.bowling-home-module-icon{display:inline-grid;place-items:center;width:66px;height:66px;margin-bottom:7px;filter:none}
+.bowling-home-module-icon img{display:block;width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 4px 5px #07172c55);pointer-events:none}
+.bowling-home-module-gold{background-position:center,right center;background-size:cover,auto 115%}
+.bowling-home-tools>h2{border-left:4px solid #14b2e0;padding-left:12px;font-size:clamp(18px,2.5vw,23px);color:#0d3059}
+.bowling-home-tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.bowling-home-tool-grid button.bowling-home-tool-card{display:flex;align-items:center;gap:12px;min-height:96px;padding:13px 15px;border-radius:19px;border:1px solid #cce5f9;background:linear-gradient(145deg,#fff 10%,#eef7fe 100%);box-shadow:0 6px 16px #1b56921f;color:#12395e;transition:transform .16s ease,box-shadow .16s ease}
+.bowling-home-tool-grid button.bowling-home-tool-card:hover{transform:translateY(-2px);box-shadow:0 9px 19px #16477927}
+.bowling-home-tool-grid .bowling-home-tool-icon{flex:0 0 55px;display:grid;place-items:center;width:55px;height:55px;border-radius:15px;background:linear-gradient(155deg,#fff,#c5e6ff);border:1px solid #d5ebfc;box-shadow:inset 0 2px 3px #fff,0 3px 7px #0c498432;font-size:34px;line-height:1;filter:drop-shadow(0 2px 2px #0b386526)}
+.bowling-home-tool-grid .bowling-home-tool-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+.bowling-home-tool-copy strong{font-size:clamp(13px,1.6vw,16px);line-height:1.2;color:#0b315c;font-weight:850}
+.bowling-home-tool-copy small{font-size:11px;line-height:1.35;color:#64809b}
+.bowling-home-tool-grid button .bowling-home-tool-arrow{flex:0 0 32px;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid #bedaf1;color:#1768a6;background:#fff;font-size:23px}
+.bowling-home-tool-grid button.bowling-home-tool-card:focus-visible{outline:3px solid #157dc8;outline-offset:2px}
+@media(max-width:760px){
+ .bowling-home-module-icon{width:55px;height:55px;margin-bottom:6px}
+ .bowling-home-module-icon img{width:54px;height:54px}
+ .bowling-home-tool-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .bowling-home-tool-grid button.bowling-home-tool-card{min-height:90px;padding:11px;gap:8px}
+ .bowling-home-tool-grid .bowling-home-tool-icon{flex-basis:43px;width:43px;height:43px;font-size:29px}
+ .bowling-home-tool-copy strong{font-size:13px}
+ .bowling-home-tool-copy small{font-size:10px}
+ .bowling-home-tool-grid button .bowling-home-tool-arrow{flex-basis:25px;width:25px;height:25px;font-size:19px}
+ .bowling-home-tool-grid button.bowling-home-tool-card:last-child:nth-child(odd){grid-column:1/-1}
+}
+@media(max-width:370px){
+ .bowling-home-tool-grid{grid-template-columns:1fr}
+ .bowling-home-tool-grid button.bowling-home-tool-card:last-child:nth-child(odd){grid-column:auto}
+ .bowling-home-tool-grid button.bowling-home-tool-card{min-height:72px;padding:10px 14px}
+}
+@media(prefers-reduced-motion:reduce){.bowling-home-tool-grid button.bowling-home-tool-card{transition:none}}
