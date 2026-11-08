@@ -168,6 +168,55 @@ async function runOffline(browser,origin){
  }finally{await context.close();}
 }
 
+
+async function runBackupRoundTrip(browser,origin){
+ // Exclusivamente fixture sintética y contexto nuevo: NUNCA usa datos reales del iPhone.
+ const ctx=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block',acceptDownloads:true});
+ const page=await ctx.newPage();
+ const original={
+  ...fixture,
+  balls:[{id:'LAB-BOLA',brand:'Prueba',model:'Bola ficticia',weight:'15 lb',kind:'Reactiva'}],
+  patterns:[{id:'LAB-PATRON',name:'Patrón ficticio'}],
+  sessions:[{...fixture.sessions[0],currentBallId:'LAB-BOLA',
+   games:[{...fixture.sessions[0].games[0],
+    rolls:[{frame:1,ball:1,pins:[1,2,3,4,5,6,7,8,9,10],ballId:'LAB-BOLA',
+     line:{approach:'20',arrow:'15',breakpoint:'8'},lane:null,pair:null,foul:false}]}]}]
+ };
+ try{
+  await page.goto(origin,{waitUntil:'load'});
+  await page.evaluate(obj=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(obj)),original);
+  await page.reload({waitUntil:'load'});
+  await page.evaluate(()=>go('ajustes'));
+  const downloadEvent=page.waitForEvent('download');
+  await page.getByRole('button',{name:/Exportar copia/}).click();
+  const download=await downloadEvent;
+  const saved=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
+  assert.equal(saved.version,2,'Versión de esquema exportada');
+  assert.equal(saved.sessions[0].games[0].rolls.length,1,'Tirada exportada');
+  assert.equal(saved.balls[0].id,'LAB-BOLA','Bola exportada');
+  assert.equal(saved.patterns[0].id,'LAB-PATRON','Patrón exportado');
+  assert(saved.leagueNational && saved.leagueRosters,'Información de Liga incluida');
+  await page.evaluate(()=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify({version:2,hand:'diestro',balls:[],patterns:[],sessions:[]}));});
+  await page.reload({waitUntil:'load'});
+  await page.evaluate(()=>go('ajustes'));
+  page.once('dialog',async d=>d.accept());
+  await page.locator('#restore-file').setInputFiles({
+   name:'MI_BOWLING_copia_ficticia.json',
+   mimeType:'application/json',
+   buffer:Buffer.from(JSON.stringify(saved))
+  });
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')||'{}').sessions?.length===1);
+  const restored=await dbFromPage(page);
+  assert.equal(restored.sessions[0].id,'LAB-SESION','Sesión restaurada');
+  assert.equal(restored.sessions[0].games[0].rolls.length,1,'Tirada restaurada');
+  assert.equal(restored.sessions[0].games[0].rolls[0].pins.length,10,'Bolos restaurados');
+  assert.equal(restored.balls[0].id,'LAB-BOLA','Material restaurado');
+  assert.equal(restored.patterns[0].id,'LAB-PATRON','Patrón restaurado');
+  assert.equal(restored.sessions[0].currentLine.breakpoint,'8','Línea restaurada');
+  console.log('OK exportación y restauración JSON con fixture sintética, sin datos reales.');
+ }finally {await ctx.close();}
+}
+
 (async()=>{
  let browsers=[];let passed=0;
  try {
@@ -178,10 +227,10 @@ async function runOffline(browser,origin){
    for(const [w,h] of [[320,640],[390,844],[768,1024],[1280,900]]){
     await runView(browser,engine,w,h,origin);passed++;
    }
-   if(engine==='chromium')await runOffline(browser,origin);
+   if(engine==='chromium'){await runOffline(browser,origin);await runBackupRoundTrip(browser,origin);}
   }
   assert.equal(passed,8);
-  console.log('PASS 8 combinaciones de navegador/viewport y comprobación PWA offline.');
+  console.log('PASS 8 combinaciones, PWA offline y copia JSON exportada/restaurada con datos ficticios.');
  }catch(e){console.error('FAIL Browser Lab:',e.stack||e);process.exitCode=1;}
  finally {for(const b of browsers)await b.close();if(server.listening)await close();}
 })();
