@@ -128,7 +128,7 @@ function dom(){
  failBackend=false;
  // Fail when the identity has not confirmed email.
  user={...user,email_confirmed_at:null};
- await assert.rejects(auth.getVerifiedUser(),/confirmar el correo/);
+ await assert.rejects(auth.getVerifiedUser(),/sin confirmar/);
  user={...user,email_confirmed_at:'2026-11-08T12:00:00Z'};
  await assert.rejects(liveGate.signup('jugadora@example.test','Password123456','Password123456'),/altas reales están deshabilitadas/);
  assert.equal(await liveGate.requestReset('jugadora@example.test'),true);
