@@ -108,7 +108,9 @@ async function main(){
  damagedPins.personal.sessions[0].games[0].rolls[0].pins=[1,2,3];
  await assert.rejects(verify(damagedPins,{ownerId:A,cryptoSource:crypto.webcrypto}),/Estadísticas o totales alterados/);
  const damagedPdf=structuredClone(pkgA);
- damagedPdf.files[0].bytesBase64=damagedPdf.files[0].bytesBase64.replace('UE', 'UU');
+ const damagedBytes=Buffer.from(damagedPdf.files[0].bytesBase64,'base64');
+ damagedBytes[damagedBytes.length-4]^=1; // guaranteed single-bit binary tampering
+ damagedPdf.files[0].bytesBase64=damagedBytes.toString('base64');
  await assert.rejects(verify(damagedPdf,{ownerId:A,cryptoSource:crypto.webcrypto}),/PDF|Checksum/);
  const missingPdf=structuredClone(pkgA);missingPdf.files=[];
  await assert.rejects(verify(missingPdf,{ownerId:A,cryptoSource:crypto.webcrypto}),/Falta PDF/);
