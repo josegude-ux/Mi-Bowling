@@ -34,7 +34,7 @@
       }]
     }]
   };
-  const data=new Map([['mi-bowling-analitica-v2',JSON.stringify(db)]]);
+  const data=new Map([['mi-bowling-profile:fixture-a:mi-bowling-analitica-v2',JSON.stringify(db)]]);
   const store={
     getItem:key=>data.has(String(key))?data.get(String(key)):null,
     setItem:(key,val)=>data.set(String(key),String(val)),
@@ -43,7 +43,7 @@
   };
   Object.defineProperty(window,'localStorage',{configurable:true,value:store});
   let user='Jugador A';
-  window.MiBowlingProfiles={current:()=>({name:user,id:user})};
+  window.MiBowlingProfiles={current:()=>({name:user,id:'fixture-a'}),storageKey:key=>'mi-bowling-profile:fixture-a:'+key,pdfDatabase:()=> 'mi-bowling-patrones-pdf-fixture-a',isLegacy:()=>false,validateRestore:()=>true};
   window.__pinlab={getUser:()=>user,setUser:next=>{user=next;}};
 })();
 </script>
