@@ -16,6 +16,7 @@ on:
       - tests/app-line-integration.test.cjs
       - tests/browser-smoke.cjs
       - tests/lane-browser.html
+      - lab/demo.html
       - .github/workflows/line-editor-lab-tests.yml
 permissions:
   contents: read
