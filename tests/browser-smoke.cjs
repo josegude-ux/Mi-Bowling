@@ -23,6 +23,7 @@ if(!exe){
 assert.ok(exe,'Chrome/Chromium no encontrado: no se puede completar la validación en navegador');
 const fixture=pathToFileURL(path.join(__dirname,'lane-browser.html')).href;
 const demo=pathToFileURL(path.join(__dirname,'..','lab','demo.html')).href+'?smoke=1';
+const fullApp=pathToFileURL(path.join(__dirname,'..','lab','app.html')).href+'?smoke=1';
 const shotFolder=path.join(__dirname,'artifacts');fs.mkdirSync(shotFolder,{recursive:true});
 for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
   const args=[
@@ -45,6 +46,15 @@ for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
   assert.equal(sample.status,0,'Falló la demo interactiva a '+width+'px: '+String(sample.stderr).slice(-700));
   assert.ok(sample.stdout.includes('data-demo-test="PASS"'),'La demo no supera sus pruebas a '+width+'px: '+sample.stdout.slice(-1200));
   console.log('OK · Demo interactiva '+width+'x'+height+' · Ejemplos, tiros ficticios y reinicio sin persistencia');
+  const full=cp.spawnSync(exe,[
+    '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
+    '--hide-scrollbars','--disable-extensions','--allow-file-access-from-files',
+    '--window-size='+width+','+height,'--virtual-time-budget=6000','--dump-dom',fullApp
+  ],{encoding:'utf8',timeout:30000,maxBuffer:4*1024*1024});
+  assert.equal(full.status,0,'Falló el inicio de MI BOWLING LAB '+width+'px: '+String(full.stderr).slice(-700));
+  assert.ok(full.stdout.includes('data-lab-isolated="true"'),'Almacenamiento temporal no aislado '+width+'px: '+full.stdout.slice(-1200));
+  assert.ok(full.stdout.includes('data-full-app-test="PASS"'),'La app LAB no supera prueba integrada '+width+'px: '+full.stdout.slice(-1400));
+  console.log('OK · MI BOWLING LAB completo '+width+'x'+height+' · sesión ficticia y registro seguro');
   const screenshot=path.join(shotFolder,'pista-3d-'+width+'.png');
   const shot=cp.spawnSync(exe,[
     '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
