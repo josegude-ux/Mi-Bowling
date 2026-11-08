@@ -51,6 +51,17 @@ function create(client){
    result(await client.auth.resend(payload),'Reenviar confirmación');
    return true;
   },
+  async verifyLinkToken(type,tokenHash){
+   // Email templates generate these two permitted link actions only.
+   if(type!=='email'&&type!=='recovery')throw Error('Tipo de enlace no permitido');
+   if(typeof tokenHash!=='string'||!/^[a-f0-9]{64}$/i.test(tokenHash))
+    throw Error('Enlace sin token válido');
+   if(typeof client.auth.verifyOtp!=='function')throw Error('El proveedor no admite enlaces de verificación');
+   const data=result(await client.auth.verifyOtp({type,token_hash:tokenHash}),'Verificar enlace');
+   if(!data.session?.access_token)throw Error('El servidor no confirmó una sesión temporal');
+   // Verify that token really corresponds to a user by calling getUser() afterwards.
+   return Object.freeze({verifiedByServer:true});
+  },
   async requestReset(email,redirectTo){
    const options=redirectTo?{redirectTo}:{};
    result(await client.auth.resetPasswordForEmail(email,options),'Recuperación de contraseña');
