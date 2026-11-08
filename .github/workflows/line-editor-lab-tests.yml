@@ -11,6 +11,7 @@ on:
       - line-editor.js
       - line-editor.css
       - tests/line-editor.test.cjs
+      - tests/app-line-integration.test.cjs
       - .github/workflows/line-editor-lab-tests.yml
 permissions:
   contents: read
@@ -32,4 +33,6 @@ jobs:
           node --check line-editor.js
           node --check sw.js
           node --check tests/line-editor.test.cjs
+          node --check tests/app-line-integration.test.cjs
           node tests/line-editor.test.cjs
+          node tests/app-line-integration.test.cjs
