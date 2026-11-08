@@ -32,6 +32,8 @@ async function checkReader(page,base){
  await page.goto(base+'/lab/migracion-a7.html');
  await page.addScriptTag({url:base+'/auth-idb-pdf-reader-lab.js'});
  const result=await page.evaluate(async()=>{
+  let stage='reader init';
+  try{
   const fact=window.MiBowlingIdbPdfReaderLAB,M=window.MiBowlingMigrationLAB;
   const contents=str=>new TextEncoder().encode('%PDF-1.4\n1 0 obj\n<< /Name ('+str+') >>\nendobj\n%%EOF');
   function makeDb(name,entries){
@@ -51,9 +53,11 @@ async function checkReader(page,base){
   const db='mi-bowling-patrones-pdf-'+fixture;
   const binary=contents('Aceite-A7');
   await makeDb(db,[['oil',new Blob([binary],{type:'application/pdf'})]]);
+  stage='reader open existing fixture';
   const beforeList=typeof indexedDB.databases==='function'?(await indexedDB.databases()).map(x=>x.name):null;
   const reader=fact.create({indexedDB,sourceProfileId:fixture});
   const bytes=await reader.readPdf('oil');
+  stage='first PDF read';
   if(!(bytes instanceof Uint8Array)||bytes.length!==binary.length||
     bytes.some((v,i)=>v!==binary[i]))throw Error('WebKit Blob bytes differ');
   const missing=await reader.readPdf('absent-id');
@@ -65,6 +69,7 @@ async function checkReader(page,base){
      balls:[{id:'ball-a7'}],patterns:[{id:'oil',pdfName:'oil.pdf'}]}):null}
   };
   const owner='11111111-1111-4111-8111-111111111111';
+  stage='migration capture';
   const pkg=await M.capture({storage,readPdf:id=>reader.readPdf(id),sourceProfileId:fixture,
     ownerId:owner,confirmOwnerId:owner,acknowledge:M.ACK});
   await M.verify(pkg,{ownerId:owner});
@@ -76,6 +81,7 @@ async function checkReader(page,base){
   // Nonexistent source must not persist a newly created DB via IDB.open.
   const nonexistent='mi-bowling-patrones-pdf-p-a7-missing';
   const absentReader=fact.create({indexedDB,sourceProfileId:'p-a7-missing'});
+  stage='missing database abort';
   const absentPdf=await absentReader.readPdf('oil');
   if(absentPdf!==null)throw Error('Missing database reported existing data');
   const afterList=typeof indexedDB.databases==='function'?(await indexedDB.databases()).map(x=>x.name):null;
@@ -92,6 +98,7 @@ async function checkReader(page,base){
   // Legacy fallback: scoped DB absent; original can be read using known legacy name.
   await makeDb('mi-bowling-patrones-pdf',[['oil-old',new Blob([contents('OldLegacy')],{type:'application/pdf'})]]);
   const legacy=fact.create({indexedDB,sourceProfileId:'legacy'});
+  stage='legacy reader fallback';
   const old=await legacy.readPdf('oil-old');
   if(!old||String.fromCharCode(...old.slice(0,5))!=='%PDF-')throw Error('Legacy fallback failed');
   legacy.close();
@@ -103,7 +110,9 @@ async function checkReader(page,base){
   reopen.close();
   return {bytes:binary.length,pkgSha:pkg.sha256,
    sourceOnly:db,createdMissing:false,legacyFallback:true,score:237};
+  }catch(e){return{failed:true,stage,name:e?.name,message:e?.message,stack:e?.stack,asString:String(e)}}
  });
+ if(result.failed)throw Error('WebKit IDB stage '+result.stage+': '+JSON.stringify(result));
  assert.equal(result.score,237);
  console.log('OK · WebKit IndexedDB read-only: Blob bytes, SHA-256, old DB fallback, missing/invalid PDF, no new DB');
  return result;
