@@ -86,7 +86,17 @@ async function afterLeave(page,base,before){
 }
 async function login(page,letter){
  await page.locator(select(letter)).click();
- const got=await waitOpened(page,letter);
+ const got=await waitOpened(page,letter).catch(async error=>{
+  const diagnostic=await page.evaluate(()=>({
+   auth:document.querySelector('#auth-status')?.textContent,
+   safety:document.querySelector('#lab-safety-status')?.textContent,
+   lab:document.querySelector('#lab-private-summary')?.textContent,
+   state:window.MiBowlingIntegrationI2?.getState(),
+   i3:!!window.MiBowlingScoreSyncI3,
+   scriptCount:document.querySelectorAll('script[src*="score-sync-i3"]').length
+  })).catch(e=>({diagnosticError:String(e)}));
+  throw Error(error.message+' · LAB diagnostics '+JSON.stringify(diagnostic));
+ });
  assert.equal(got.auth.verified,true);
  assert.equal(got.auth.opened,true);
  assert.equal(got.isolation.hasIndexedDB,false);
