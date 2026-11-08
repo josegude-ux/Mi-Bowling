@@ -9,7 +9,7 @@ const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 new Function(app);
-const start=app.indexOf('function registryPinMini(');
+const start=app.indexOf('function registryFrameMissedPins(');
 const end=app.indexOf('function changeBall(',start);
 assert(start>=0 && end>start,'Función de registro localizado');
 const PINS=[1,2,3,4,5,6,7,8,9,10],RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
