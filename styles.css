@@ -113,3 +113,75 @@ body.home-screen .app-main{padding-top:12px}
 .liga34-balance {margin:16px 0 8px;padding:15px;border:1px solid rgba(20,180,200,.34);border-radius:14px;background:rgba(12,126,153,.08)}
 .liga34-balance h3 {margin:0 0 10px;font-size:1rem}
 .liga34-balance p {margin:8px 0;line-height:1.5}
+
+
+/* MI BOWLING · LAB visual R1: solo pantalla de inicio; estilo de módulos INVENTA. */
+body.home-screen{background:#f2f7fc}
+body.home-screen .app-main{max-width:1440px;padding:18px clamp(14px,3vw,32px) calc(100px + env(safe-area-inset-bottom))}
+.bowling-home{color:#102747;max-width:100%}
+.bowling-home-header{display:flex;align-items:center;gap:16px;justify-content:space-between;min-height:96px;padding:12px clamp(14px,2vw,28px);background:#fff;border:1px solid #d8e5f2;border-bottom:3px solid #b9d7ea;border-radius:24px;box-shadow:0 10px 22px rgba(23,64,113,.10)}
+.bowling-home-brand{background:transparent;color:#0c2b54;display:flex;align-items:center;gap:10px;padding:0;text-align:left}
+.bowling-home-mark{display:grid;place-items:center;line-height:1;font-size:37px;width:58px;height:58px;background:linear-gradient(145deg,#e8f5ff,#bddfff);border-radius:15px}
+.bowling-home-wordmark{display:flex;flex-direction:column;font-size:clamp(21px,2.7vw,32px);font-weight:650;letter-spacing:-.8px;line-height:1}
+.bowling-home-wordmark strong{font-weight:900}
+.bowling-home-wordmark small{font-size:9px;letter-spacing:2.2px;color:#367bb3;margin-top:5px;font-weight:800}
+.bowling-home-device{margin-left:auto;font-size:12px;font-weight:750;color:#346858;display:flex;gap:6px;align-items:center;white-space:nowrap}
+.bowling-home-status-dot{width:8px;height:8px;background:#1f9a66;border-radius:50%}
+.bowling-home-settings{width:73px;min-width:73px;min-height:68px;border-radius:16px;background:#f8fbff;border:1px solid #d8e5ef;box-shadow:0 3px 10px #19487513;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#173a67}
+.bowling-home-settings>span{font-size:27px;line-height:1.1}
+.bowling-home-settings small{font-size:11px;font-weight:800;margin-top:3px}
+.bowling-home-intro{padding:25px 8px 22px;background:radial-gradient(ellipse at 97% 55%,rgba(59,133,201,.08),transparent 47%)}
+.bowling-home-kicker{font-size:11px;color:#316aa4;font-weight:850;letter-spacing:1.2px}
+.bowling-home-intro h1{font-size:clamp(24px,3vw,35px);letter-spacing:-.8px;line-height:1.1;margin:8px 0}
+.bowling-home-intro p{font-size:clamp(13px,1.2vw,15px);color:#5e7490;margin:0}
+.bowling-home-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.bowling-home-module{position:relative;overflow:hidden;isolation:isolate;text-align:left;display:block;width:100%;min-height:228px;border-radius:24px;border:1px solid #b9cada44;padding:24px 24px 20px;box-shadow:0 12px 21px rgba(20,51,83,.12);background-size:cover;background-position:center;transition:transform .15s,box-shadow .15s;color:#fff}
+.bowling-home-module:focus-visible{outline:3px solid #2c8dff;outline-offset:3px}
+.bowling-home-module:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(19,54,94,.18)}
+.bowling-home-module-red{background-image:linear-gradient(90deg,rgba(156,4,27,.97),rgba(143,5,28,.81) 54%,rgba(75,5,19,.10)),url('./portada-opcion-2.jpg');background-position:50% 45%}
+.bowling-home-module-blue{background-image:linear-gradient(90deg,rgba(9,51,99,.98),rgba(8,52,109,.8) 54%,rgba(5,36,67,.15)),url('./premium-bowling-hero.jpg');background-position:50% 48%}
+.bowling-home-module-gold{background-image:linear-gradient(90deg,rgba(142,91,4,.97),rgba(143,95,4,.80) 54%,rgba(100,45,4,.15)),url('./premium-bowling-hero.jpg');background-position:70% 70%}
+.bowling-home-module-purple{background-image:linear-gradient(90deg,rgba(76,39,124,.97),rgba(76,42,123,.80) 54%,rgba(45,28,84,.15)),url('./portada-opcion-2.jpg');background-position:70% 54%}
+.bowling-home-module-content{display:flex;flex-direction:column;align-items:flex-start;min-height:176px;max-width:78%}
+.bowling-home-module-icon{display:grid;place-items:center;font-size:27px;line-height:1.2;margin-bottom:8px;min-width:32px}
+.bowling-home-module strong{font-size:clamp(22px,2vw,29px);line-height:1.08;letter-spacing:-.5px;max-width:315px;font-weight:850}
+.bowling-home-module-desc{font-size:14px;line-height:1.45;margin-top:11px;max-width:360px}
+.bowling-home-module-arrow{width:46px;height:46px;display:grid;place-items:center;border:2px solid #fff;border-radius:50%;font-size:30px;line-height:1;margin-top:auto;padding-bottom:4px}
+.bowling-home-tools,.bowling-home-stats{margin-top:26px}
+.bowling-home-tools h2,.bowling-home-stats h2{font-size:17px;margin:0 0 12px;font-weight:850}
+.bowling-home-tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bowling-home-tool-grid button{min-height:72px;display:flex;gap:10px;align-items:center;text-align:left;padding:14px 20px;background:#fff;border:1px solid #d9e7f4;border-radius:18px;color:#103b66;box-shadow:0 4px 14px rgba(30,66,108,.06);font-weight:750}
+.bowling-home-tool-grid button>span:first-child{font-size:27px}
+.bowling-home-tool-grid button>span:nth-child(2){flex:1}
+.bowling-home-tool-grid button>b{font-size:24px}
+.bowling-home-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bowling-home-stat-grid>div{display:grid;gap:5px;padding:18px 20px;background:#fff;border:1px solid #d9e7f4;border-radius:18px}
+.bowling-home-stat-grid span{color:#61768d;font-size:12px;font-weight:750}
+.bowling-home-stat-grid strong{font-size:29px;font-variant-numeric:tabular-nums;color:#102b52}
+.bowling-home-stat-grid small{color:#627c98;font-size:11px}
+.bowling-home-footer{color:#69809b;font-size:11px;text-align:center;padding:26px 0 6px}
+@media(max-width:760px){
+ body.home-screen .app-main{padding:11px 12px calc(90px + env(safe-area-inset-bottom))}
+ .bowling-home-header{min-height:83px;padding:10px 12px;border-radius:21px;gap:8px}
+ .bowling-home-mark{width:42px;height:42px;font-size:27px;border-radius:11px}
+ .bowling-home-wordmark{font-size:23px}
+ .bowling-home-wordmark small{font-size:8px}
+ .bowling-home-device{display:none}
+ .bowling-home-settings{min-width:60px;width:60px;min-height:60px}
+ .bowling-home-intro{padding:19px 6px}
+ .bowling-home-menu{grid-template-columns:1fr;gap:14px}
+ .bowling-home-module{min-height:190px;padding:20px 20px 17px;border-radius:23px}
+ .bowling-home-module-content{min-height:151px;max-width:80%}
+ .bowling-home-module strong{font-size:clamp(22px,5vw,28px)}
+ .bowling-home-module-desc{font-size:13px;margin-top:9px}
+ .bowling-home-module-arrow{width:43px;height:43px}
+ .bowling-home-tools,.bowling-home-stats{margin-top:24px}
+}
+@media(max-width:400px){
+ .bowling-home-wordmark{font-size:20px}
+ .bowling-home-mark{width:38px;height:38px;font-size:24px}
+ .bowling-home-module{min-height:184px}
+ .bowling-home-module-content{max-width:83%}
+ .bowling-home-tool-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.bowling-home-module{transition:none}}
