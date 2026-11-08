@@ -34,7 +34,11 @@ try{
   throw Error('El aislamiento de datos no es compatible con este navegador');
  // A new PWA must NEVER be registered by the integration harness. The main
  // application is only injected after an explicit fictitious login.
- const blockedSW=Object.freeze({register:async()=>{throw Error('PWA LAB bloqueada')}});
+ const blockedSW=Object.freeze({
+  controller:null,
+  addEventListener(){/* no-op: main's controllerchange listener remains isolated */},
+  register:async()=>{throw Error('PWA LAB bloqueada')}
+ });
  Object.defineProperty(root.navigator,'serviceWorker',{configurable:true,value:blockedSW});
  if(root.navigator.serviceWorker!==blockedSW)throw Error('No se pudo bloquear Service Worker');
  // app.js uses storage APIs and navigator.serviceWorker checks; both are fenced.
