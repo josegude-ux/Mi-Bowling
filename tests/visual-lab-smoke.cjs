@@ -73,7 +73,7 @@ const scoreIndex=registrySource.indexOf('${scoreStrip(g,n)}');
 const pairIndex=registrySource.indexOf('onclick="editPair=!editPair;render()"');
 const undoIndex=registrySource.indexOf('onclick="undoRoll()"');
 assert(scoreIndex>=0&&pairIndex>scoreIndex&&undoIndex>pairIndex&&undoIndex-pairIndex<300,'Deshacer junto a Cambiar par');
-assert.equal((registrySource.match(/onclick="undoRoll\\(\\)"/g)||[]).length,1,'Un único botón Deshacer');
+assert.equal(registrySource.split('onclick="undoRoll()"').length-1,1,'Un único botón Deshacer');
 assert(registrySource.includes("g.rolls.length?'':'disabled'"),'Deshacer inactivo sin tiradas');
 assert(registrySource.includes("score-action-buttons"),'Ambos botones agrupados en marcador');
 assert(registrySource.includes("${lane.pair?`<button"),'Cambiar par sigue siendo condicional');
