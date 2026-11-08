@@ -83,19 +83,24 @@ const Bview=api.html(B,{profileName:'Jugador B'});
 assert.ok(Bview.includes('Sin datos'));
 assert.ok(!Bview.includes('3 de 7'),'No stats from other user must leak');
 assert.ok(!/\b(?:localStorage|indexedDB|sessionStorage)\s*(?:\[|\.)|fetch\s*\(/.test(source),'Statistics module must not read global data or network');
-assert.ok(app.includes("MiBowlingPinStats.html(a,"),'Analysis must be fed filtered active player aggregate');
-assert.ok(app.includes("pinAnalysisCombined(a)"),'Old pin analyses retained');
-assert.ok(app.includes("const APP_VERSION='3.3.8-LAB-perfiles-estadisticas-int1'"),'Live app version unchanged');
-for(const path of ['stats-bolos.css?v=1','stats-bolos.js?v=1','profiles.js?v=1','profiles.css?v=1']){
- assert.ok(html.includes(path),'Resource missing in HTML: '+path);
- assert.ok(sw.includes("'./"+path+"'"),'Offline resource missing: '+path);
-}
-assert.ok(html.indexOf('stats-bolos.js?v=1')<html.indexOf('profiles.js?v=1'));
-assert.ok(!html.includes('<script src="app.js'), 'App may only be loaded after player selection');
-assert.ok(profiles.includes("script.src = 'app.js?v=338-int-perfiles-stats1'"));
-assert.ok(sw.includes("'./app.js?v=338-int-perfiles-stats1'"));
-assert.ok(app.includes("MiBowlingProfiles.storageKey('mi-bowling-analitica-v2')"));
-console.log('OK · 4 modes, fractions and 10 bowling pins; no false percentages');
-console.log('OK · 1st: 13/20, 2nd: 4/8, single 1/1, combinations 3/7 + 1/3 conversions');
-console.log('OK · player A/B isolation, XSS escaping, source immutable, previous views retained');
-console.log('OK · responsive module resources are precached by LAB service worker');
+
+const lab=fs.readFileSync(path.join(root,'lab/integracion-main-auth-cp020.html'),'utf8');
+const bridge=fs.readFileSync(path.join(root,'lab/integracion-main-auth-cp020.js'),'utf8');
+assert.ok(app.includes('function aggregate('),'Main CP-020 keeps real aggregate');
+assert.ok(app.includes('function calendarView()'),'Main CP-020 keeps calendar');
+assert.ok(app.includes('Liga Nacional'),'Main CP-020 keeps league');
+assert.ok(bridge.includes('MiBowlingPinStats.html(a,'),
+ 'LAB visual stats use the filtered aggregate from the current main player');
+assert.ok(bridge.includes('MiBowlingProfiles.storageKey('),
+ 'Old local profiles are import sources, not parallel authentication');
+assert.ok(lab.includes('stats-bolos.css?v=r1')&&lab.includes('stats-bolos.js?v=r1'));
+assert.ok(lab.includes('profiles.js?v=i1')&&lab.includes('auth-lab.js?v=a8'));
+assert.ok(lab.indexOf('stats-bolos.js?v=r1')<lab.indexOf('lab/integracion-main-auth-cp020.js?v=i2'));
+assert.ok(!lab.includes('<script src="app.js'),
+ 'Main CP-020 app is only loaded after the fake email login');
+assert.ok(!sw.includes('integracion-main-auth-cp020'),
+ 'LAB must not be precached by the published main service worker');
+assert.ok(!/MiBowlingProfiles\.init\(\)/.test(bridge),'PIN must not authenticate real players');
+console.log('OK · 4 visual pin modes, fractions, 10 pins, XSS and zero-contamination stats');
+console.log('OK · actual current-main aggregate is wired to an isolated UUID verified in LAB');
+console.log('OK · no PR12 app/index/SW replacement, no PWA precache or PIN-based login');
