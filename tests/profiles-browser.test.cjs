@@ -12,6 +12,7 @@ if(!chrome){
 }
 assert.ok(chrome,'No hay Chromium para validar el selector');
 const fixture=pathToFileURL(path.join(__dirname,'profiles-browser.html')).href;
+const demo=pathToFileURL(path.join(__dirname,'..','lab','perfiles.html')).href;
 for(const [w,h] of [[390,844],[768,1024],[1440,900]]){
  // La derivación WebCrypto del PIN se verifica en Node; --dump-dom finaliza demasiado pronto
  // para usarlo como verificación fiable de tareas criptográficas asíncronas en Chromium.
@@ -27,3 +28,13 @@ for(const [w,h] of [[390,844],[768,1024],[1440,900]]){
   console.log('OK · '+w+' × '+h+' · Selector, '+mode+', partida nueva y legado intacto');
  }
 }
+
+const probe=cp.spawnSync(chrome,[
+  '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
+  '--allow-file-access-from-files','--window-size=390,844',
+  '--virtual-time-budget=3000','--dump-dom',demo
+],{encoding:'utf8',timeout:20000,maxBuffer:4*1024*1024});
+assert.equal(probe.status,0,'No se pudo cargar la vista previa LAB');
+assert.ok(probe.stdout.includes('data-lab-safe="true"')&&probe.stdout.includes('id="player-show-create"'),
+  'La vista previa LAB no muestra el selector seguro: '+probe.stdout.slice(0,750));
+console.log('OK · Vista previa manual de perfiles LAB con almacenamiento temporal');
