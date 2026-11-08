@@ -33,3 +33,7 @@ jobs:
           node --check sw.js
           node --check tests/profiles-lab.test.cjs
           node tests/profiles-lab.test.cjs
+      - name: Comprobar selector y partidas con Chrome real
+        run: |
+          node --check tests/profiles-browser.test.cjs
+          node tests/profiles-browser.test.cjs
