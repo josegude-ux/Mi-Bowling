@@ -185,3 +185,37 @@ body.home-screen .app-main{max-width:1440px;padding:18px clamp(14px,3vw,32px) ca
  .bowling-home-tool-grid{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){.bowling-home-module{transition:none}}
+
+
+/* MI BOWLING · LAB visual R2: registro interactivo de tablas, preserva entradas existentes. */
+.lane-visual{background:linear-gradient(135deg,#f7fbff,#eef6fd);border:1px solid #d2e4f5;border-radius:18px;padding:14px;margin:16px 0 12px;color:#133450}
+.lane-visual-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 13px}
+.lane-visual-title h3{font-size:16px;margin:0 0 4px;font-weight:850;letter-spacing:-.25px;color:#122f53}
+.lane-visual-title p{font-size:12px;color:#58758e;margin:0;line-height:1.4}
+.lane-visual-tag{font-weight:800;font-size:10px;border:1px solid #b9d6ee;background:#e6f1fe;border-radius:20px;color:#24649e;padding:7px 10px;white-space:nowrap}
+.lane-visual-layout{display:grid;grid-template-columns:minmax(0,1fr) 208px;align-items:start;gap:12px}
+.lane-visual-scene{padding:6px;background:#0e2a47;border-radius:16px;overflow:hidden;box-shadow:0 7px 20px rgba(14,42,71,.19)}
+.lane-graphic{display:block;width:100%;height:auto;max-height:565px;border-radius:13px;touch-action:pan-y;user-select:none}
+.lane-hit-area{cursor:crosshair}
+.lane-hit-area:focus-visible{outline:none;stroke:#fff;stroke-width:3;stroke-dasharray:8 4}
+.lane-visual-sidebar{min-width:0;display:flex;flex-direction:column;gap:9px}
+.lane-visual-help{font-size:12px;line-height:1.52;color:#54708a;padding:12px;border-radius:12px;background:#fff;border:1px solid #dae8f4}
+.lane-visual-help strong{color:#123b6a}
+.lane-control-row{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #d9e7f2;border-radius:13px;padding:10px 8px}
+.lane-control-indicator{width:10px;height:10px;border-radius:50%;flex:none}
+.lane-control-name{font-size:11px;font-weight:800;color:#244b74;line-height:1.22;flex:1;min-width:0}
+.lane-control-name small{display:block;color:#708ca5;font-weight:700;font-size:10px;margin-top:4px}
+.lane-control-nudge{display:grid;place-items:center;flex:none;border:1px solid #c5d9ec;background:#edf5fc;color:#13518a;font-size:21px;font-weight:900;min-width:32px;height:36px;padding:0;border-radius:10px}
+.lane-control-nudge:active{background:#d3eaff}
+.lane-visual-caption{font-size:10px;color:#70869c;line-height:1.5;margin:6px 3px 0}
+@media(max-width:680px){
+ .lane-visual{padding:11px;margin:12px 0;border-radius:15px}
+ .lane-visual-layout{grid-template-columns:1fr}
+ .lane-graphic{max-height:475px}
+ .lane-visual-sidebar{gap:8px}
+ .lane-control-row{padding:9px 11px}
+ .lane-control-name{font-size:12px}
+ .lane-control-nudge{min-width:40px;min-height:42px;font-size:23px}
+ .lane-visual-help{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.lane-control-nudge{transition:none}}
