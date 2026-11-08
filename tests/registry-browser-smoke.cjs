@@ -75,7 +75,9 @@ async function runView(browser,engine,width,height,origin){
    const b=el.getBoundingClientRect(); return [b.width,b.height];
   });
   assert(sizes[0]>=44 && sizes[1]>=44,'Bolos cómodos al tacto');
-  assert.equal(await page.locator('.registry-v4-quick .btn').count(),4,'Cuatro atajos');
+  assert.equal(await page.locator('.registry-v4-quick .btn').count(),3,'Tres atajos');
+  assert.equal(await page.getByRole('button',{name:'Todos derribados',exact:true}).count(),0,'Atajo redundante eliminado');
+  assert(await page.locator('#quick-record').getByText('Strike').isVisible(),'Strike sigue disponible como acción principal');
   const actions = await page.locator('.registry-v4-quick .btn').evaluateAll(buttons=>buttons.map(el=>{
    const b=el.getBoundingClientRect();return {x:b.x,y:b.y,height:b.height,scroll:el.scrollWidth,width:el.clientWidth};
   }));
@@ -156,6 +158,8 @@ async function runMissedFrame(browser,engine,origin){
   await page.locator('#quick-record').click();
   assert.equal(await first.locator('.missed').count(),0,'Primera tirada: sin rojo');
   assert.equal(await first.locator('.standing').count(),2,'Primera tirada: dos bolos negros');
+  assert((await page.locator('#quick-record').textContent()).includes('Semipleno'),'Segunda tirada ofrece Semipleno');
+  assert(!(await page.locator('#quick-record').textContent()).includes('Derribados todos'),'Segunda tirada sin nombre antiguo');
   assert.equal(await first.locator('[data-pin="9"].standing').count(),1,'Bolo 9 en pie negro');
   assert.equal(await first.locator('[data-pin="10"].standing').count(),1,'Bolo 10 en pie negro');
   await page.getByRole('button',{name:/Bolo 10:/}).click();
@@ -188,7 +192,7 @@ async function runOffline(browser,origin){
   await page.waitForTimeout(350);
   assert.equal(navigations.length,1,'No debe recargar al tomar el control por primera vez');
   const cacheNames=await page.evaluate(()=>caches.keys());
-  assert(cacheNames.some(x=>x.includes('v3-3-8-prueba')),'Caché versionada disponible');
+  assert(cacheNames.some(x=>x.includes('v3-3-9-lab')),'Caché versionada disponible');
   await page.evaluate(db=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));},fixture);
   await context.setOffline(true);
   await page.reload({waitUntil:'load'});

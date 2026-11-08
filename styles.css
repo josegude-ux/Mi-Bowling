@@ -275,7 +275,7 @@ body.home-screen .app-main{max-width:1440px;padding:18px clamp(14px,3vw,32px) ca
 .registry-v4 .pin.selected{background:#135dad;border-color:#0e4c94;color:#fff;box-shadow:0 3px 0 #0d4781}
 .registry-v4 .pin.unavailable{opacity:.17}
 .registry-v4-record{background:linear-gradient(105deg,#0e66c3,#084f9c)!important;font-size:15px!important;border-radius:13px}
-.registry-v4-quick{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;margin-top:10px}
+.registry-v4-quick{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin-top:10px}
 .registry-v4-quick .btn{font-size:12px!important;min-width:0;min-height:45px;padding:9px 4px!important;line-height:1.2}
 .registry-v4 .stats-checkbox{margin-top:13px}
 .registry-v4-extra,.registry-v4-history{border:1px solid #d6e5f3;border-radius:15px;margin-top:14px;background:#fff;box-shadow:0 3px 11px rgba(18,57,94,.035);overflow:hidden}
@@ -352,3 +352,5 @@ body.registry-screen .app-main{padding-bottom:calc(26px + env(safe-area-inset-bo
 .registry-v4-mini-legend .registry-v4-legend-red{background:#cf1839}
 @media(max-width:580px){.registry-v4 .registry-v4-mini-dot.standing{width:4.5px;height:4.5px}}
 @media(max-width:350px){.registry-v4 .registry-v4-mini-dot.standing{width:4px;height:4px}}
+/* LAB: con tres atajos, el último ocupa la segunda fila completa a 320 px. */
+@media(max-width:370px){.registry-v4-quick .btn:last-child{grid-column:1/-1}}
