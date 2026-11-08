@@ -154,7 +154,7 @@ async function run(){
  assert.ok(emailState.signedOut>=1);
  assert.equal(emailState.options.detectSessionInUrl,false);
  assert.equal(emailState.options.autoRefreshToken,false);
- assert.equal(emailState.options.storage.getItem('anything'),null);
+ assert.equal(await mail.evaluate(()=>window.__fakeAuthA4.options.storage.getItem('anything')),null);
  assert.equal(await pwaPage.evaluate(()=>sessionStorage.getItem('mi-bowling:fake-original-pkce')),'PWA_PKCE_ONLY');
  await mail.screenshot({path:path.join(out,'webkitiPhone13ProMax-email.png'),fullPage:true});
  await checkNavigation(mail,base);
