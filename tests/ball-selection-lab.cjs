@@ -26,6 +26,68 @@ async function ensureExtras(page){
  const node=page.locator('details.registry-v4-extra');
  if((await node.getAttribute('open'))===null)await node.locator('summary').click();
 }
+
+async function officialScenario(browser,engine,origin){
+ const context=await browser.newContext({
+  viewport:{width:430,height:932},isMobile:true,hasTouch:true,deviceScaleFactor:3,serviceWorkers:'block'
+ });
+ const page=await context.newPage(),errors=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ try{
+  const sample=JSON.parse(JSON.stringify(fixture));
+  sample.patterns.push({id:'patron-lab',name:'Aceite ficticio LAB',length:'42',maker:'LAB',ratio:'',volume:'',notes:'',pdfName:'',createdAt:'2026-01-01'});
+  await page.goto(origin,{waitUntil:'load'});
+  await page.evaluate(db=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db)),sample);
+  await page.reload({waitUntil:'load'});
+  await page.getByRole('button',{name:'Nueva',exact:true}).click();
+  await page.locator('#s-type').selectOption('oficial');
+  await page.locator('#s-date').fill('2026-11-21');
+  await page.locator('#s-venue').fill('Bolera oficial sintética');
+  await page.locator('#s-title').fill('Competición ficticia');
+  await page.locator('#s-notes').fill('Mantener anotaciones oficiales');
+  await page.locator('#s-patternId').selectOption('patron-lab');
+  await page.locator('#lane-pair').fill('7');
+  await page.locator('#lane-start').selectOption('8');
+  await page.locator('#s-ball').selectOption('lab-b');
+  await page.getByRole('button',{name:/Elegir bolas para esta sesión/}).click();
+  await page.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').check();
+  await page.getByRole('button',{name:/Volver a empezar partida/}).click();
+  assert.equal(await page.locator('#s-type').inputValue(),'oficial','Modalidad oficial preservada');
+  assert.equal(await page.locator('#s-date').inputValue(),'2026-11-21','Fecha preservada');
+  assert.equal(await page.locator('#s-venue').inputValue(),'Bolera oficial sintética','Bolera preservada');
+  assert.equal(await page.locator('#s-patternId').inputValue(),'patron-lab','Patrón preservado');
+  assert.equal(await page.locator('#lane-pair').inputValue(),'7','Par preservado');
+  assert.equal(await page.locator('#lane-start').inputValue(),'8','Pista preservada');
+  assert.equal(await page.locator('#s-ball').inputValue(),'lab-b','Bola inicial preservada');
+  await page.locator('#newSessionForm button[type=submit]').click();
+  let data=await getData(page),s=data.db.sessions.at(-1);
+  assert.equal(data.db.sessions.length,2,'Solo una nueva sesión oficial');
+  assert.equal(s.type,'oficial','Tipo de competición correcto');
+  assert.equal(s.patternId,'patron-lab','Patrón correcto');
+  assert.equal(s.pattern,'Aceite ficticio LAB','Nombre del patrón correcto');
+  assert.deepEqual(s.games[0].pair,[7,8],'Par correcto');
+  assert.equal(s.games[0].startLane,8,'Pista de salida correcta');
+  assert.equal(s.currentBallId,'lab-b','Bola inicial oficial correcta');
+  assert.deepEqual(data.picks[s.id],['lab-b'],'Filtro de sesión oficial correcto');
+  await page.evaluate(()=>togglePin(1));
+  assert.deepEqual(await page.evaluate(()=>selection),[1],'Bolo señalado antes del cambio de selección');
+  await ensureExtras(page);
+  await page.locator('.registry-v4-extra .textlink').click();
+  await page.getByRole('button',{name:/Volver al lanzamiento/}).click();
+  assert.deepEqual(await page.evaluate(()=>selection),[1],'Bolos en pie no se pierden al elegir bolas');
+  await page.locator('#quick-record').click();
+  data=await getData(page);
+  const roll=data.db.sessions.at(-1).games[0].rolls[0];
+  assert.equal(roll.pins.length,9,'Se registran nueve bolos derribados');
+  assert.equal(roll.ballId,'lab-b','Lanzamiento mantiene la bola seleccionada');
+  assert.deepEqual(data.db.balls,fixture.balls,'Competiciones no modifican fichas del arsenal');
+  assert.deepEqual(errors,[],'Ningún error JS en WebKit/Chromium móvil');
+  const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));
+  assert(overflow.scroll<=overflow.width+2,'Sin desplazamiento horizontal en 430px');
+  console.log('OK '+engine+' iPhone 430x932: competición, patrón, borrador y bolos preservados');
+ }finally{await context.close()}
+}
+
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
@@ -134,6 +196,19 @@ async function run(browser,engine,width,origin){
   assert.deepEqual(data.picks.__next__,[],'Reactivar no vuelve a marcar bola automáticamente');
   assert.deepEqual(data.picks[sid],['lab-b'],'Reactivar no restaura una selección que fue retirada');
   assert.equal(await page.locator('.ball-session-toggle input:checked').count(),0,'Bola reactivada exige nuevo check explícito');
+  // La importación JSON nunca debe reutilizar una selección de otra instalación.
+  assert((await getData(page)).picks[sid]?.length>0,'Fixture conserva selección antes de importar');
+  await page.locator('#restore-file').setInputFiles({
+   name:'restauracion-lab.json',mimeType:'application/json',
+   buffer:Buffer.from(JSON.stringify(fixture))
+  });
+  data=await getData(page);
+  assert.equal(data.db.sessions.length,1,'Restauración reemplaza las sesiones ficticias anteriores');
+  assert.equal(data.db.sessions[0].games[0].rolls[0].ballId,'lab-b','Restauración preserva bola de tiro histórico');
+  assert.deepEqual(data.db.balls,fixture.balls,'Restauración conserva los campos existentes de las bolas');
+  assert.deepEqual(data.picks,{},'Restauración borra solo las selecciones temporales');
+  assert.equal(await page.evaluate(()=>selectedBallsFor('lab-historica')),null,'Sesión restaurada sin filtro previo');
+  await page.evaluate(()=>go('bolas'));
   await page.evaluate(()=>{
    const original=Storage.prototype.setItem;
    Storage.prototype.setItem=function(key,value){
@@ -156,7 +231,7 @@ async function run(browser,engine,width,origin){
  try{
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
    const browser=await type.launch({headless:true});
-   try{for(const size of [390,1280])await run(browser,name,size,origin)}
+   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin)}
    finally{await browser.close()}
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
