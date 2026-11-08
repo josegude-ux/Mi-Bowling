@@ -294,6 +294,45 @@ async function parallelTabsSelectionScenario(browser,engine,origin){
  }finally{await context.close()}
 }
 
+async function concurrentRollDeselectionScenario(browser,engine,origin){
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+ const first=await context.newPage(),second=await context.newPage(),errors=[];
+ first.on('pageerror',e=>errors.push('A: '+e.message));
+ second.on('pageerror',e=>errors.push('B: '+e.message));
+ try{
+  const data=JSON.parse(JSON.stringify(fixture));
+  await first.goto(origin,{waitUntil:'load'});
+  await first.evaluate(db=>{
+   localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));
+   localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify({'lab-historica':['lab-b']}));
+  },data);
+  await second.goto(origin,{waitUntil:'load'});
+  await first.reload({waitUntil:'load'});
+  await first.evaluate(()=>openSession('lab-historica'));
+  await second.evaluate(()=>openSession('lab-historica'));
+  await ensureExtras(first);
+  await ensureExtras(second);
+  assert.equal(await first.locator('#roll-ball').inputValue(),'lab-b','Bola Beta activa en registro de A');
+  await first.evaluate(()=>togglePin(1));
+  assert.deepEqual(await first.evaluate(()=>selection),[1],'Bolo 1 señalado sin registrar');
+  await second.locator('.registry-v4-extra .textlink').click();
+  await second.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').uncheck();
+  assert.deepEqual((await getData(second)).picks['lab-historica'],[],'B deja selección vacía');
+  assert.equal(await first.locator('#roll-ball').inputValue(),'lab-b','Selector A abierto mantiene valor anterior sin perder bolos');
+  assert.deepEqual(await first.evaluate(()=>selection),[1],'Tirada A conserva selección física de bolos');
+  await first.locator('#quick-record').click();
+  let snapshot=await getData(first);
+  assert.deepEqual(snapshot.db.sessions[0].games[0].rolls.map(r=>r.ballId),['lab-b',''],
+   'El lanzamiento nuevo nunca se adjudica a la bola desmarcada en B');
+  assert.deepEqual(snapshot.db.sessions[0].games[0].rolls[1].pins,[2,3,4,5,6,7,8,9,10],
+   'Registrar tras cambio conserva los bolos derribados');
+  assert.equal(snapshot.db.sessions[0].currentBallId,'','La bola excluida deja de ser bola actual');
+  assert.deepEqual(snapshot.db.balls,fixture.balls,'Fichas de bolas originales conservadas');
+  assert.deepEqual(errors,[],'Sin errores JS entre dos pestañas con registro abierto');
+  console.log('OK '+engine+' 390px: desmarcar bola desde otra pestaña no contamina lanzamiento abierto');
+ }finally{await context.close()}
+}
+
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
@@ -441,7 +480,7 @@ async function run(browser,engine,width,origin){
  try{
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
    const browser=await type.launch({headless:true});
-   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin)}
+   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin);await concurrentRollDeselectionScenario(browser,name,origin)}
    finally{await browser.close()}
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
