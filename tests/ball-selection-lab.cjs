@@ -80,6 +80,28 @@ async function officialScenario(browser,engine,origin){
   const roll=data.db.sessions.at(-1).games[0].rolls[0];
   assert.equal(roll.pins.length,9,'Se registran nueve bolos derribados');
   assert.equal(roll.ballId,'lab-b','Lanzamiento mantiene la bola seleccionada');
+  // Una misma sesión puede contener varias partidas; la selección debe pertenecer a
+  // la sesión, no a la primera partida ni al estado visual anterior.
+  for(let i=0;i<12;i++)await page.getByRole('button',{name:'Todos derribados'}).click();
+  assert.equal(await page.getByText('Partida terminada').count(),1,'Partida ficticia terminada');
+  await page.getByRole('button',{name:/Siguiente partida/}).click();
+  await page.getByRole('button',{name:/Empezar siguiente partida/}).click();
+  data=await getData(page);
+  assert.equal(data.db.sessions.at(-1).games.length,2,'Segunda partida dentro de la misma sesión');
+  assert.deepEqual(data.picks[s.id],['lab-b'],'Filtro permanece asociado a la sesión');
+  assert.equal(data.db.sessions.at(-1).games[0].rolls[0].ballId,'lab-b','Primer juego mantiene bola histórica');
+  await ensureExtras(page);
+  assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),['Sin asignar','Marca LAB Beta'],'Nuevo juego hereda filtro de sesión');
+  await page.locator('.registry-v4-extra .textlink').click();
+  await page.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').uncheck();
+  await page.getByRole('button',{name:/Volver al lanzamiento/}).click();
+  await ensureExtras(page);
+  assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),['Sin asignar'],'Lista vacía permite continuar sin bola');
+  await page.locator('#quick-record').click();
+  data=await getData(page);
+  assert.equal(data.db.sessions.at(-1).games[1].rolls[0].ballId,'','Tiro con lista vacía se registra sin bola');
+  assert.equal(data.db.sessions.at(-1).games[0].rolls[0].ballId,'lab-b','Desmarcar no reescribe primer juego');
+  assert.deepEqual(data.picks[s.id],[],'Selección vacía se mantiene por sesión');
   assert.deepEqual(data.db.balls,fixture.balls,'Competiciones no modifican fichas del arsenal');
   assert.deepEqual(errors,[],'Ningún error JS en WebKit/Chromium móvil');
   const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));
