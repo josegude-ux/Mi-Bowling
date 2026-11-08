@@ -22,7 +22,8 @@ if(!exe){
 }
 assert.ok(exe,'Chrome/Chromium no encontrado: no se puede completar la validación en navegador');
 const fixture=pathToFileURL(path.join(__dirname,'lane-browser.html')).href;
-for(const [width,height] of [[390,844],[1440,900]]){
+const shotFolder=path.join(__dirname,'artifacts');fs.mkdirSync(shotFolder,{recursive:true});
+for(const [width,height] of [[390,844],[768,1024],[1440,900]]){
   const args=[
     '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
     '--hide-scrollbars','--disable-extensions','--allow-file-access-from-files',
@@ -33,5 +34,14 @@ for(const [width,height] of [[390,844],[1440,900]]){
   const html=p.stdout||'';
   assert.equal(p.status,0,'Chrome/Chromium falló ('+width+'px): '+String(p.stderr).slice(-1200));
   assert.ok(html.includes('data-result="PASS"'),'Prueba fallida ('+width+'px): '+html.slice(-1900)+'\n'+String(p.stderr).slice(-900));
-  console.log('OK · Chrome/Chromium '+width+'x'+height+' · Marcadores, entradas y ancho adaptable');
+  console.log('OK · Chrome/Chromium '+width+'x'+height+' · 3D, cámara, zoom, sincronización 2D y ancho adaptable');
+  const screenshot=path.join(shotFolder,'pista-3d-'+width+'.png');
+  const shot=cp.spawnSync(exe,[
+    '--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',
+    '--hide-scrollbars','--disable-extensions','--allow-file-access-from-files',
+    '--window-size='+width+','+height,'--virtual-time-budget=5000',
+    '--screenshot='+screenshot,fixture
+  ],{encoding:'utf8',timeout:30000,maxBuffer:1024*1024});
+  assert.equal(shot.status,0,'Error al generar captura LAB a '+width+'px: '+String(shot.stderr).slice(-800));
+  assert.ok(fs.existsSync(screenshot)&&fs.statSync(screenshot).size>10000,'Captura LAB vacía a '+width+'px');
 }
