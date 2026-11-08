@@ -110,6 +110,58 @@ async function officialScenario(browser,engine,origin){
  }finally{await context.close()}
 }
 
+async function deletionAndMalformedSelectionScenario(browser,engine,origin){
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+ const page=await context.newPage(),errors=[];
+ let allowDelete=false;
+ page.on('pageerror',e=>errors.push(e.message));
+ page.on('dialog',d=>allowDelete?d.accept():d.dismiss());
+ try{
+  const sample=JSON.parse(JSON.stringify(fixture));
+  const disposable=JSON.parse(JSON.stringify(sample.sessions[0]));
+  disposable.id='lab-descartable';disposable.title='Borrar solo ficha ficticia';
+  disposable.games[0].id='lab-juego-descartable';
+  sample.sessions.push(disposable);
+  const selections={
+   'lab-historica':['lab-b'],'lab-descartable':['lab-a'],'__next__':['lab-b']
+  };
+  await page.goto(origin,{waitUntil:'load'});
+  await page.evaluate(({db,picks})=>{
+   localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));
+   localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify(picks));
+  },{db:sample,picks:selections});
+  await page.reload({waitUntil:'load'});
+  assert.deepEqual((await getData(page)).picks,selections,'Selecciones preparadas para dos sesiones ficticias');
+  await page.evaluate(()=>deleteSession('lab-descartable'));
+  let data=await getData(page);
+  assert.equal(data.db.sessions.length,2,'Cancelar el borrado conserva la sesión');
+  assert.deepEqual(data.picks,selections,'Cancelar no altera ninguna selección temporal');
+  allowDelete=true;
+  await page.evaluate(()=>deleteSession('lab-descartable'));
+  data=await getData(page);
+  assert.equal(data.db.sessions.length,1,'Solo se elimina la sesión ficticia confirmada');
+  assert.deepEqual(data.db.sessions[0],fixture.sessions[0],'Otra sesión y sus tiros no se alteran');
+  assert.deepEqual(data.db.balls,fixture.balls,'Borrar una sesión no modifica el arsenal');
+  assert.equal(Object.hasOwn(data.picks,'lab-descartable'),false,'No quedan selecciones de sesión borrada');
+  assert.deepEqual(data.picks['lab-historica'],['lab-b'],'Selección de la otra sesión preservada');
+  assert.deepEqual(data.picks.__next__,['lab-b'],'Próxima sesión preservada');
+  // Selecciones no son datos de las partidas: si se corrompen, no deben impedir abrir la PWA.
+  await page.evaluate(()=>localStorage.setItem('mi-bowling-ball-selection-v1','{invalid json'));
+  await page.reload({waitUntil:'load'});
+  assert.equal(await page.evaluate(()=>selectedBallsFor('__next__')),null,'Selección malformada se ignora');
+  await page.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  assert.equal(await page.locator('.ball-session-toggle input:checked').count(),0,'JSON dañado no marca bolas');
+  await page.evaluate(()=>localStorage.setItem('mi-bowling-ball-selection-v1',
+   JSON.stringify({__next__:['lab-b','lab-b','lab-c','lab-inexistente',42]})));
+  await page.reload({waitUntil:'load'});
+  assert.deepEqual(await page.evaluate(()=>selectedBallsFor('__next__')),['lab-b'],
+   'Se ignoran duplicados, retiradas, inexistentes y IDs no válidos');
+  assert.deepEqual((await getData(page)).db,fixture,'Datos deportivos intactos tras sidecar inválido');
+  assert.deepEqual(errors,[],'Sin errores JS durante borrado y recuperación de selección');
+  console.log('OK '+engine+' 390px: cancelación/borrado de sesión, sidecar limpio y recuperación de selección corrupta');
+ }finally{await context.close()}
+}
+
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
@@ -257,7 +309,7 @@ async function run(browser,engine,width,origin){
  try{
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
    const browser=await type.launch({headless:true});
-   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin)}
+   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin)}
    finally{await browser.close()}
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
