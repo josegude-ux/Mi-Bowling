@@ -5,8 +5,8 @@ const app=read('app.js').toString(),css=read('styles.css').toString(),sw=read('s
 new Function(app);
 assert(app.includes("const APP_VERSION='3.3.8-prueba'"),'Versión funcional preservada');
 assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Sin migración de datos');
-assert(html.includes('app.js?v=338visref1')&&html.includes('styles.css?v=338visref1'),'Recursos nuevos');
-assert(sw.includes('mi-bowling-analitica-v3-3-8-prueba-visref1'),'Caché nueva');
+assert(html.includes('app.js?v=338fgb1')&&html.includes('styles.css?v=338fgb1'),'Recursos nuevos');
+assert(sw.includes('mi-bowling-analitica-v3-3-8-prueba-fgbcalendar1'),'Caché nueva');
 assert(css.includes("url('./home-estadisticas-limpio.jpg')"),'Tarjeta usa imagen sin porcentajes ilustrativos');
 assert(!css.includes("url('./home-estadisticas.jpg')"),'Tarjeta no usa fondo anterior del 85%');
 const jpg=read('home-estadisticas-limpio.jpg');
