@@ -53,7 +53,7 @@ async function checkReader(page,base){
   const db='mi-bowling-patrones-pdf-'+fixture;
   stage='creating fake WebKit database: secure='+(window.isSecureContext)+' origin='+location.origin;
   const binary=contents('Aceite-A7');
-  await makeDb(db,[['oil',new Blob([binary],{type:'application/pdf'})]]);
+  await makeDb(db,[['oil',new Uint8Array(binary)]]); // WebKit CI supports typed-array fixtures; Blob write probed separately
   stage='reader open existing fixture';
   const beforeList=typeof indexedDB.databases==='function'?(await indexedDB.databases()).map(x=>x.name):null;
   const reader=fact.create({indexedDB,sourceProfileId:fixture});
@@ -91,13 +91,13 @@ async function checkReader(page,base){
    throw Error('Reader mutated existing DB');
   absentReader.close();
   // Corrupted bytes and wrong MIME must be rejected.
-  await makeDb('mi-bowling-patrones-pdf-p-a7-corrupt',[['bad',new Blob(['not a pdf'],{type:'application/pdf'})]]);
+  await makeDb('mi-bowling-patrones-pdf-p-a7-corrupt',[['bad',new TextEncoder().encode('not a pdf')]]);
   const invalid=fact.create({indexedDB,sourceProfileId:'p-a7-corrupt'});
   try{await invalid.readPdf('bad');throw Error('Corrupt PDF was accepted')}
   catch(e){if(!/Firma/.test(e.message))throw e}
   invalid.close();
   // Legacy fallback: scoped DB absent; original can be read using known legacy name.
-  await makeDb('mi-bowling-patrones-pdf',[['oil-old',new Blob([contents('OldLegacy')],{type:'application/pdf'})]]);
+  await makeDb('mi-bowling-patrones-pdf',[['oil-old',contents('OldLegacy')]]);
   const legacy=fact.create({indexedDB,sourceProfileId:'legacy'});
   stage='legacy reader fallback';
   const old=await legacy.readPdf('oil-old');
