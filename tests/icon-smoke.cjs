@@ -20,6 +20,6 @@ assert(manifest.icons.some(i=>i.src==='icon-512.png?v=338icon1'),'Manifest 512')
 assert(html.includes('class="brand-mark"')&&html.includes('icon-192.png?v=338icon1'),'Icono de cabecera');
 assert(app.includes('class="bowling-home-mark"')&&app.includes('icon-192.png?v=338icon1'),'Icono de inicio');
 assert(css.includes('.bowling-home-mark img'),'Escalado responsive');
-assert(sw.includes('mi-bowling-analitica-v3-3-8-prueba-viscal1'),'Nueva caché para actualización');
+assert(sw.includes('mi-bowling-analitica-v3-3-8-prueba-visref1'),'Nueva caché para actualización');
 assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Sin modificación de datos');
 console.log('PASS iconos 180/192/512, iPhone, manifest, cabeceras, caché y datos');

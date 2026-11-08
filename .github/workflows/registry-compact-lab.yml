@@ -16,6 +16,11 @@ on:
       - 'home-registro.jpg'
       - 'home-partidas.jpg'
       - 'home-estadisticas.jpg'
+      - 'home-estadisticas-limpio.jpg'
+      - 'icon-registro-3d.svg'
+      - 'icon-partidas-3d.svg'
+      - 'icon-estadisticas-3d.svg'
+      - 'tests/home-refinement-smoke.cjs'
       - 'tests/home-calendar-smoke.cjs'
       - 'tests/registry-compact-smoke.cjs'
       - '.github/workflows/registry-compact-lab.yml'
@@ -30,7 +35,7 @@ permissions:
 
 jobs:
   validar-registro:
-    if: github.head_ref == 'design/inicio-visura-calendario-20261108' || github.head_ref == 'design/icono-mi-bowling-visura-20261108' || github.head_ref == 'design/registro-compacto-r1-20261108' || github.head_ref == 'fix/mini-pins-black-red-after-second-20261108' || github.head_ref == 'fix/mini-bolos-rojos-fin-frame-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/fix/mini-bolos-rojos-fin-frame-20261108'
+    if: github.head_ref == 'design/inicio-visura-refinamiento-3d-20261108' || github.head_ref == 'design/inicio-visura-calendario-20261108' || github.head_ref == 'design/icono-mi-bowling-visura-20261108' || github.head_ref == 'design/registro-compacto-r1-20261108' || github.head_ref == 'fix/mini-pins-black-red-after-second-20261108' || github.head_ref == 'fix/mini-bolos-rojos-fin-frame-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/fix/mini-bolos-rojos-fin-frame-20261108'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -46,6 +51,8 @@ jobs:
         run: node tests/icon-smoke.cjs
       - name: Portada y calendario de partidas (datos ficticios)
         run: node tests/home-calendar-smoke.cjs
+      - name: Verificar ajustes visuales CP-019
+        run: node tests/home-refinement-smoke.cjs
       - name: Pruebas de lógica existentes
         run: |
           node tests/visual-lab-smoke.cjs
