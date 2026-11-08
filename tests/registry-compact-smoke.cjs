@@ -14,10 +14,10 @@ const end=app.indexOf('function changeBall(',start);
 assert(start>=0 && end>start,'Función de registro localizado');
 const PINS=[1,2,3,4,5,6,7,8,9,10],RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
 const ONE=[{frame:1,ball:1,pins:[1,2,3,4,5,6,7,8]}];
-function render(pair,rolls,done){
+function render(pair,rolls,done,overrideNext=null){
  const g={id:'g1',pair,rolls},s={id:'s1',type:'entrenamiento',date:'2026-11-08',title:'Prueba',games:[g],currentBallId:'',currentLine:{approach:'20',arrow:'15',breakpoint:'8'}};
  const ctx={
-  session:()=>s,game:()=>g,next:()=>done?{done:true,frame:10}:{done:false,frame:5,ball:1,available:PINS},
+  session:()=>s,game:()=>g,next:()=>overrideNext || (done?{done:true,frame:10}:{done:false,frame:5,ball:1,available:PINS}),
   currentLane:()=>({pair,lane:pair?pair[0]:null}),complete:()=>!!done,
   head:()=>'<div class="section-head"></div>',score:()=>89,
   scoreStrip:()=>'<div class="score-strip"></div>',
@@ -109,7 +109,11 @@ assert(css.includes('body.registry-screen .bottom-nav{display:none!important}'),
 assert(app.includes('aria-pressed="${selection.includes(p)}"'),'Estado accesible en bolos');
 assert(app.includes('registry-v4-quick-caption'),'Advertencia sobre atajos automáticos');
 assert(css.includes('.registry-v4-quick.quick-large .btn'),'Respeta botones grandes');
-assert(app.includes("n.available.length===10?'✕ Strike':'✓ Derribados todos'"),'Botón principal distingue strike de spare');
+assert(app.includes("n.available.length===10?'✕ Strike':n.ball===2?'✓ Semipleno':'✓ Derribados todos'"),'Semipleno exclusivamente en segunda tirada');
+assert(render(null,[],false).includes('✕ Strike'),'Botón Strike en primera tirada completa');
+assert(render(null,[],false,{frame:1,ball:2,done:false,available:[9,10]}).includes('✓ Semipleno'),'Segunda tirada con bolos restantes muestra Semipleno');
+assert(!render(null,[],false,{frame:1,ball:2,done:false,available:[9,10]}).includes('✓ Derribados todos'),'Segunda no conserva nombre anterior');
+assert(render(null,[],false,{frame:10,ball:3,done:false,available:[9,10]}).includes('✓ Derribados todos'),'Tercera tirada no se denomina semipleno');
 assert(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))!important'),'Tres columnas de atajos en móvil habitual');
 assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Sin migración de datos');
 assert(app.includes("const APP_VERSION='3.3.9-lab'"),'Versión de laboratorio');

@@ -158,7 +158,8 @@ async function runMissedFrame(browser,engine,origin){
   await page.locator('#quick-record').click();
   assert.equal(await first.locator('.missed').count(),0,'Primera tirada: sin rojo');
   assert.equal(await first.locator('.standing').count(),2,'Primera tirada: dos bolos negros');
-  assert((await page.locator('#quick-record').textContent()).includes('Derribados todos'),'Segunda tirada conserva acción para completar spare');
+  assert((await page.locator('#quick-record').textContent()).includes('Semipleno'),'Segunda tirada ofrece Semipleno');
+  assert(!(await page.locator('#quick-record').textContent()).includes('Derribados todos'),'Segunda tirada sin nombre antiguo');
   assert.equal(await first.locator('[data-pin="9"].standing').count(),1,'Bolo 9 en pie negro');
   assert.equal(await first.locator('[data-pin="10"].standing').count(),1,'Bolo 10 en pie negro');
   await page.getByRole('button',{name:/Bolo 10:/}).click();
