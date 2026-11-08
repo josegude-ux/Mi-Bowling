@@ -23,7 +23,7 @@
   if(!Number.isSafeInteger(timeoutMs)||timeoutMs<250||timeoutMs>60000)throw Error('Tiempo de lectura inválido');
   if(!Number.isSafeInteger(maxBytes)||maxBytes<8||maxBytes>MAX_BYTES)throw Error('Límite de PDF no válido');
   const names=namesFor(sourceProfileId);
-  let closed=false, readCount=0;
+  let closed=false, readCount=0,epoch=0;
   function openKnown(name){
    return new Promise((resolve,reject)=>{
     let req,done=false,timer;
@@ -59,6 +59,8 @@
    });
   }
   async function readFrom(name,id){
+   if(closed)throw Error('Lector de PDF ya cerrado');
+   const requestEpoch=epoch;
    let db;
    try{db=await openKnown(name)}
    catch(err){if(err.code==='ABSENT')return {found:false,bytes:null};throw err}
@@ -86,6 +88,7 @@
      if(value.type&&value.type!=='application/pdf')throw Error('Contenido almacenado no es PDF');
      bytes=new Uint8Array(await value.arrayBuffer());
     }else throw Error('Valor PDF almacenado con un formato desconocido');
+    if(closed||epoch!==requestEpoch)throw Error('Lector cerrado durante la lectura de PDF');
     if(bytes.length<8||bytes.length>maxBytes)throw Error('PDF fuera del límite de tamaño');
     if(String.fromCharCode(...bytes.subarray(0,5))!=='%PDF-')throw Error('Firma del PDF inválida');
     readCount++;
@@ -97,11 +100,12 @@
    if(!isKey(id))throw Error('ID de patrón inválido');
    for(const name of names){
     const found=await readFrom(name,id);
+    if(closed)throw Error('Lector cerrado durante la lectura de PDF');
     if(found.found)return found.bytes; // legacy: scoped copy first, original fallback
    }
    return null; // capture() rejects this when a PDF is declared in pattern metadata
   }
-  function close(){closed=true;}
+  function close(){closed=true;epoch++;}
   return Object.freeze({readPdf,close,getState:()=>({sourceProfileId,readCount,closed})});
  }
  return Object.freeze({create,namesFor,MAX_BYTES});
