@@ -17,7 +17,7 @@ on:
 permissions:
   contents: read
 jobs:
-  integración-lab:
+  integration-lab:
     name: Aislamiento real de tres jugadores y estadísticas por bolo
     runs-on: ubuntu-latest
     timeout-minutes: 12
