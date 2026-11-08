@@ -173,6 +173,62 @@ function newController(location,auth=provider){
  assert.equal(optionsPassed.auth.persistSession,true);
  assert.equal(optionsPassed.auth.storage.getItem('anything'),null);
  assert.equal(Object.keys(originalPWA).length,0); // no touching PWA data by callback
+
+ // Safari's History API can fail in restricted contexts. Never use the token if scrub fails.
+ assert.equal(bootstrap.MiBowlingEmailCallback.parseAndScrub(
+  makeLocation('email','88'.repeat(32)),{replaceState(){throw Error('SecurityError')}}),null);
+ assert.equal(bootstrap.MiBowlingEmailCallback.parseAndScrub(
+  makeLocation('email','88'.repeat(32)),null),null);
+ // pagehide while a verification is still running must revoke late results.
+ const stale={window:null,URLSearchParams,console};stale.window=stale;vm.createContext(stale);
+ vm.runInContext(source('auth-email-callback.js'),stale);
+ let releaseVerification,remoteCalls=0,cleanupCalls=0;
+ const deferredVerification=new Promise(resolve=>{releaseVerification=resolve});
+ const lifecycle={};
+ const staleCtl=stale.MiBowlingEmailCallback.create({
+  element:makeDOM(),document:{getElementById:()=>makeDOM()},
+  location:makeLocation('email','67'.repeat(32)),
+  history:{replaceState(){}},
+  window:{addEventListener(event,fn){lifecycle[event]=fn}},
+  auth:{
+   async verifyLinkToken(){await deferredVerification;return {verifiedByServer:true}},
+   async getVerifiedUser(){remoteCalls++;return{id:uuidA,email:'fixture@example.test'}},
+   async signOut(){cleanupCalls++}
+  }
+ });
+ const inflight=staleCtl.verify();
+ assert.equal(typeof lifecycle.pagehide,'function');
+ lifecycle.pagehide();releaseVerification();
+ await assert.rejects(inflight,/No se pudo verificar/);
+ assert.equal(remoteCalls,0,'Verification completed after navigating away');
+ assert.equal(staleCtl.getState().disposed,true);
+ assert.ok(cleanupCalls>0,'Session not revoked during pagehide');
+ // If navigation occurs during the second getUser in password update, no updateUser.
+ const lifecycle2={};
+ let releaseOwner,ownerChecks=0,passwordWrites=0;
+ const deferredOwner=new Promise(resolve=>{releaseOwner=resolve});
+ const callbackAuth={
+  async verifyLinkToken(){return{verifiedByServer:true}},
+  async getVerifiedUser(){ownerChecks++;return ownerChecks===1?
+    {id:uuidA,email:'fixture@example.test'}:deferredOwner},
+  async updatePassword(){passwordWrites++},
+  async signOut(){}
+ };
+ const recoveryRace=stale.MiBowlingEmailCallback.create({
+  element:makeDOM(),document:{getElementById:()=>makeDOM()},
+  location:makeLocation('recovery','78'.repeat(32)),
+  history:{replaceState(){}},
+  window:{addEventListener(event,fn){lifecycle2[event]=fn}},
+  auth:callbackAuth,now:()=>5000
+ });
+ await recoveryRace.verify();
+ const updateWaiting=recoveryRace.updatePassword('ClavedePrueba12345','ClavedePrueba12345');
+ lifecycle2.pagehide();
+ releaseOwner({id:uuidA,email:'fixture@example.test'});
+ await assert.rejects(updateWaiting,/Error de recuperación/);
+ assert.equal(passwordWrites,0,'Late recovery response changed password after navigation');
+ assert.equal(recoveryRace.getState().disposed,true);
+
  console.log('OK · iPhone PWA/browser isolated storage mock: token_hash email/recovery without shared PKCE verifier');
  console.log('OK · URL fragment stripped, explicit user click, link replay/expiration blocked');
  console.log('OK · recovery requires remote user, same owner, local expiry, mandatory sign-out');
