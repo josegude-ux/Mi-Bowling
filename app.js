@@ -48,7 +48,7 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(db));saveError=false
 /* CATÁLOGO Y ARSENAL F1 LAB: selección operativa; no modifica db/balls/sessions. */
 const BALL_SELECTION_KEY='mi-bowling-ball-selection-v1';
 const BALL_SELECTION_NEXT='__next__';
-let ballPickTarget=BALL_SELECTION_NEXT,ballPickReturn='inicio',ballPickPins=null,ballPickerOpening=false;
+let ballPickTarget=BALL_SELECTION_NEXT,ballPickReturn='inicio',ballPickPins=null,ballPickerOpening=false,ballPickNewSessionDraft=null;
 function readBallSelections(){
  try{const value=JSON.parse(localStorage.getItem(BALL_SELECTION_KEY)||'{}');
  return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}
@@ -74,13 +74,39 @@ function toggleSelectedBall(id,checked){
  persistBallSelections({...ballSelections,[ballPickTarget]:cleanSelectedBallIds([...chosen])});
  render();
 }
+function captureNewSessionDraft(){
+ const form=$('newSessionForm');
+ if(!form)return null;
+ return Array.from(form.querySelectorAll('input,select,textarea')).filter(el=>el.type!=='file'&&(el.id||el.name)).map(el=>({
+  id:el.id,name:el.name,value:el.value,checked:el.type==='checkbox'||el.type==='radio'?el.checked:null
+ }));
+}
+function restoreNewSessionDraft(draft){
+ if(!draft||!$('newSessionForm'))return;
+ const form=$('newSessionForm');
+ function restoreOne(item){
+  const el=item.id?form.querySelector('[id="'+item.id+'"]'):Array.from(form.elements).find(e=>e.name===item.name);
+  if(!el||el.type==='file'||el.disabled)return;
+  if(el.tagName==='SELECT'){
+   if(Array.from(el.options).some(o=>o.value===item.value))el.value=item.value;
+  }else if(item.checked!==null){el.checked=item.checked}
+  else el.value=item.value;
+ }
+ draft.filter(x=>x.name!=='startLane').forEach(restoreOne);
+ if($('lane-pair'))updatePairHint();
+ draft.filter(x=>x.name==='startLane').forEach(restoreOne);
+ if($('s-patternId'))patternPreview($('s-patternId').value);
+}
 function openBallPickerFor(sessionId='',returnTo='inicio'){
  ballPickTarget=sessionId&&db.sessions.some(s=>s.id===sessionId)?sessionId:BALL_SELECTION_NEXT;
  ballPickReturn=returnTo;ballPickPins=returnTo==='registro'?[...selection]:null;
+ ballPickNewSessionDraft=returnTo==='nueva'?captureNewSessionDraft():null;
  ballEditingId=null;ballPickerOpening=true;go('bolas');ballPickerOpening=false;
 }
 function closeBallPicker(){
- const back=ballPickReturn,pins=ballPickPins;ballPickPins=null;go(back);
+ const back=ballPickReturn,pins=ballPickPins,draft=ballPickNewSessionDraft;
+ ballPickPins=null;ballPickNewSessionDraft=null;go(back);
+ if(back==='nueva')restoreNewSessionDraft(draft);
  if(back==='registro'&&pins){selection=pins;render()}
 }
 function transferBallSelectionToSession(id){
