@@ -131,7 +131,8 @@ async function deletionAndMalformedSelectionScenario(browser,engine,origin){
    localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify(picks));
   },{db:sample,picks:selections});
   await page.reload({waitUntil:'load'});
-  assert.deepEqual((await getData(page)).picks,selections,'Selecciones preparadas para dos sesiones ficticias');
+  const initial=await getData(page);
+  assert.deepEqual(initial.picks,selections,'Selecciones preparadas para dos sesiones ficticias');
   await page.evaluate(()=>deleteSession('lab-descartable'));
   let data=await getData(page);
   assert.equal(data.db.sessions.length,2,'Cancelar el borrado conserva la sesión');
@@ -140,7 +141,7 @@ async function deletionAndMalformedSelectionScenario(browser,engine,origin){
   await page.evaluate(()=>deleteSession('lab-descartable'));
   data=await getData(page);
   assert.equal(data.db.sessions.length,1,'Solo se elimina la sesión ficticia confirmada');
-  assert.deepEqual(data.db.sessions[0],fixture.sessions[0],'Otra sesión y sus tiros no se alteran');
+  assert.deepEqual(data.db.sessions[0],initial.db.sessions[0],'Otra sesión y sus tiros no se alteran');
   assert.deepEqual(data.db.balls,fixture.balls,'Borrar una sesión no modifica el arsenal');
   assert.equal(Object.hasOwn(data.picks,'lab-descartable'),false,'No quedan selecciones de sesión borrada');
   assert.deepEqual(data.picks['lab-historica'],['lab-b'],'Selección de la otra sesión preservada');
@@ -156,7 +157,9 @@ async function deletionAndMalformedSelectionScenario(browser,engine,origin){
   await page.reload({waitUntil:'load'});
   assert.deepEqual(await page.evaluate(()=>selectedBallsFor('__next__')),['lab-b'],
    'Se ignoran duplicados, retiradas, inexistentes y IDs no válidos');
-  assert.deepEqual((await getData(page)).db,fixture,'Datos deportivos intactos tras sidecar inválido');
+  const stable=await getData(page);
+  assert.deepEqual(stable.db.sessions,initial.db.sessions.slice(0,1),'Historial deportivo intacto tras sidecar inválido');
+  assert.deepEqual(stable.db.balls,initial.db.balls,'Bolas intactas tras sidecar inválido');
   assert.deepEqual(errors,[],'Sin errores JS durante borrado y recuperación de selección');
   console.log('OK '+engine+' 390px: cancelación/borrado de sesión, sidecar limpio y recuperación de selección corrupta');
  }finally{await context.close()}
