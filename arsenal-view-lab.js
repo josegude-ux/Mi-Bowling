@@ -8,7 +8,9 @@
   const link=(label,panel,id)=>'<button type="button" class="btn outline" onclick="setArsenalPanel('+escape(JSON.stringify(panel))+(id===undefined?'':','+escape(JSON.stringify(id)))+')">'+escape(label)+'</button>';
   const back='<button type="button" class="btn outline" onclick="setArsenalPanel(\'list\')">← Volver a Mis bolas</button>';
   const intro='<div class="card arsenal-notice"><p class="hint">Estimaciones basadas en fichas de fábrica. No sustituyen pruebas sobre pista: superficie, PAP, taladro y estilo de lanzamiento pendientes.</p></div>';
-  const nav='<div class="card arsenal-nav"><div class="actions">'+back+link('Catálogo de 10 modelos','catalog')+link('Comparar marcadas','compare')+link('Asistente de competición','assistant')+'</div></div>';
+  const returnLabel=ctx.returnTo==='registro'?'Volver al lanzamiento':ctx.returnTo==='nueva'?'Volver a empezar partida':'';
+  const quickReturn=returnLabel?'<button type="button" class="btn primary" onclick="closeBallPicker()">← '+escape(returnLabel)+'</button>':'';
+  const nav='<div class="card arsenal-nav"><div class="actions">'+quickReturn+back+link('Catálogo de 10 modelos','catalog')+link('Comparar marcadas','compare')+link('Asistente de competición','assistant')+'</div></div>';
   const headline='<div class="section-head"><div><h1>Análisis de Mis bolas</h1><p>Arsenal seleccionado para '+escape(ctx.scope)+'</p></div></div>';
   if(ctx.mode==='catalog'){
    const cards=lib.profiles.map(p=>{
