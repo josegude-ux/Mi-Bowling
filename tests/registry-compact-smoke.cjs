@@ -42,7 +42,9 @@ for(const pair of [null,[7,8]]){
   assert(html.includes('Cambiar par')&&html.includes('Deshacer último lanzamiento'),'Ambas acciones visibles');
   assert.equal(html.split('onclick="undoRoll()"').length-1,1,'Un botón de deshacer');
   assert.equal(html.includes('onclick="undoRoll()" disabled'),rolls.length===0,'Deshacer desactivado en partida vacía');
-  assert(html.includes('onclick="fastRoll(true)"')&&html.includes('onclick="fastRoll(false)"')&&html.includes('onclick="foulRoll()"'),'Atajos conservados');
+  assert(html.includes('onclick="fastRoll(true)"')&&html.includes('onclick="foulRoll()"'),'Atajos de 0 bolos y falta conservados');
+  assert(!html.includes('onclick="fastRoll(false)"')&&!html.includes('>Todos derribados</button>'),'Sin atajo duplicado de todos derribados');
+  assert.equal((html.match(/class="btn(?: foul-btn)?" onclick="(?:fastRoll\(true\)|foulRoll\(\)|selection=\[\];render\(\))"/g)||[]).length,3,'Tres atajos secundarios');
   assert(html.includes('onclick="selection=[];render()"'),'Limpiar selección');
   assert(html.includes('id="roll-ball"')&&html.includes('registry-v4-extra'),'Bola en desplegable');
   assert(html.includes('lane-visual')&&html.includes('registry-v4-history'),'Línea visual e historial conservados');
@@ -107,8 +109,10 @@ assert(css.includes('body.registry-screen .bottom-nav{display:none!important}'),
 assert(app.includes('aria-pressed="${selection.includes(p)}"'),'Estado accesible en bolos');
 assert(app.includes('registry-v4-quick-caption'),'Advertencia sobre atajos automáticos');
 assert(css.includes('.registry-v4-quick.quick-large .btn'),'Respeta botones grandes');
+assert(app.includes("n.available.length===10?'✕ Strike':'✓ Derribados todos'"),'Botón principal distingue strike de spare');
+assert(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))!important'),'Tres columnas de atajos en móvil habitual');
 assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Sin migración de datos');
-assert(app.includes("const APP_VERSION='3.3.8-prueba'"),'Versión de laboratorio');
-assert(index.includes('app.js?v=338prueba')&&index.includes('styles.css?v=338prueba'),'Referencias coherentes');
-assert(sw.includes('mi-bowling-analitica-v3-3-8-prueba'),'Caché de LAB');
+assert(app.includes("const APP_VERSION='3.3.9-lab'"),'Versión de laboratorio');
+assert(index.includes('app.js?v=339lab')&&index.includes('styles.css?v=339lab'),'Referencias coherentes');
+assert(sw.includes('mi-bowling-analitica-v3-3-9-lab'),'Caché de LAB');
 console.log('MI BOWLING LAB: registro compacto validado (4 estados, 10 frames, controles, datos, caché).');
