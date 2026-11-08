@@ -48,7 +48,7 @@ function create(options={}){
    '<button type="submit" class="auth-lab-primary" '+(!available?'disabled':'')+'>'+submitName+'</button></form>'+
    '<div class="auth-lab-actions">'+
    '<button id="auth-mode-login" type="button" '+(mode==='login'?'hidden':'')+'>Volver a iniciar sesión</button>'+
-   '<button id="auth-mode-signup" type="button" '+(mode==='signup'||!canSignUp?'hidden':'')+'>Crear cuenta</button>'+
+   '<button id="auth-mode-signup" type="button" '+(mode==='signup'?'hidden':!canSignUp?'disabled title="Alta deshabilitada hasta activar el servicio"':'')+'>Crear cuenta</button>'+
    '<button id="auth-mode-recovery" type="button" '+(mode==='recovery'||mode==='update'?'hidden':'')+'>¿Olvidaste tu contraseña?</button>'+
    '</div><p id="auth-status" role="status" aria-live="polite" data-kind="info"></p>'+
    '<p class="auth-lab-notice">'+htmlEscape(reason)+'</p>'+
