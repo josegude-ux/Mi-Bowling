@@ -7,7 +7,7 @@ const os=require('node:os'),https=require('node:https'),cp=require('node:child_p
 const {webkit,chromium,devices}=require('playwright');
 const root=path.resolve(__dirname,'..');
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'mi-bowling-i4-'));
-const shots=path.join(__dirname,'artifacts-integracion-i3');fs.mkdirSync(shots,{recursive:true});
+const shots=path.join(__dirname,'artifacts-integracion-i4');fs.mkdirSync(shots,{recursive:true});
 let server;const requested=[];
 async function serve(){
  const cert=path.join(tmp,'cert.pem'),key=path.join(tmp,'key.pem');
@@ -68,10 +68,10 @@ async function run(browser,base,letter,label,config){
   assert.equal(after.portActive,true);
   assert.equal(after.persistence.revision,letter==='B'?0:1);
   assert.equal(await page.evaluate(to=>MiBowlingIntegrationI4.crossOwnerDenied(to),letter==='A'?'B':'A'),true);
-  // Verify exact content via manual re-read from the real I2 mocked repository,
-  // which also checks SHA/revision. Manual action advances revision once more.
+  // Verify exact content via manual re-read; I4 avoids an unnecessary write
+  // when the last state is already confirmed.
   await page.locator('#lab-save-private').click();
-  await page.waitForFunction(rev=>document.querySelector('#lab-private-summary')?.textContent.includes('revisión '+rev),letter==='B'?1:2);
+  await page.waitForFunction(rev=>document.querySelector('#lab-private-summary')?.textContent.includes('revisión '+rev),letter==='B'?0:1);
   await page.locator('#lab-home').click();
   await page.locator('#app .bowling-home').waitFor();
   await page.locator('#lab-calendar').click();
