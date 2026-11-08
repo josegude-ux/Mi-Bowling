@@ -333,6 +333,72 @@ async function concurrentRollDeselectionScenario(browser,engine,origin){
  }finally{await context.close()}
 }
 
+async function rewindUndoWithDeselectedBallScenario(browser,engine,origin){
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+ const page=await context.newPage(),errors=[];
+ let confirmAction=false;
+ page.on('pageerror',e=>errors.push(e.message));
+ page.on('dialog',d=>confirmAction?d.accept():d.dismiss());
+ try{
+  const sample=JSON.parse(JSON.stringify(fixture));
+  const secondRoll={...sample.sessions[0].games[0].rolls[0],frame:2,ball:1,createdAt:'2026-01-01T12:01:00Z'};
+  sample.sessions[0].games[0].rolls.push(secondRoll);
+  await page.goto(origin,{waitUntil:'load'});
+  await page.evaluate(db=>{
+   localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));
+   localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify({'lab-historica':['lab-b']}));
+  },sample);
+  await page.reload({waitUntil:'load'});
+  await page.evaluate(()=>openSession('lab-historica'));
+  await ensureExtras(page);
+  assert.equal(await page.locator('#roll-ball').inputValue(),'lab-b','Beta asignada antes de corregir');
+  await page.locator('.registry-v4-extra .textlink').click();
+  await page.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').uncheck();
+  await page.getByRole('button',{name:/Volver al lanzamiento/}).click();
+  await ensureExtras(page);
+  let before=await getData(page);
+  assert.deepEqual(before.picks['lab-historica'],[],'Bola retirada explícitamente de la selección');
+  assert.equal(await page.locator('#roll-ball').inputValue(),'','Bola histórica no aparece como seleccionable');
+  await page.evaluate(()=>rewindRoll(1));
+  let data=await getData(page);
+  assert.deepEqual(data.db.sessions[0].games[0].rolls,before.db.sessions[0].games[0].rolls,
+   'Cancelar corrección no modifica los tiros ficticios');
+  confirmAction=true;
+  await page.evaluate(()=>rewindRoll(1));
+  data=await getData(page);
+  assert.equal(data.db.sessions[0].games[0].rolls.length,1,'Corregir segunda tirada deja la primera');
+  assert.equal(data.db.sessions[0].games[0].rolls[0].ballId,'lab-b','Primera bola histórica preservada');
+  assert.equal(data.db.sessions[0].currentBallId,'','Corregir no reactiva la bola excluida como bola actual');
+  await ensureExtras(page);
+  assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),['Sin asignar'],
+   'Selector de corrección sigue sin bolas elegidas');
+  await page.locator('#quick-record').click();
+  data=await getData(page);
+  assert.deepEqual(data.db.sessions[0].games[0].rolls.map(r=>r.ballId),['lab-b',''],
+   'La corrección registra el nuevo tiro sin reasignar bola excluida');
+  assert.deepEqual(data.picks['lab-historica'],[],'La corrección no reescribe el filtro');
+  confirmAction=false;
+  await page.evaluate(()=>undoRoll());
+  assert.equal((await getData(page)).db.sessions[0].games[0].rolls.length,2,'Cancelar deshacer conserva tiros');
+  confirmAction=true;
+  await page.evaluate(()=>undoRoll());
+  assert.deepEqual((await getData(page)).db.sessions[0].games[0].rolls.map(r=>r.ballId),['lab-b'],
+   'Deshacer solo elimina el tiro más reciente');
+  await ensureExtras(page);
+  await page.locator('#quick-record').click();
+  data=await getData(page);
+  assert.deepEqual(data.db.sessions[0].games[0].rolls.map(r=>r.ballId),['lab-b',''],
+   'Repetir tras deshacer no reintroduce Beta');
+  assert.deepEqual(data.db.balls,fixture.balls,'Bolas y taladros no se modifican');
+  await page.reload({waitUntil:'load'});
+  await page.evaluate(()=>openSession('lab-historica'));
+  assert.deepEqual((await getData(page)).db.sessions[0].games[0].rolls.map(r=>r.ballId),['lab-b',''],
+   'Corrección y resultado se conservan tras recargar');
+  assert.deepEqual(errors,[],'Sin errores JS tras corregir/deshacer');
+  console.log('OK '+engine+' 390px: cancelar, corregir y deshacer no reactivan bola desmarcada ni alteran historial');
+ }finally{await context.close()}
+}
+
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
@@ -480,7 +546,7 @@ async function run(browser,engine,width,origin){
  try{
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
    const browser=await type.launch({headless:true});
-   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin);await concurrentRollDeselectionScenario(browser,name,origin)}
+   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin);await concurrentRollDeselectionScenario(browser,name,origin);await rewindUndoWithDeselectedBallScenario(browser,name,origin)}
    finally{await browser.close()}
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
