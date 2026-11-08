@@ -45,7 +45,7 @@ function active(id,withApp){
 }
 (async()=>{
  let ctx=active(null,false);
- assert.deepEqual(ctx.MiBowlingProfiles.profiles().map(p=>p.id),['legacy']);
+ assert.deepEqual(Array.from(ctx.MiBowlingProfiles.profiles(),p=>p.id),['legacy']);
  for(const [key,value] of originals){
    assert.equal(storage.getItem(key),value,'Original intacto '+key);
    assert.equal(storage.getItem('mi-bowling-profile:legacy:'+key),value,'Copia literal '+key);
