@@ -120,6 +120,32 @@
   document.getElementById('reset').addEventListener('click',()=>{history.length=0;draw(examples[0]);renderLog();feedback.textContent='Prueba reiniciada, sin modificar la aplicación publicada.';});
   draw(examples[0]);
   document.body.dataset.demoReady='true';
+  if(new URL(location.href).searchParams.has('smoke')){
+    try{
+      if(!window.MiBowlingLane3D||window.MiBowlingLane3D.inspect().markers!==3)throw Error('3D no renderizado');
+      if(document.documentElement.scrollWidth>innerWidth+2)throw Error('Desbordamiento horizontal');
+      document.getElementById('preset-b').click();
+      if(values().approach!=='30'||values().breakpointFt!=='45')throw Error('Preset no funciona');
+      document.getElementById('simulate').click();
+      if(history.length!==1||history[0].approach!=='30')throw Error('Simulación de tirada fallida');
+      document.getElementById('breakpoint').value='9.5';
+      document.getElementById('breakpoint').dispatchEvent(new Event('input',{bubbles:true}));
+      if(window.MiBowlingLane3D.inspect().points.breakpoint.board!==9.5)throw Error('Los inputs no sincronizan al 3D');
+      document.getElementById('simulate').click();
+      if(history.length!==2||history[0].breakpoint!=='12'||history[1].breakpoint!=='9.5')throw Error('No se conserva la línea de cada tiro');
+      document.getElementById('view2d-button').click();
+      if(!document.getElementById('shot-stage').classList.contains('lane-view-2d'))throw Error('Cambio cenital');
+      document.getElementById('view3d-button').click();
+      if(!document.getElementById('shot-stage').classList.contains('lane-view-3d'))throw Error('Retorno perspectiva');
+      document.getElementById('reset').click();
+      if(history.length||values().approach!=='25')throw Error('Reinicio incorrecto');
+      document.body.dataset.demoTest='PASS';
+    }catch(error){
+      document.body.dataset.demoTest='FAIL';
+      document.body.dataset.demoTestError=String(error);
+      console.error(error);
+    }
+  }
 })();
 </script>
 </body></html>
