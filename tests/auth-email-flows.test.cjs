@@ -87,7 +87,7 @@ async function main(){
  user={...user,email_confirmed_at:'2026-11-08T19:00:00Z'};
  // Requesting a reset must not reveal account existence or auto-login.
  assert.equal(await gate.requestReset('nuevo@example.test'),true);
- assert.equal(calls.find(x=>x[0]==='reset')[2].redirectTo,'https://bowling.example.test/auth/reset');
+ assert.equal(calls.find(x=>x[0]==='reset')[2].redirectTo,'https://bowling.example.test/auth/reset',JSON.stringify(calls.filter(x=>x[0]==='reset')));
  assert.equal(gate.getState().opened,false);
  await assert.rejects(gate.updatePassword('ContraseñaNueva1234','ContraseñaNueva1234'),/sin autorización/);
  // A valid password recovery event unlocks ONLY the reset form.
