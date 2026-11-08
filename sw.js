@@ -1,5 +1,5 @@
-const CACHE='mi-bowling-analitica-v3-3-8-prueba';
-const ASSETS=['./','./index.html','./styles.css','./app.js','./styles.css?v=338prueba','./app.js?v=338prueba','./manifest.json','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png','./premium-bowling-hero.jpg','./icon-competition.svg','./portada-opcion-2.jpg'];
+const CACHE='mi-bowling-analitica-v3-3-8-bolos-lab1';
+const ASSETS=['./','./index.html','./styles.css','./app.js','./styles.css?v=338prueba','./stats-bolos.css','./stats-bolos.css?v=1','./stats-bolos.js','./stats-bolos.js?v=1','./app.js?v=338-bolos-lab1','./manifest.json','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png','./premium-bowling-hero.jpg','./icon-competition.svg','./portada-opcion-2.jpg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{for(const name of await caches.keys()){if(name.startsWith('mi-bowling-')&&name!==CACHE)await caches.delete(name)}await self.clients.claim()})())});
 self.addEventListener('fetch',event=>{const request=event.request;const url=new URL(request.url);if(request.method!=='GET'||url.origin!==location.origin)return;
