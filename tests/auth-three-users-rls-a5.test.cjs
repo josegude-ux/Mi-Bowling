@@ -24,7 +24,7 @@ function personal(scores,balls=[]){
 function league(matches){
  return {version:1,matches:matches.map((total,i)=>({id:'fake-league-'+i,total,players:[{alias:'Ficticio'}]})),rosters:{own:['Equipo simulado']}};
 }
-function scores(doc){return doc.sessions.flatMap(x=>x.games).map(x=>x.score);}
+function scores(doc){return Array.from(doc.sessions,session=>Array.from(session.games,game=>game.score)).flat();}
 async function main(){
  const server=createServer();
  server.seed(A,'personal',personal([300,181],['bola-A']));
@@ -41,13 +41,13 @@ async function main(){
  assert.equal(a.personal.payload.balls[0].id,'bola-A');
  assert.deepEqual(a.league.payload.matches.map(x=>x.total),[195,200]);
  assert.deepEqual(scores(b.personal.payload),[]);
- assert.deepEqual(b.personal.payload.balls,[]);
+ assert.deepEqual(Array.from(b.personal.payload.balls),[]);
  assert.equal(b.personal.exists,false);
  assert.deepEqual(b.league.payload.matches.map(x=>x.total),[140]);
  assert.deepEqual(scores(c.personal.payload),[157,201]);
  assert.equal(c.league.exists,false);
- assert.deepEqual(c.league.payload.matches,[]);
- assert.deepEqual(c.league.payload.rosters.own,[]);
+ assert.deepEqual(Array.from(c.league.payload.matches),[]);
+ assert.deepEqual(Array.from(c.league.payload.rosters.own),[]);
  assert.equal(new Set([a.owner,b.owner,c.owner]).size,3);
  console.log('OK · A=[300,181], B=0, C=[157,201]; Liga A/B/C independent from personal history');
  // Every owner attempts SELECT/INSERT/UPDATE of another owner (6 cross directions).
