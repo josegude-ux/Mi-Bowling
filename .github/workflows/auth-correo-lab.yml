@@ -49,7 +49,21 @@ jobs:
           node tests/auth-callback.test.cjs
           node --check tests/auth-email-flows.test.cjs
           node --check tests/auth-browser-smoke.cjs
+          node --check tests/auth-callback-browser.test.cjs
           node tests/auth-lab.test.cjs
           node tests/auth-email-flows.test.cjs
       - name: Formulario responsive y acceso bloqueado sin backend
-        run: node tests/auth-browser-smoke.cjs
+        run: |
+          node tests/auth-browser-smoke.cjs
+          node tests/auth-callback-browser.test.cjs
+        run: |
+          node tests/auth-browser-smoke.cjs
+          node tests/auth-callback-browser.test.cjs
+      - name: Capturas callback A3
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-auth-callback-lab
+          path: tests/artifacts-callback/*.png
+          retention-days: 14
+          if-no-files-found: warn
