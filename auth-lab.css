@@ -40,3 +40,9 @@ body.auth-stage{margin:0;min-height:100vh;background:#edf5fb;color:#163d5b;font-
 #auth-link-password-form input{width:100%;min-width:0;min-height:49px;padding:12px;font:400 16px system-ui;border:1px solid #cadfe9;border-radius:10px;background:white;color:#173d56}
 #auth-link-password-form input:focus-visible,#auth-link-gate button:focus-visible{outline:3px solid #2798c5;outline-offset:2px}
 #auth-link-status{font-size:12px;line-height:1.5;color:#a13c45}
+
+/* A4 · WebKit iPhone 13 Pro Max: use border-box for the whole auth island
+   to prevent intrinsic grid width and card padding overflowing the viewport. */
+.auth-lab-screen,.auth-lab-screen *{box-sizing:border-box}
+.auth-lab-screen{width:100%;max-width:100%;min-width:0}
+.auth-lab-panel{max-width:min(440px,100%);min-width:0}
