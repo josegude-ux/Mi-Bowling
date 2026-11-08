@@ -1,4 +1,4 @@
-name: MI BOWLING · Auth + respaldos + IndexedDB · LAB A7
+name: MI BOWLING · Auth + PDF WebKit + Storage UUID · LAB A8
 on:
   push:
     branches:
@@ -19,6 +19,10 @@ on:
       - tests/auth-three-users-rls-a5.test.cjs
       - auth-legacy-migration-lab.js
       - auth-idb-pdf-reader-lab.js
+      - auth-private-pdf-storage-lab.js
+      - tests/private-storage-policy-mock-a8.cjs
+      - tests/auth-storage-a8.test.cjs
+      - tests/auth-blob-webkit-a8.test.cjs
       - lab/migracion-a7.html
       - lab/migracion-a7.css
       - lab/migracion-a7-demo.js
@@ -62,6 +66,10 @@ jobs:
           node --check tests/auth-three-users-rls-a5.test.cjs
           node tests/auth-three-users-rls-a5.test.cjs
           node --check auth-idb-pdf-reader-lab.js
+          node --check auth-private-pdf-storage-lab.js
+          node --check tests/private-storage-policy-mock-a8.cjs
+          node --check tests/auth-storage-a8.test.cjs
+          node tests/auth-storage-a8.test.cjs
           node --check lab/migracion-a7-demo.js
           node --check auth-legacy-migration-lab.js
           node --check tests/auth-migration-a6.test.cjs
@@ -106,13 +114,15 @@ jobs:
         run: |
           node tests/auth-webkit-a4.test.cjs
           node tests/auth-indexeddb-webkit-a7.test.cjs
+          node tests/auth-blob-webkit-a8.test.cjs
       - name: Capturas WebKit (ficticias)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mi-bowling-auth-webkit-a7
+          name: mi-bowling-auth-webkit-a8
           path: |
             tests/artifacts-webkit-a4/*.png
             tests/artifacts-migration-a7/*.png
+            tests/artifacts-blob-a8/*.png
           retention-days: 14
           if-no-files-found: warn
