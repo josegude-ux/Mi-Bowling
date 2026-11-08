@@ -232,6 +232,10 @@
     if(evt.key==='+'||evt.key==='='){evt.preventDefault();changeZoom(.1);}
     if(evt.key==='-'){evt.preventDefault();changeZoom(-.1);}
   });
+  if(typeof window.addEventListener==='function'){
+    window.addEventListener('resize',function(){if(selectedView==='3d')refresh();});
+    window.addEventListener('orientationchange',function(){if(selectedView==='3d')refresh();});
+  }
   window.MiBowlingLane3D={
     html:html,refresh:refresh,setView:setView,setCamera:setCamera,changeZoom:changeZoom,
     inspect:function(){return {view:selectedView,cameraYaw:cameraYaw,cameraTilt:cameraTilt,zoom:zoom,points:last.projected,width:last.width,height:last.height,markers:last.markers};},
