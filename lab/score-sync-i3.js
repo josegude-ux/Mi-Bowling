@@ -5,7 +5,7 @@
  */
 (function(root){
 'use strict';
-const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function personal(value){
  if(!value||typeof value!=='object'||Array.isArray(value)||
     !Array.isArray(value.sessions)||!Array.isArray(value.balls)||!Array.isArray(value.patterns))
