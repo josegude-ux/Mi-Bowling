@@ -60,7 +60,7 @@ assert(saves>=6,'Cambios guardados');
 assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Datos existentes conservados');
 assert(app.includes("const APP_VERSION='3.3.3-prueba'"));
 assert(index.includes('styles.css?v=333prueba')&&index.includes('app.js?v=333prueba'));
-assert(worker.includes('mi-bowling-analitica-v3-3-3-lab'));
+assert(worker.includes('mi-bowling-analitica-v3-3-3-prueba'));
 assert(worker.includes("'./styles.css?v=333prueba','./app.js?v=333prueba'"));
 assert(styles.includes('MI BOWLING · LAB visual R2'));
 assert(app.includes('${laneVisual(s)}'),'La pista está integrada en el registro');
