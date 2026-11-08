@@ -85,10 +85,12 @@ async function runView(browser,engine,width,height,origin){
    assert(actions[2].y>actions[0].y+20,'Segunda fila para atajos en móvil pequeño');
   }
   const frameHeading=await page.locator('.registry-v4-roll .game-heading h1').evaluate(el=>{
-   const b=el.getBoundingClientRect(),line=parseFloat(getComputedStyle(el).lineHeight);
-   return {height:b.height,line};
+   const b=el.getBoundingClientRect(),style=getComputedStyle(el);
+   const line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.2;
+   return {height:b.height,line,contentWidth:el.scrollWidth,clientWidth:el.clientWidth};
   });
   assert(frameHeading.height<=frameHeading.line+3,'Cabecera del frame en una línea');
+  assert(frameHeading.contentWidth<=frameHeading.clientWidth+2,'Título del frame sin recortes');
   assert(await page.getByText('Si no marcas ninguno, anotarás todos derribados.').isVisible(),'Explicación de anotación');
 
   const overflow=await assertNoHorizontalOverflow(page);

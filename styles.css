@@ -325,7 +325,7 @@ body.registry-screen .app-main{padding-bottom:calc(26px + env(safe-area-inset-bo
 /* LAB R2 · Legibilidad en móvil pequeño y prevención de strikes accidentales. */
 .registry-v4-pin-caption small{display:block;margin-top:4px;font-size:11px;line-height:1.4;color:#567390}
 @media(max-width:580px){
- .registry-v4-roll .game-heading h1{font-size:clamp(16px,4.7vw,21px);white-space:nowrap}
+ .registry-v4-roll .game-heading h1{font-size:clamp(16px,4.7vw,21px);line-height:1.16;white-space:nowrap;min-width:0}
  .registry-v4-roll .game-heading .pill{font-size:11px;white-space:nowrap}
 }
 @media(max-width:370px){
