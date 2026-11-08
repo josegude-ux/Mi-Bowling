@@ -5,7 +5,7 @@
   const lib=root.MiBowlingArsenal,escape=ctx.escape,balls=ctx.balls||[];
   if(!lib)return '<div class="card"><p>Los análisis no están disponibles sin el catálogo local.</p></div>';
   const pick=lib.selected(balls,ctx.ids||[]);
-  const link=(label,panel,id)=>'<button type="button" class="btn outline" onclick="setArsenalPanel('+JSON.stringify(panel)+(id===undefined?'':','+JSON.stringify(id))+')">'+escape(label)+'</button>';
+  const link=(label,panel,id)=>'<button type="button" class="btn outline" onclick="setArsenalPanel('+escape(JSON.stringify(panel))+(id===undefined?'':','+escape(JSON.stringify(id)))+')">'+escape(label)+'</button>';
   const back='<button type="button" class="btn outline" onclick="setArsenalPanel(\'list\')">← Volver a Mis bolas</button>';
   const intro='<div class="card arsenal-notice"><p class="hint">Estimaciones basadas en fichas de fábrica. No sustituyen pruebas sobre pista: superficie, PAP, taladro y estilo de lanzamiento pendientes.</p></div>';
   const nav='<div class="card arsenal-nav"><div class="actions">'+back+link('Catálogo de 10 modelos','catalog')+link('Comparar marcadas','compare')+link('Asistente de competición','assistant')+'</div></div>';
