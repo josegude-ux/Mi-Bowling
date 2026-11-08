@@ -1,46 +1,65 @@
-/* MI BOWLING · Auth LAB A1 · adaptador Supabase Auth real (sin credenciales)
- * Requiere un cliente @supabase/supabase-js configurado por un bootstrap privado.
- * NO almacena contraseñas ni verifica credenciales en JavaScript local. */
+/* MI BOWLING · Supabase Auth adapter · LAB A2 (no keys / no real users).
+ * Official browser SDK is injected by the future secure bootstrap.
+ * Calls server APIs for identity; neither stores nor hashes user passwords. */
 (function(root){
 'use strict';
-function ok(result,operation){
- if(result?.error)throw new Error(operation+': '+(result.error.message||'operación no disponible'));
- return result?.data||{};
+function result(r,operation){
+ if(r?.error)throw new Error(operation+': '+(r.error.message||'servicio no disponible'));
+ if(!r||typeof r!=='object')throw new Error(operation+': respuesta inválida');
+ return r.data||{};
 }
 function create(client){
- if(!client?.auth || typeof client.auth.getUser!=='function' ||
-    typeof client.auth.signInWithPassword!=='function')throw Error('Cliente de autenticación no configurado');
+ if(!client?.auth||typeof client.auth.getUser!=='function'||
+  typeof client.auth.signInWithPassword!=='function'||
+  typeof client.auth.signUp!=='function'||
+  typeof client.auth.resend!=='function'||
+  typeof client.auth.resetPasswordForEmail!=='function'||
+  typeof client.auth.updateUser!=='function'||
+  typeof client.auth.signOut!=='function')throw Error('Proveedor de identidad incompleto');
+ const redirectOptions=redirectTo=>redirectTo?{emailRedirectTo:redirectTo}:{};
  return Object.freeze({
   async signIn(email,password){
-   const data=ok(await client.auth.signInWithPassword({email,password}),'Inicio de sesión');
-   // Los datos del primer resultado no sirven como prueba de identidad.
+   const data=result(await client.auth.signInWithPassword({email,password}),'Inicio de sesión');
+   // A session is not proof of email confirmation or account ownership.
    return data.session||null;
   },
   async getVerifiedUser(){
-   const data=ok(await client.auth.getUser(),'Verificación de sesión (servidor)');
+   // Unlike getSession, getUser makes a remote verification request.
+   const data=result(await client.auth.getUser(),'Verificación remota de identidad');
    const user=data.user;
-   if(!user?.id||!user?.email)throw Error('Sesión no verificada por el servidor');
-   if(!user.email_confirmed_at)throw Error('Debes confirmar el correo electrónico para entrar');
-   if(user.is_anonymous)throw Error('Las cuentas anónimas no están permitidas');
+   if(!user?.id||!user?.email)throw Error('Sesión no verificada por servidor');
+   if(!user.email_confirmed_at)throw Error('Correo aún sin confirmar');
+   if(user.is_anonymous)throw Error('No se admiten sesiones anónimas');
    return Object.freeze({id:user.id,email:user.email});
   },
-  async signUp(email,password){
-   await client.auth.signUp({email,password}).then(r=>ok(r,'Crear cuenta'));
-   // Registrarse NO inicia automáticamente MI BOWLING: exige confirmación y login nuevo.
-   await client.auth.signOut({scope:'local'}).catch(()=>{});
+  async signUp(email,password,redirectTo){
+   const payload={email,password};
+   if(redirectTo)payload.options=redirectOptions(redirectTo);
+   const data=result(await client.auth.signUp(payload),'Registro');
+   // Confirmation required, even if the external provider were misconfigured.
+   if(data.session){
+    try{await client.auth.signOut({scope:'local'});}catch(_){}
+    throw Error('Registro bloqueado: el servidor no exige verificar el correo');
+   }
+   return Object.freeze({pendingConfirmation:true});
+  },
+  async resendSignup(email,redirectTo){
+   const payload={type:'signup',email};
+   if(redirectTo)payload.options=redirectOptions(redirectTo);
+   result(await client.auth.resend(payload),'Reenviar confirmación');
    return true;
   },
   async requestReset(email,redirectTo){
-   const opts=redirectTo?{redirectTo}:{};
-   ok(await client.auth.resetPasswordForEmail(email,opts),'Recuperar contraseña');
+   const options=redirectTo?{redirectTo}:{};
+   result(await client.auth.resetPasswordForEmail(email,options),'Recuperación de contraseña');
    return true;
   },
   async updatePassword(password){
-   ok(await client.auth.updateUser({password}),'Cambiar contraseña');
+   result(await client.auth.updateUser({password}),'Actualizar contraseña');
    return true;
   },
   async signOut(){
-   ok(await client.auth.signOut(),'Cerrar sesión');
+   result(await client.auth.signOut(),'Cerrar sesión');
    return true;
   },
   onAuthChange(callback){
