@@ -40,17 +40,18 @@ async function checkReader(page,base){
    return new Promise((resolve,reject)=>{
     const req=indexedDB.open(name,1);
     req.onupgradeneeded=()=>req.result.createObjectStore('pdf');
-    req.onerror=()=>reject(req.error);
+    req.onerror=()=>reject(new Error('fixture open '+name+': '+(req.error?.name||'null')+' '+(req.error?.message||'no message')));
     req.onsuccess=()=>{
      const db=req.result,tx=db.transaction('pdf','readwrite');
      for(const [id,value] of entries)tx.objectStore('pdf').put(value,id);
      tx.oncomplete=()=>{db.close();resolve()};
-     tx.onerror=()=>{db.close();reject(tx.error)};
+     tx.onerror=()=>{db.close();reject(new Error('fixture write '+name+': '+(tx.error?.name||'null')+' '+(tx.error?.message||'no message')))};
     };
    });
   }
   const fixture='p-a7-webkit';
   const db='mi-bowling-patrones-pdf-'+fixture;
+  stage='creating fake WebKit database: secure='+(window.isSecureContext)+' origin='+location.origin;
   const binary=contents('Aceite-A7');
   await makeDb(db,[['oil',new Blob([binary],{type:'application/pdf'})]]);
   stage='reader open existing fixture';
