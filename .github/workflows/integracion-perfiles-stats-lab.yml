@@ -1,0 +1,56 @@
+name: MI BOWLING · Integración perfiles + estadísticas LAB
+on:
+  push:
+    branches:
+      - integration/perfiles-estadisticas-lab-20261108
+  pull_request:
+    paths:
+      - app.js
+      - profiles.js
+      - stats-bolos.js
+      - index.html
+      - sw.js
+      - tests/perfiles-estadisticas-integration.test.cjs
+      - tests/perfiles-estadisticas-browser.html
+      - tests/perfiles-estadisticas-browser.test.cjs
+      - .github/workflows/integracion-perfiles-stats-lab.yml
+permissions:
+  contents: read
+jobs:
+  integración-lab:
+    name: Aislamiento real de tres jugadores y estadísticas por bolo
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis
+        run: |
+          node --check profiles.js
+          node --check stats-bolos.js
+          node --check app.js
+          node --check sw.js
+          node --check tests/profiles-lab.test.cjs
+          node --check tests/profiles-faults.test.cjs
+          node --check tests/perfiles-estadisticas-integration.test.cjs
+          node --check tests/perfiles-estadisticas-browser.test.cjs
+      - name: Pruebas de perfiles, migración, restauración y cálculos
+        run: |
+          node tests/profiles-lab.test.cjs
+          node tests/profiles-faults.test.cjs
+          node tests/perfiles-estadisticas-integration.test.cjs
+          node tests/stats-bolos.test.cjs
+      - name: Pruebas de interfaz móvil tablet escritorio
+        run: |
+          node tests/perfiles-estadisticas-browser.test.cjs
+          node tests/stats-bolos-browser.test.cjs
+      - name: Capturas de jugadores A B C
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-integracion-perfiles-stats
+          path: tests/artifacts-integracion/*.png
+          retention-days: 14
+          if-no-files-found: warn
