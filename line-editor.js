@@ -74,8 +74,23 @@
     nodes.push('</svg>');
     return nodes.join('');
   }
+  function nudge(key,direction){
+    if(!Object.prototype.hasOwnProperty.call(DEFAULTS,key))return;
+    var el=document.getElementById(key);if(!el)return;
+    var distance=key==='breakpointFt',lo=distance?25:1,hi=distance?55:39,step=distance?1:.5;
+    var value=num(el.value,DEFAULTS[key],lo,hi);
+    var next=clamp(Math.round((value+step*(direction<0?-1:1))*2)/2,lo,hi);
+    el.value=String(next);
+    if(typeof window.changeLine==='function')window.changeLine(key,el.value);
+    refresh();
+  }
+  function nudges(key,label){
+    return '<div class="shot-nudges" role="group" aria-label="Ajustar '+label+'">'+
+      '<button type="button" aria-label="'+label+': reducir '+(key==='breakpointFt'?'un pie':'media tabla')+'" onclick="MiBowlingLineEditor.nudge(\''+key+'\',-1)">−</button>'+
+      '<button type="button" aria-label="'+label+': aumentar '+(key==='breakpointFt'?'un pie':'media tabla')+'" onclick="MiBowlingLineEditor.nudge(\''+key+'\',1)">+</button></div>';
+  }
   function field(key,label,placeholder){
-    return '<label class="shot-field" for="'+key+'"><span>'+label+'</span><input class="input" id="'+key+'" name="'+key+'" type="number" inputmode="decimal" min="1" max="39" step="0.5" placeholder="'+placeholder+'" oninput="changeLine(\''+key+'\',this.value);MiBowlingLineEditor.refresh()" aria-label="'+label+' en tablas"></label>';
+    return '<div class="shot-field-block"><label class="shot-field" for="'+key+'"><span>'+label+'</span><input class="input" id="'+key+'" name="'+key+'" type="number" inputmode="decimal" min="1" max="39" step="0.5" placeholder="'+placeholder+'" oninput="changeLine(\''+key+'\',this.value);MiBowlingLineEditor.refresh()" aria-label="'+label+' en tablas"></label>'+nudges(key,label)+'</div>';
   }
   function html(line){
     line=line||{};
@@ -88,7 +103,7 @@
       field('approach','1 · Salida de los pies','Ej. 25').replace('placeholder="Ej. 25"','value="'+visible(line.approach)+'" placeholder="Ej. 25"')+
       field('arrow','2 · Paso por flechas','Ej. 15').replace('placeholder="Ej. 15"','value="'+visible(line.arrow)+'" placeholder="Ej. 15"')+
       field('breakpoint','3 · Breakpoint, tabla','Ej. 8').replace('placeholder="Ej. 8"','value="'+visible(line.breakpoint)+'" placeholder="Ej. 8"')+
-      '<label class="shot-field" for="breakpointFt"><span>Distancia del break (pies)</span><input id="breakpointFt" class="input" type="number" min="25" max="55" step="1" inputmode="numeric" value="'+visible(line.breakpointFt)+'" placeholder="43" oninput="changeLine(\'breakpointFt\',this.value);MiBowlingLineEditor.refresh()"></label>'+
+      '<div class="shot-field-block"><label class="shot-field" for="breakpointFt"><span>Distancia del break (pies)</span><input id="breakpointFt" class="input" type="number" min="25" max="55" step="1" inputmode="numeric" value="'+visible(line.breakpointFt)+'" placeholder="43" oninput="changeLine(\'breakpointFt\',this.value);MiBowlingLineEditor.refresh()"></label>'+nudges('breakpointFt','Distancia del break')+'</div>'+
       '<div id="shot-line-summary" class="shot-line-summary" aria-live="polite"></div>'+
       '<p class="hint">Es un <b>registro visual</b>, no una predicción física del recorrido. La línea discontinua une tu posición de pies con la referencia de flechas; no representa la suelta real. Si un campo está vacío, el dibujo usa un ejemplo hasta que lo ajustes.</p>'+
       '</div></div></section>';
@@ -160,5 +175,5 @@
       if(distance){distance.value=String(clamp(num(distance.value,43,25,55)+(evt.key==='ArrowUp'?1:-1),25,55));if(typeof window.changeLine==='function')window.changeLine('breakpointFt',distance.value);refresh();}
     }
   });
-  window.MiBowlingLineEditor={html:html,refresh:refresh,values:vals,boardX:boardX};
+  window.MiBowlingLineEditor={html:html,refresh:refresh,nudge:nudge,values:vals,boardX:boardX};
 })();
