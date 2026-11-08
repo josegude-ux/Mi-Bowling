@@ -6,6 +6,7 @@ const source=fs.readFileSync(path.join(root,'stats-bolos.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+const profiles=fs.readFileSync(path.join(root,'profiles.js'),'utf8');
 const w={};w.window=w;w.render=function(){w.renders=(w.renders||0)+1};vm.createContext(w);
 vm.runInContext(source,w,{filename:'stats-bolos.js',timeout:3000});
 const api=w.MiBowlingPinStats;
@@ -84,12 +85,16 @@ assert.ok(!Bview.includes('3 de 7'),'No stats from other user must leak');
 assert.ok(!/\b(?:localStorage|indexedDB|sessionStorage)\s*(?:\[|\.)|fetch\s*\(/.test(source),'Statistics module must not read global data or network');
 assert.ok(app.includes("MiBowlingPinStats.html(a,"),'Analysis must be fed filtered active player aggregate');
 assert.ok(app.includes("pinAnalysisCombined(a)"),'Old pin analyses retained');
-assert.ok(app.includes("const APP_VERSION='3.3.8-LAB-bolos-visual1'"),'Live app version unchanged');
-for(const path of ['stats-bolos.css?v=1','stats-bolos.js?v=1','app.js?v=338-bolos-lab1']){
+assert.ok(app.includes("const APP_VERSION='3.3.8-LAB-perfiles-estadisticas-int1'"),'Live app version unchanged');
+for(const path of ['stats-bolos.css?v=1','stats-bolos.js?v=1','profiles.js?v=1','profiles.css?v=1']){
  assert.ok(html.includes(path),'Resource missing in HTML: '+path);
  assert.ok(sw.includes("'./"+path+"'"),'Offline resource missing: '+path);
 }
-assert.ok(html.indexOf('stats-bolos.js?v=1')<html.indexOf('app.js?v=338-bolos-lab1'));
+assert.ok(html.indexOf('stats-bolos.js?v=1')<html.indexOf('profiles.js?v=1'));
+assert.ok(!html.includes('<script src="app.js'), 'App may only be loaded after player selection');
+assert.ok(profiles.includes("script.src = 'app.js?v=338-int-perfiles-stats1'"));
+assert.ok(sw.includes("'./app.js?v=338-int-perfiles-stats1'"));
+assert.ok(app.includes("MiBowlingProfiles.storageKey('mi-bowling-analitica-v2')"));
 console.log('OK · 4 modes, fractions and 10 bowling pins; no false percentages');
 console.log('OK · 1st: 13/20, 2nd: 4/8, single 1/1, combinations 3/7 + 1/3 conversions');
 console.log('OK · player A/B isolation, XSS escaping, source immutable, previous views retained');
