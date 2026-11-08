@@ -41,7 +41,7 @@ jobs:
           node tests/auth-three-users-rls-a5.test.cjs
           node tests/stats-bolos.test.cjs
   browser:
-    name: I5 · WebKit iPhone y Chromium: cierre, recarga, AES-GCM
+    name: "I5 · WebKit iPhone y Chromium: cierre, recarga, AES-GCM"
     runs-on: ubuntu-24.04
     timeout-minutes: 24
     steps:
