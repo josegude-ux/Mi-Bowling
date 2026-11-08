@@ -1,33 +1,69 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../line-editor.css">
-<title>MI BOWLING · Prueba de editor en navegador</title>
+<link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../line-editor.css"><link rel="stylesheet" href="../lane-3d.css">
+<title>MI BOWLING · Prueba de pista 3D interactiva</title>
 <style>body{padding:10px!important;min-height:100vh}.fixture{max-width:950px;margin:auto}.fixture h1{font-size:20px}</style>
-</head><body><main class="fixture"><h1>Editor de línea LAB</h1><div id="fixture-root"></div></main>
+</head><body><main class="fixture"><h1>Editor de línea LAB · 3D + cenital</h1><div id="fixture-root"></div></main>
+<script src="../lane-3d.js"></script>
 <script src="../line-editor.js"></script>
 <script>
 const recorded={};
 window.changeLine=(k,v)=>{recorded[k]=v;};
 try{
   const editor=window.MiBowlingLineEditor;
-  document.querySelector('#fixture-root').innerHTML=editor.html({approach:'25',arrow:'15',breakpoint:'8',breakpointFt:'43'});
+  const perspective=window.MiBowlingLane3D;
+  const root=document.querySelector('#fixture-root');
+  root.innerHTML=editor.html({approach:'25',arrow:'15',breakpoint:'8',breakpointFt:'43'});
   editor.refresh();
-  const lane=document.querySelector('#shot-lane'),marker=lane?.querySelector('[data-point="approach"]');
-  if(!lane||!marker)throw Error('No aparece pista o marcador');
-  if(lane.getBoundingClientRect().width>window.innerWidth)throw Error('La pista rebasa la ventana');
+  const canvas=document.getElementById('lane3d-canvas'),ctx=canvas?.getContext('2d');
+  if(!canvas||!ctx)throw Error('Vista en perspectiva no disponible');
+  if(document.getElementById('shot-stage').classList.contains('lane-view-3d')!==true)throw Error('3D no es la vista principal');
+  if(perspective.inspect().markers!==3)throw Error('No están los tres marcadores 3D');
+  if(canvas.getBoundingClientRect().width>window.innerWidth)throw Error('Canvas excede el ancho');
   if(document.documentElement.scrollWidth>window.innerWidth+2)throw Error('Desbordamiento horizontal');
-  const rect=lane.getBoundingClientRect(),at=(x,y)=>({x:rect.left+x*rect.width/380,y:rect.top+y*rect.height/644});
-  const a=at(editor.boardX(28),601);
-  marker.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:7,clientX:a.x,clientY:a.y}));
-  document.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:7,clientX:a.x,clientY:a.y}));
-  document.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:7,clientX:a.x,clientY:a.y}));
-  if(document.getElementById('approach').value!=='28')throw Error('No se actualiza el punto al arrastrar');
-  if(recorded.approach!=='28')throw Error('No se guarda la posición de pies');
+  const pixel=ctx.getImageData(Math.max(1,Math.floor(canvas.width/2)),Math.max(1,Math.floor(canvas.height/2)),1,1).data;
+  if(pixel[3]!==255)throw Error('La geometría 3D no se ha dibujado');
+  const camera0=perspective.inspect();
+  perspective.setCamera('izquierda');
+  if(perspective.inspect().cameraYaw>=0)throw Error('Control cámara izquierda no funciona');
+  perspective.setCamera('centro');
+  perspective.changeZoom(.1);
+  if(perspective.inspect().zoom<=camera0.zoom)throw Error('Zoom inactivo');
+  perspective.changeZoom(-.1);
+  const point=perspective.inspect().points.approach;
+  const geometry=perspective.camera(canvas.getBoundingClientRect().width,canvas.getBoundingClientRect().height);
+  const target=perspective.project([20-28,0,-9],geometry);
+  const rect=canvas.getBoundingClientRect();
+  canvas.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:7,clientX:rect.left+point.x,clientY:rect.top+point.y}));
+  document.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:7,clientX:rect.left+target.x,clientY:rect.top+target.y}));
+  document.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:7,clientX:rect.left+target.x,clientY:rect.top+target.y}));
+  if(document.getElementById('approach').value!=='28')throw Error('Arrastre 3D no guarda la tabla 28, actual: '+document.getElementById('approach').value);
+  if(recorded.approach!=='28')throw Error('Arrastre 3D no llega al modelo de datos');
+  if(document.querySelector('#shot-lane [data-point="approach"]').getAttribute('aria-valuenow')!=='28')throw Error('No se sincronizó el marcador cenital');
+  const before=perspective.inspect().points.breakpoint.y;
   const bpFt=document.getElementById('breakpointFt');
   bpFt.value='45';bpFt.dispatchEvent(new Event('input',{bubbles:true}));
-  if(recorded.breakpointFt!=='45')throw Error('No se actualiza distancia');
-  if(lane.querySelectorAll('.shot-marker').length!==3)throw Error('No aparecen los tres marcadores');
+  if(recorded.breakpointFt!=='45')throw Error('Distancia no propagada');
+  if(Math.abs(perspective.inspect().points.breakpoint.y-before)<.2)throw Error('El 3D no se actualizó tras cambiar la distancia');
+  perspective.setView('2d');
+  if(document.getElementById('shot-stage').classList.contains('lane-view-2d')!==true)throw Error('No cambia a cenital');
+  const lane=document.querySelector('#shot-lane'),marker=lane?.querySelector('[data-point="approach"]');
+  if(!lane||!marker)throw Error('No existe vista cenital');
+  const bounds=lane.getBoundingClientRect(),at=(x,y)=>({x:bounds.left+x*bounds.width/380,y:bounds.top+y*bounds.height/644});
+  if(bounds.width<10||bounds.width>window.innerWidth)throw Error('Vista cenital no visible correctamente');
+  const mark=marker.getBoundingClientRect();
+  const origin={x:mark.left+mark.width/2,y:mark.top+mark.height/2};
+  const a=at(editor.boardX(30),601);
+  marker.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:8,clientX:origin.x,clientY:origin.y}));
+  document.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:8,clientX:a.x,clientY:a.y}));
+  document.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:8,clientX:a.x,clientY:a.y}));
+  if(document.getElementById('approach').value!=='30')throw Error('Arrastre cenital no guarda tabla 30');
+  perspective.setView('3d');
+  if(perspective.inspect().points.approach.board!==30)throw Error('El 3D no refleja el cambio cenital');
+  if(perspective.inspect().markers!==3)throw Error('Se perdieron los marcadores al cambiar de vista');
+  if(document.documentElement.scrollWidth>window.innerWidth+2)throw Error('Desbordamiento horizontal al recuperar 3D');
   document.body.dataset.result='PASS';
   document.body.dataset.browserWidth=window.innerWidth;
+  document.body.dataset.features='3d-camera-zoom-markers-roundtrip';
 }catch(err){document.body.dataset.result='FAIL';document.body.dataset.error=String(err&&err.stack||err);console.error(err)}
 </script></body></html>
