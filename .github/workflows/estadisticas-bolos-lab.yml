@@ -1,0 +1,46 @@
+name: MI BOWLING · Estadísticas de bolos LAB
+on:
+  push:
+    branches:
+      - feature/estadisticas-bolos-visual-lab-20261108
+  pull_request:
+    paths:
+      - app.js
+      - index.html
+      - stats-bolos.js
+      - stats-bolos.css
+      - sw.js
+      - tests/stats-bolos.test.cjs
+      - tests/stats-bolos-browser.html
+      - tests/stats-bolos-browser.test.cjs
+      - .github/workflows/estadisticas-bolos-lab.yml
+permissions:
+  contents: read
+jobs:
+  pinmap-lab:
+    name: Estadísticas visuales y separación por perfil
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis y cálculos de bolos
+        run: |
+          node --check app.js
+          node --check stats-bolos.js
+          node --check sw.js
+          node --check tests/stats-bolos.test.cjs
+          node --check tests/stats-bolos-browser.test.cjs
+          node tests/stats-bolos.test.cjs
+      - name: Interfaz en móvil tablet escritorio (Chromium)
+        run: node tests/stats-bolos-browser.test.cjs
+      - name: Capturas de laboratorio
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-stats-visual-lab
+          path: tests/artifacts-bolos/*.png
+          retention-days: 14
+          if-no-files-found: warn

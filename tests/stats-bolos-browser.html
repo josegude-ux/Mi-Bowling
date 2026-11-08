@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MI BOWLING LAB · mapa de bolos</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../stats-bolos.css">
+<style>body{min-height:100vh}#app{margin:0 auto}.lab-heading{background:#e3f3ff;padding:8px 14px;font:bold 12px system-ui;color:#235679}</style>
+</head><body>
+<div class="lab-heading">MI BOWLING LAB · Datos ficticios · No conectado a producción</div>
+<header class="topbar"><div class="topbar-inner"><div class="brand">🎳 MI BOWLING</div></div></header>
+<main id="app" class="app-main"></main>
+<nav id="bottom-nav" class="bottom-nav"></nav>
+<input id="restore-file" type="file" hidden disabled>
+<script>
+(function(){
+  const all=[1,2,3,4,5,6,7,8,9,10];
+  const rolls=[];
+  for(let frame=1;frame<=10;frame++){
+    const first=frame<=5?all.slice(0,9):all.slice(0,8);
+    const second=frame<=5?[10]:frame===10?[9,10]:[9];
+    rolls.push({frame,ball:1,pins:first,ballId:'ball-a'});
+    rolls.push({frame,ball:2,pins:second,ballId:'ball-a'});
+    if(frame===10)rolls.push({frame,ball:3,pins:all,ballId:'ball-a'});
+  }
+  const db={
+    version:2,hand:'diestro',
+    balls:[{id:'ball-a',brand:'Prueba',model:'Azul'}],
+    patterns:[],
+    sessions:[{
+      id:'sample-one',type:'entrenamiento',date:'2026-11-08',
+      title:'Partida ficticia 1',venue:'LAB',games:[{
+        id:'sample-game',includeStats:true,pair:null,startLane:null,
+        segments:[],rolls
+      }]
+    }]
+  };
+  const data=new Map([['mi-bowling-analitica-v2',JSON.stringify(db)]]);
+  const store={
+    getItem:key=>data.has(String(key))?data.get(String(key)):null,
+    setItem:(key,val)=>data.set(String(key),String(val)),
+    removeItem:key=>data.delete(String(key)),
+    clear:()=>data.clear()
+  };
+  Object.defineProperty(window,'localStorage',{configurable:true,value:store});
+  let user='Jugador A';
+  window.MiBowlingProfiles={current:()=>({name:user,id:user})};
+  window.__pinlab={getUser:()=>user,setUser:next=>{user=next;}};
+})();
+</script>
+<script src="../stats-bolos.js"></script>
+<script src="../app.js"></script>
+<script>
+(function(){
+try{
+  activeId='sample-one';go('registro');
+  if(document.querySelectorAll('.registry-v4-mini-frame').length!==10)throw Error('Regresión en las diez miniaturas de anotación');
+  if(document.querySelectorAll('.score-strip .frame-cell').length!==10)throw Error('Regresión en el marcador de diez frames');
+  statPane='bolos';go('estadisticas');
+  let map=document.getElementById('pinmap-screen');
+  if(!map)throw Error('El mapa no aparece en estadísticas');
+  if(document.querySelectorAll('.pinmap-pin').length!==10)throw Error('Mapa incorrecto de 10 bolos');
+  if(document.querySelectorAll('.pinmap-tabs button').length!==4)throw Error('No están los cuatro modos');
+  if(document.querySelectorAll('.pinmap-rack-row').length!==4)throw Error('Formación real 4-3-2-1 ausente');
+  const analysis=MiBowlingPinStats.compute(periodAggregate(aggregate('entrenamiento')),'first');
+  if(analysis.events!==11)throw Error('Primer lanzamiento y bonificaciones del décimo incorrectos: '+analysis.events);
+  if(analysis.overallPossible!==110)throw Error('Denominador de primer tiro incorrecto');
+  const firstCards=[...document.querySelectorAll('.pinmap-pin')];
+  if(firstCards.some(p=>p.getBoundingClientRect().height<44))throw Error('Bolos demasiado pequeños para tocar');
+  MiBowlingPinStats.setMode('second');
+  if(MiBowlingPinStats.compute(periodAggregate(aggregate('entrenamiento')),'second').events!==10)throw Error('Segundas bolas incorrectas');
+  if(!document.getElementById('pinmap-screen').textContent.includes('Spares convertidos'))throw Error('KPI de spares ausente');
+  MiBowlingPinStats.setMode('single');
+  if(MiBowlingPinStats.compute(periodAggregate(aggregate('entrenamiento')),'single').events!==5)throw Error('Bolos únicos incorrectos');
+  MiBowlingPinStats.setMode('combinations');
+  if(MiBowlingPinStats.compute(periodAggregate(aggregate('entrenamiento')),'combinations').events!==5)throw Error('Combinaciones incorrectas');
+  if(!document.querySelector('.pinmap-combo-row'))throw Error('Sin ranking de combinaciones');
+  MiBowlingPinStats.selectPin(10);
+  if(!document.querySelector('.pinmap-pin.selected'))throw Error('No se selecciona el bolo');
+  if(document.querySelector('.pinmap-pin.selected')?.getAttribute('aria-pressed')!=='true')throw Error('Sin accesibilidad al seleccionar');
+  MiBowlingPinStats.setMode('first');
+  __pinlab.setUser('Jugador B');
+  db=emptyDB();
+  render();
+  const emptyMap=document.getElementById('pinmap-screen');
+  if(!emptyMap||!emptyMap.textContent.includes('Sin datos'))throw Error('Se arrastran estadísticas de otro jugador');
+  if(!emptyMap.textContent.includes('Jugador B'))throw Error('No se identifica el jugador');
+  const zero=MiBowlingPinStats.compute(periodAggregate(aggregate('entrenamiento')),'first');
+  if(zero.events!==0||zero.overallRate!==null)throw Error('Jugador nuevo no empieza en cero');
+  if(document.documentElement.scrollWidth>innerWidth+3)throw Error('Desbordamiento horizontal: '+document.documentElement.scrollWidth+'/'+innerWidth);
+  document.body.dataset.browserTest='PASS';
+  document.body.dataset.viewport=String(innerWidth);
+}catch(e){document.body.dataset.browserTest='FAIL';document.body.dataset.browserError=String(e&&e.stack||e);console.error(e)}
+})();
+</script>
+</body></html>
