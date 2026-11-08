@@ -1,0 +1,71 @@
+name: MI BOWLING · Integración main CP-020 + Auth LAB I2
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-cp020-lab-20261108
+  pull_request:
+    paths:
+      - 'lab/integracion-main-auth-cp020*'
+      - 'tests/integracion-main-auth-cp020*'
+      - '.github/workflows/integracion-main-auth-cp020-lab.yml'
+permissions:
+  contents: read
+jobs:
+  verify-main-and-unit:
+    name: Main intocable · autenticación y recuperación ficticia
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comparar identidad binaria del main CP-020 y calendario
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Sintaxis de los módulos integrados
+        run: |
+          node --check lab/integracion-main-auth-cp020-guard.js
+          node --check lab/integracion-main-auth-cp020.js
+          node --check tests/integracion-main-auth-cp020-browser.test.cjs
+          node --check auth-private-repository.js
+          node --check auth-lab.js
+          node --check auth-legacy-migration-lab.js
+          node --check profiles.js
+          node --check stats-bolos.js
+      - name: Pruebas del LAB autenticación, perfiles y estadística
+        run: |
+          node tests/auth-lab.test.cjs
+          node tests/auth-email-flows.test.cjs
+          node tests/auth-callback.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
+          node tests/auth-migration-a6.test.cjs
+          node tests/auth-storage-a8.test.cjs
+          node tests/profiles-lab.test.cjs
+          node tests/stats-bolos.test.cjs
+  integration-webkit:
+    name: WebKit iPhone/Tablet + Chromium · perfiles y portada CP-020
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright fijado para el runner de pruebas
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: Preparar WebKit en Ubuntu de prueba
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Integración funcional LAB sin datos reales
+        run: node tests/integracion-main-auth-cp020-browser.test.cjs
+      - name: Capturas de la integración
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-main-cp020-auth-integracion-i2
+          path: tests/artifacts-integracion-i2/*.png
+          retention-days: 14
+          if-no-files-found: warn
