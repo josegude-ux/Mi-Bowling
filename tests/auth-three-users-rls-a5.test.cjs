@@ -109,7 +109,7 @@ async function main(){
  const unauth=server.client({id:null,role:'anon',active:true});
  const expired=server.client({...OWNER(C),active:false});
  const unconfirmed=server.client({...OWNER(A),confirmed:false});
- for(const [name,client] of [['anonymous',anon],['no session',unauth],['expired',expired],['unconfirmed',unconfirmed]]){
+ for(const [name,client] of [['anonymous',anon],['no session',unauth],['expired',expired]]){
   const r=repo(client);
   await assert.rejects(r.load(A),/Acceso denegado/,'repository denies '+name);
   const raw=await client.from('bowling_player_documents').select('user_id,doc_type,payload,revision');
@@ -117,6 +117,15 @@ async function main(){
   const no=await client.from('bowling_player_documents').insert({user_id:A,doc_type:'league',payload:league([999]),revision:0});
   assert.ok(no.error,'server denies insert for '+name);
  }
+ // Separate concerns: RLS checks UUID + anonymous role, but NOT email confirmation.
+ // Auth MUST reject unconfirmed sign-ins, and the repository enforces this again.
+ await assert.rejects(repo(unconfirmed).load(A),/Acceso denegado/,
+  'application repository refuses a server-unconfirmed email');
+ const unconfirmedRaw=await unconfirmed.from('bowling_player_documents')
+  .select('user_id,doc_type,payload,revision');
+ assert.ok(unconfirmedRaw.data.length>=1,
+  'Document limitation accurately modeled: RLS alone does not enforce email confirmation');
+
  const del=await clients[0].from('bowling_player_documents').delete().eq('user_id',A);
  assert.ok(del.error,'DELETE disabled by policy and grants');
  // User switches session during an in-flight SELECT: no result can be delivered.
@@ -157,7 +166,7 @@ async function main(){
  assert.ok(!/\bsecurity\s+definer\b/i.test(sql.replace(/--[^\n]*/g,'')));
  assert.ok(!/\buser_metadata\b|\braw_user_meta_data\b/i.test(sql));
  assert.match(sql,/primary key\s*\(user_id,\s*doc_type\)/i);
- console.log('OK · Anonymous, expired, unconfirmed, foreign identity + in-flight session switch all denied');
+ console.log('OK · Anonymous/expired and foreign RLS deny; unconfirmed blocked by Auth/repository, not RLS alone');
  console.log('OK · SQL grants/owner policies statically matched to RLS mock; NO database SQL executed');
  console.log('OK · All scores/rosters fictitious, no Supabase project/accounts and no external writes');
 }
