@@ -202,6 +202,10 @@ async function run(browser,engine,width,origin){
    name:'restauracion-lab.json',mimeType:'application/json',
    buffer:Buffer.from(JSON.stringify(fixture))
   });
+  await page.waitForFunction(()=>{
+   try{return JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')||'{}').sessions?.length===1}
+   catch{return false}
+  },null,{timeout:10000});
   data=await getData(page);
   assert.equal(data.db.sessions.length,1,'Restauración reemplaza las sesiones ficticias anteriores');
   assert.equal(data.db.sessions[0].games[0].rolls[0].ballId,'lab-b','Restauración preserva bola de tiro histórico');
