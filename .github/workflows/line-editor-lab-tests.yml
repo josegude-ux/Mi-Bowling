@@ -1,0 +1,35 @@
+name: MI BOWLING · Línea visual LAB
+on:
+  push:
+    branches:
+      - feature/linea-visual-r1-20261108
+  pull_request:
+    paths:
+      - app.js
+      - index.html
+      - sw.js
+      - line-editor.js
+      - line-editor.css
+      - tests/line-editor.test.cjs
+      - .github/workflows/line-editor-lab-tests.yml
+permissions:
+  contents: read
+jobs:
+  line-editor:
+    name: Sintaxis y regresión sin dependencias
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Obtener código de laboratorio
+        uses: actions/checkout@v4
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar sintaxis JS y pruebas
+        run: |
+          node --check app.js
+          node --check line-editor.js
+          node --check sw.js
+          node --check tests/line-editor.test.cjs
+          node tests/line-editor.test.cjs
