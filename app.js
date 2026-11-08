@@ -364,7 +364,18 @@ function patternsView(){const p=db.patterns.find(x=>x.id===selectedPatternId);co
 // Exposed test harness; harmless in normal operation.
 window.__miBowlingTest={next,frameScores,score,complete,currentLane,aggregate,migrate};
 if('serviceWorker'in navigator&&location.protocol.startsWith('http')){
- navigator.serviceWorker.addEventListener('controllerchange',()=>{updateAvailable=true;updateStatus('Nueva versión descargada. Se aplicará al volver a abrir; puedes actualizar ahora.',true);if(tab==='inicio'&&document.visibilityState==='visible'&&!updateCheckStarted){updateCheckStarted=true;window.location.reload()}});
+ let swWasControlled=!!navigator.serviceWorker.controller;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  const isUpdate=swWasControlled;
+  swWasControlled=true;
+  // La primera instalación no es una actualización: no recargar al usuario durante la navegación.
+  if(!isUpdate)return;
+  updateAvailable=true;
+  updateStatus('Nueva versión descargada. Se aplicará al volver a abrir; puedes actualizar ahora.',true);
+  if(tab==='inicio'&&document.visibilityState==='visible'&&!updateCheckStarted){
+   updateCheckStarted=true;window.location.reload();
+  }
+ });
  window.addEventListener('load',async()=>{try{swRegistration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});await swRegistration.update();}catch(e){}});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdates(false)});
 }
