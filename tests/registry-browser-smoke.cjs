@@ -155,17 +155,24 @@ async function runMissedFrame(browser,engine,origin){
   await page.getByRole('button',{name:/Bolo 10:/}).click();
   await page.locator('#quick-record').click();
   assert.equal(await first.locator('.missed').count(),0,'Primera tirada: sin rojo');
+  assert.equal(await first.locator('.standing').count(),2,'Primera tirada: dos bolos negros');
+  assert.equal(await first.locator('[data-pin="9"].standing').count(),1,'Bolo 9 en pie negro');
+  assert.equal(await first.locator('[data-pin="10"].standing').count(),1,'Bolo 10 en pie negro');
   await page.getByRole('button',{name:/Bolo 10:/}).click();
   await page.locator('#quick-record').click();
   assert.equal(await first.locator('.missed').count(),1,'Solo bolo 10 sin derribar');
   assert.equal(await first.locator('[data-pin="10"].missed').count(),1,'Pin correcto marcado en rojo');
+  assert.equal(await first.locator('[data-pin="9"].standing').count(),1,'Bolo 9 derribado en segunda negro');
+  assert.equal(await first.locator('[data-pin="8"].fallen').count(),1,'Bolo derribado en primera gris');
   assert.equal((await dbFromPage(page)).sessions[0].games[0].rolls.length,2,'Segunda tirada guardada');
   await page.screenshot({path:path.join(results,engine+'-390-rojo-segunda.png'),fullPage:true});
   page.once('dialog',async dlg=>dlg.accept());
   await page.getByRole('button',{name:/Deshacer último lanzamiento/}).click();
   assert.equal(await first.locator('.missed').count(),0,'Deshacer: no conservar rojo anterior');
+  assert.equal(await first.locator('.standing').count(),2,'Deshacer repone los dos negros de primera tirada');
   await page.locator('#quick-record').click();
   assert.equal(await first.locator('.missed').count(),0,'Spare: ningún bolo rojo');
+  assert.equal(await first.locator('.standing').count(),2,'Spare deja negros los derribados en segunda');
   console.log('OK '+engine+' indicadores rojos: cierre, deshacer y spare.');
  }finally{await context.close();}
 }
