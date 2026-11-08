@@ -11,6 +11,8 @@ on:
       - profiles.css
       - sw.js
       - tests/profiles-lab.test.cjs
+      - tests/profiles-faults.test.cjs
+      - lab/perfiles.html
       - tests/profiles-browser.html
       - tests/profiles-browser.test.cjs
       - .github/workflows/perfiles-locales-lab.yml
@@ -32,7 +34,9 @@ jobs:
           node --check profiles.js
           node --check sw.js
           node --check tests/profiles-lab.test.cjs
+          node --check tests/profiles-faults.test.cjs
           node tests/profiles-lab.test.cjs
+          node tests/profiles-faults.test.cjs
       - name: Comprobar selector y partidas con Chrome real
         run: |
           node --check tests/profiles-browser.test.cjs
