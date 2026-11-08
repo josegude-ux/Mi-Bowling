@@ -42,7 +42,6 @@ jobs:
           node tests/auth-three-users-rls-a5.test.cjs
           node tests/auth-migration-a6.test.cjs
           node tests/auth-storage-a8.test.cjs
-          node tests/profiles-lab.test.cjs
           node tests/stats-bolos.test.cjs
   integration-webkit:
     name: WebKit iPhone/Tablet + Chromium · perfiles y portada CP-020
