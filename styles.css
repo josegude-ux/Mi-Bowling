@@ -342,3 +342,13 @@ body.registry-screen .app-main{padding-bottom:calc(26px + env(safe-area-inset-bo
 .registry-v4-mini-legend i{display:inline-block;flex:none;width:7px;height:7px;background:#cf1839;border-radius:50%}
 @media(max-width:580px){.registry-v4 .registry-v4-mini-dot.missed{width:4.5px;height:4.5px}}
 @media(max-width:350px){.registry-v4 .registry-v4-mini-dot.missed{width:4px;height:4px}}
+
+/* LAB: negro = permanecen tras 1ª o derribados en la 2ª; rojo = restantes tras la 2ª. */
+.registry-v4 .registry-v4-mini-dot.standing{background:#111827;width:5px;height:5px}
+.registry-v4 .registry-v4-mini-dot.missed{background:#cf1839;width:5.5px;height:5.5px}
+.registry-v4-mini-legend{flex-wrap:wrap;column-gap:12px;row-gap:5px;white-space:normal}
+.registry-v4-mini-legend span{display:inline-flex;align-items:center;gap:5px}
+.registry-v4-mini-legend .registry-v4-legend-black{background:#111827}
+.registry-v4-mini-legend .registry-v4-legend-red{background:#cf1839}
+@media(max-width:580px){.registry-v4 .registry-v4-mini-dot.standing{width:4.5px;height:4.5px}}
+@media(max-width:350px){.registry-v4 .registry-v4-mini-dot.standing{width:4px;height:4px}}
