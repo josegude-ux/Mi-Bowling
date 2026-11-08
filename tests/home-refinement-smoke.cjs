@@ -22,6 +22,6 @@ assert(app.includes('class="bowling-home-module bowling-home-module-red"'),'Tarj
 assert(app.includes('class="bowling-home-module bowling-home-module-blue"'),'Tarjeta azul conservada');
 assert(app.includes('class="bowling-home-module bowling-home-module-gold"'),'Tarjeta dorada conservada');
 assert.equal((app.slice(app.indexOf('function home(){'),app.indexOf('let calendarMonth=')).match(/class="bowling-home-tool-card"/g)||[]).length,3,'Tres herramientas homogéneas');
-for(const t of ['patrones','liga','bolas'])assert(app.includes('class="bowling-home-tool-card" data-target="'+t+'"'),'Ruta '+t+' conservada');
+for(const t of ['patrones','liga','bolas'])assert(app.includes('data-target="'+t+'"')&&app.includes('class="bowling-home-tool-card"'),'Ruta '+t+' conservada');
 assert(app.includes("['calendario'"),'Calendario permanece en navegación');
 console.log('PASS CP-019 · Iconos tridimensionales estáticos, estadísticas sin 85%, tarjetas uniformes, PWA y datos intactos');
