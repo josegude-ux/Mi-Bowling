@@ -13,19 +13,22 @@
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="stylesheet" href="styles.css?v=338prueba">
   <link rel="stylesheet" href="stats-bolos.css?v=1">
+  <link rel="stylesheet" href="profiles.css?v=1">
   <title>Mi Bowling · Analítica</title>
 </head>
-<body>
+<body class="player-gated">
+ <div id="profile-gate" aria-live="polite"></div>
  <header class="topbar">
    <div class="topbar-inner">
      <button class="brand" type="button" onclick="go('inicio')" aria-label="Ir al inicio"><span class="brand-mark">🎳</span>Mi <b>Bowling</b><span class="brand-sub">ANALÍTICA</span></button>
-     <div class="header-actions"><span class="offline-label"><i></i> En tu dispositivo</span><button type="button" class="icon-button" onclick="go('ajustes')" aria-label="Ajustes" title="Ajustes">⚙</button></div>
+     <div class="header-actions"><button id="player-switch" type="button" onclick="MiBowlingProfiles.leave()" hidden aria-label="Cambiar jugador"><span id="player-current">Jugador</span> <span aria-hidden="true">⌄</span></button><span class="offline-label"><i></i> En tu dispositivo</span><button type="button" class="icon-button" onclick="go('ajustes')" aria-label="Ajustes" title="Ajustes">⚙</button></div>
    </div>
  </header>
  <main id="app" class="app-main" role="main"></main>
  <nav id="bottom-nav" class="bottom-nav" aria-label="Navegación"></nav>
  <input id="restore-file" type="file" accept=".json,application/json" hidden>
  <script src="stats-bolos.js?v=1"></script>
- <script src="app.js?v=338-bolos-lab1"></script>
+ <script src="profiles.js?v=1"></script>
+ <script>MiBowlingProfiles.init()</script>
 </body>
 </html>
