@@ -24,7 +24,7 @@ const fixture={version:2,hand:'diestro',balls:[
 const getData=page=>page.evaluate(()=>({db:JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')),picks:JSON.parse(localStorage.getItem('mi-bowling-ball-selection-v1')||'{}')}));
 async function ensureExtras(page){
  const node=page.locator('details.registry-v4-extra');
- if(!(await node.getAttribute('open')))await node.locator('summary').click();
+ if((await node.getAttribute('open'))===null)await node.locator('summary').click();
 }
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
@@ -73,6 +73,16 @@ async function run(browser,engine,width,origin){
   assert.equal(data.db.balls[0].notes,fixture.balls[0].notes,'Texto de taladro solo en notes');
   assert.deepEqual(data.db.balls.map(b=>Object.keys(b).sort()),fixture.balls.map(b=>Object.keys(b).sort()),'Cero nuevos campos de bola');
   assert.equal(data.db.version,2,'Esquema existente intacto');
+  await ensureExtras(page);
+  await page.locator('.registry-v4-extra .textlink').click();
+  await page.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').uncheck();
+  await page.getByRole('button',{name:/Volver al lanzamiento/}).click();
+  await ensureExtras(page);
+  assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),['Sin asignar','Marca LAB Alpha'],'Desmarcar retira la bola del selector, sin borrar lanzamientos');
+  assert.deepEqual((await getData(page)).db.sessions[1].games[0].rolls.slice(0,2).map(r=>r.ballId),['lab-a','lab-b'],'Bolas usadas históricamente inmutables');
+  await page.locator('.registry-v4-extra .textlink').click();
+  await page.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').check();
+  await page.getByRole('button',{name:/Volver al lanzamiento/}).click();
   await page.reload({waitUntil:'load'});
   await page.evaluate(id=>openSession(id),sid);
   await ensureExtras(page);
@@ -82,6 +92,16 @@ async function run(browser,engine,width,origin){
   assert.deepEqual(await page.locator('#roll-ball option').allTextContents(),['Sin asignar','Marca LAB Alpha','Marca LAB Beta'],'Sesión antigua sin check conserva comportamiento');
   await page.evaluate(()=>go('bolas'));
   assert.equal(await page.locator('.ball-session-toggle input:checked').count(),0,'Nueva selección independiente tras sesión');
+  await page.evaluate(()=>{
+   const original=Storage.prototype.setItem;
+   Storage.prototype.setItem=function(key,value){
+    if(key==='mi-bowling-ball-selection-v1')throw new DOMException('Quota simulada','QuotaExceededError');
+    return original.call(this,key,value);
+   };
+  });
+  await page.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').check();
+  assert.deepEqual(await page.evaluate(()=>selectedBallsFor('__next__')),['lab-a'],'Fallo de cuota: selección operativa en memoria');
+  assert.deepEqual((await getData(page)).db.balls,fixture.balls,'Fallo de cuota no cambia arsenal');
   const scroll=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
   assert(scroll.scroll<=scroll.client+2,'Sin desbordamiento horizontal');
   assert.deepEqual(errors,[],'Sin errores JS en navegador');
