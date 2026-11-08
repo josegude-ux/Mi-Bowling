@@ -96,6 +96,11 @@ async function webkitRecovery(browser,base){
   assert.equal(JSON.stringify(raw).includes('wal-game-A'),false,'game leaked to native IDB');
   assert.equal(await p.evaluate(()=>localStorage.getItem('__I5_NATIVE_SENTINEL__')),'must-remain');
   await go(p,base);
+  // A second, explicit same-tab browser reload must preserve the encrypted row
+  // while discarding the previous execution's fake identity and unlock key.
+  await p.reload();
+  assert.equal(await p.locator('body').getAttribute('data-lab-isolation'),'PASS');
+  assert.equal((await status(p)).opened,false);
   await login(p,'A','Incorrect-Independent-Secret-2026');
   await p.locator('#lab-safety-status:not([hidden])').waitFor({timeout:15000});
   assert.equal((await status(p)).opened,false);
