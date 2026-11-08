@@ -75,6 +75,22 @@ async function runView(browser,engine,width,height,origin){
    const b=el.getBoundingClientRect(); return [b.width,b.height];
   });
   assert(sizes[0]>=44 && sizes[1]>=44,'Bolos cómodos al tacto');
+  assert.equal(await page.locator('.registry-v4-quick .btn').count(),4,'Cuatro atajos');
+  const actions = await page.locator('.registry-v4-quick .btn').evaluateAll(buttons=>buttons.map(el=>{
+   const b=el.getBoundingClientRect();return {x:b.x,y:b.y,height:b.height,scroll:el.scrollWidth,width:el.clientWidth};
+  }));
+  assert(actions.every(a=>a.height>=44 && a.scroll <= a.width+2),'Atajos accesibles sin texto cortado');
+  if(width===320){
+   assert(Math.abs(actions[0].y-actions[1].y)<2,'Dos botones en la primera fila');
+   assert(actions[2].y>actions[0].y+20,'Segunda fila para atajos en móvil pequeño');
+  }
+  const frameHeading=await page.locator('.registry-v4-roll .game-heading h1').evaluate(el=>{
+   const b=el.getBoundingClientRect(),line=parseFloat(getComputedStyle(el).lineHeight);
+   return {height:b.height,line};
+  });
+  assert(frameHeading.height<=frameHeading.line+3,'Cabecera del frame en una línea');
+  assert(await page.getByText('Si no marcas ninguno, anotarás todos derribados.').isVisible(),'Explicación de anotación');
+
   const overflow=await assertNoHorizontalOverflow(page);
   assert(overflow.scroll <= overflow.width + 2,
    'Desbordamiento horizontal: '+JSON.stringify({engine,width,overflow}));
