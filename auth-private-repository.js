@@ -19,10 +19,11 @@ function create(client){
  }
  async function load(owner){
   await identity(owner);
-  const {data,error}=await client.from(TABLE).select('doc_type,payload,revision')
+  const {data,error}=await client.from(TABLE).select('user_id,doc_type,payload,revision')
    .eq('user_id',owner);
   if(error)throw Error('No se puede consultar el almacén privado');
   if(!Array.isArray(data))throw Error('Respuesta de almacén inválida');
+  if(data.some(row=>row?.user_id!==owner))throw Error('El servidor devolvió datos de otro propietario');
   const docs={};
   for(const kind of DOCS){
    const rows=data.filter(x=>x.doc_type===kind);
