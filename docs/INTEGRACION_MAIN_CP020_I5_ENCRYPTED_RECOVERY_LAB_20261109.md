@@ -3,7 +3,8 @@
 **Orden:** BOWLING-INTEGRACION-CP020-I5-20261109
 **Fecha:** 9 de noviembre de 2026
 **Origen I4:** PR #21, checkpoint 5fc439d246ef1619476b8ea2a96602559662c949 y código validado 5d9a9d238f3156b336c7970d8557508d6107bfc6.
-**Rama I5:** feature/integracion-main-auth-i5-lab-20261109, derivada del último checkpoint I4; PR independiente en borrador.
+**Rama I5:** feature/integracion-main-auth-i5-lab-20261109, derivada del último checkpoint I4; PR #22 independiente en borrador.
+**Checkpoint funcional de código:** 452a4ab03e89e38055ff739ef81802d420f177bb (validado en GitHub Actions, antes de añadir esta evidencia).
 **Main preservado:** 566aafdc05be163baf8c7f82e60433b0f532d748 (VISURA y FGB CP-020).
 
 ## Objetivo y implementación
@@ -39,12 +40,35 @@ I4 guardaba pendientes en un Map de memoria; cerrar la página destruía el diar
 
 ## Matriz de aceptación antes de cerrar checkpoint
 
-- [ ] Verificar los seis SHA CP-020 y calendario FGB 31 fechas.
-- [ ] Node sintaxis + regresión I4/I3 y RLS ficticio A/B/C.
-- [ ] Playwright WebKit emulado y Chromium: motor CP-020 y guard aislado.
-- [ ] Cierre real de pestaña/reapertura: pendiente A cifrado sobrevive, con IV/sal/ciphertext pero sin puntuaciones en texto claro.
-- [ ] Tras reabrir: contraseña errónea no borra WAL; B no accede a A; A necesita confirmación y CAS antes de reanudar.
-- [ ] Corrupción del ciphertext AES-GCM bloquea recuperación, no hace escrituras ni elimina copia.
-- [ ] Registrar código/checkpoint y ejecuciones CI SUCCESS, sin fusionar ni publicar.
+- [x] Verificar los seis SHA CP-020 y calendario FGB 31 fechas.
+- [x] Node sintaxis + regresión I4/I3 y RLS ficticio A/B/C.
+- [x] Playwright WebKit emulado y Chromium: motor CP-020 y guard aislado.
+- [x] Cierre real de pestaña/reapertura: pendiente A cifrado sobrevive, con IV/sal/ciphertext pero sin puntuaciones en texto claro.
+- [x] Tras reabrir: contraseña errónea no borra WAL; B no accede a A; A necesita confirmación y CAS antes de reanudar.
+- [x] Corrupción del ciphertext AES-GCM bloquea recuperación, no hace escrituras ni elimina copia.
+- [x] Registrar código/checkpoint y ejecuciones CI SUCCESS, sin fusionar ni publicar.
 
 **NO UTILIZAR CON PARTIDAS REALES · NO FUSIONAR · NO PUBLICAR.**
+
+
+## Checkpoint I5 verificado · 9 de noviembre de 2026
+
+**Código exacto validado:** 452a4ab03e89e38055ff739ef81802d420f177bb.
+**Evidencia CI I5 sobre el código final:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42537369307 · SUCCESS, **2/2 jobs**.
+**Evidencia CI complementaria de la PR (código anterior, con prueba de cierre y reapertura):** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42537359854 · SUCCESS, 2/2 jobs.
+**PR:** https://github.com/josegude-ux/Mi-Bowling/pull/22 (abierta, draft, base de PR #21).
+
+Pruebas específicas realizadas y observadas:
+- WebKit emulando iPhone: escritura WAL con error de servidor ficticio, **cierre verdadero de pestaña**, apertura de pestaña nueva y **recarga verdadera** de la página antes de desbloquear. La entrada sobrevive y se comprueba que IndexedDB solo contiene el sobre cifrado, sin nombres de partidas ni puntuaciones en claro.
+- Contraseña errónea: bloquea lectura sin borrar ni modificar ciphertext. La clave de una pestaña cerrada no persiste.
+- Jugador B: inicio independiente sin abrir pendientes del jugador A; intento de leer A con journal de B denegado. Al volver a A, la app inicia en modo **solo recuperación**, con el motor editable bloqueado hasta resolver.
+- Inspección de versión SHA-256, recuperación explícita con CAS, lectura posterior y borrado del journal únicamente tras confirmación. El motor CP-020 muestra la sesión ficticia recuperada.
+- Chromium escritorio: alteración deliberada de bytes AES-GCM detectada; la app se bloquea y mantiene la copia alterada para investigación, sin escribir en el remoto ficticio.
+- WebKit iPhone A y tablet B y Chromium escritorio C: integración normal con guarda asíncrona del CP-020, sin PWA ni modificación del localStorage real.
+- Regresiones Node I4/I3, aislamiento A/B/C, contratos de SHA de seis ficheros CP-020 y calendario FGB 31 eventos (10 gallegos y 21 nacionales): todas aprobadas.
+
+**Estado:** I5 VALIDADA EN LAB con cuentas y partidas ficticias y un origen HTTPS efímero de Playwright. Cifrado/IndexedDB probado en los navegadores de CI; no ha sido comprobado en Safari físico ni con cuentas/servidores/productos reales. No se considera apto para utilizar, migrar o sincronizar partidas auténticas.
+
+**Advertencias de continuidad:** el backend de demostración desaparece al recargar; en la demo solo se conserva el WAL. Tampoco se evita la ventana previa de 80 ms antes del journal. Para una fase posterior, preparar persistencia del servidor simulado y pruebas multi-pestaña/quota/privado. Sin cambiar estas limitaciones, no aprobar producción.
+
+**Prohibiciones:** no fusionar ni publicar, no conectar servicios reales, no tocar main ni las PR #1/#8/#10/#12/#13/#18/#20/#21.
