@@ -61,6 +61,13 @@ try{
   perspective.setView('3d');
   if(perspective.inspect().points.approach.board!==30)throw Error('El 3D no refleja el cambio cenital');
   if(perspective.inspect().markers!==3)throw Error('Se perdieron los marcadores al cambiar de vista');
+  const nudges=document.querySelectorAll('.shot-nudges button');
+  if(nudges.length!==8)throw Error('Controles táctiles +/- ausentes');
+  if(Array.from(nudges).some(el=>el.getBoundingClientRect().height<44))throw Error('Controles demasiado pequeños para el dedo');
+  editor.nudge('approach',-1);
+  if(document.getElementById('approach').value!=='29.5'||perspective.inspect().points.approach.board!==29.5)throw Error('Nudge no sincroniza 3D');
+  editor.nudge('breakpointFt',1);
+  if(document.getElementById('breakpointFt').value!=='46')throw Error('Nudge de distancia no funciona');
   if(document.documentElement.scrollWidth>window.innerWidth+2)throw Error('Desbordamiento horizontal al recuperar 3D');
   document.body.dataset.result='PASS';
   document.body.dataset.browserWidth=window.innerWidth;
