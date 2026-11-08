@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><base href="../"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eff7fc">
+<title>MI BOWLING · LAB Perfiles + Estadísticas visuales</title>
+<link rel="stylesheet" href="styles.css?v=338prueba">
+<link rel="stylesheet" href="profiles.css?v=1">
+<link rel="stylesheet" href="stats-bolos.css?v=1">
+<style>
+.integrated-lab-banner{position:sticky;z-index:110;top:0;background:#153d66;color:white;padding:9px 13px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px 15px;font:700 12px/1.4 system-ui;text-align:center}
+.integrated-lab-banner button{border:1px solid #95c4db;background:#28668c;border-radius:10px;color:#fff;min-height:38px;padding:7px 12px;font:750 12px system-ui}
+body.player-gated .integrated-lab-banner{position:fixed;left:0;right:0}
+#profile-gate{padding-top:43px}
+.integrated-lab-banner strong{letter-spacing:.5px}
+</style>
+</head>
+<body class="player-gated">
+<div class="integrated-lab-banner">
+ <strong>🧪 LAB · MI BOWLING · PERFILES + ESTADÍSTICAS</strong>
+ <span>Solo datos ficticios; sin conexión con tu aplicación publicada</span>
+ <button id="lab-show-home" type="button" hidden onclick="go('inicio')">Inicio</button>
+ <button id="lab-clear" type="button">Reiniciar demostración</button>
+</div>
+<div id="profile-gate"></div>
+<header class="topbar"><div class="topbar-inner">
+ <button class="brand" type="button" onclick="go('inicio')" aria-label="Ir al inicio"><span class="brand-mark">🎳</span>Mi <b>Bowling</b><span class="brand-sub">LAB</span></button>
+ <div class="header-actions"><button type="button" id="player-switch" onclick="MiBowlingProfiles.leave()" hidden><span id="player-current">Jugador</span> <span aria-hidden="true">⌄</span></button><span class="offline-label">Datos ficticios</span></div>
+</div></header>
+<main id="app" class="app-main" role="main"></main>
+<nav id="bottom-nav" class="bottom-nav" aria-label="Navegación"></nav>
+<input id="restore-file" type="file" accept=".json" hidden disabled>
+<script>
+(function(){
+'use strict';
+const nativeSession=window.sessionStorage;
+const root='mi-bowling-demo-integracion-20261108:';
+function facade(group){
+ const pre=root+group+':';
+ return {
+  getItem(key){return nativeSession.getItem(pre+String(key))},
+  setItem(key,value){nativeSession.setItem(pre+String(key),String(value))},
+  removeItem(key){nativeSession.removeItem(pre+String(key))},
+  clear(){for(let i=nativeSession.length-1;i>=0;i--){const key=nativeSession.key(i);if(key?.startsWith(pre))nativeSession.removeItem(key)}},
+  key(index){const keys=[];for(let i=0;i<nativeSession.length;i++){const key=nativeSession.key(i);if(key?.startsWith(pre))keys.push(key.slice(pre.length))}return keys[index]||null},
+  get length(){let n=0;for(let i=0;i<nativeSession.length;i++)if(nativeSession.key(i)?.startsWith(pre))n++;return n}
+ };
+}
+const data=facade('data'),tab=facade('tab');
+try{
+ Object.defineProperty(window,'localStorage',{configurable:true,value:data});
+ Object.defineProperty(window,'sessionStorage',{configurable:true,value:tab});
+ if(window.localStorage!==data||window.sessionStorage!==tab)throw Error('No se puede aislar la demo');
+ Object.defineProperty(window,'indexedDB',{configurable:true,value:undefined});
+}catch(e){
+ document.body.dataset.labReady='false';
+ document.getElementById('profile-gate').textContent='El navegador no permite aislar datos de prueba. No se abrirá MI BOWLING LAB. '+e.message;
+ return;
+}
+const ids=['p-demo-a','p-demo-b','p-demo-c'];
+const all=[1,2,3,4,5,6,7,8,9,10];
+function fictitiousGame(type){
+ const rolls=[];
+ for(let frame=1;frame<=10;frame++){
+  if(type==='c'){
+   rolls.push({frame,ball:1,pins:all.slice(),ballId:'ball-c'});
+   if(frame===10){
+    rolls.push({frame,ball:2,pins:all.slice(),ballId:'ball-c'});
+    rolls.push({frame,ball:3,pins:all.slice(),ballId:'ball-c'});
+   }
+  }else{
+   rolls.push({frame,ball:1,pins:frame<=5?all.slice(0,9):all.slice(0,8),ballId:'ball-a'});
+   rolls.push({frame,ball:2,pins:frame<=5?[10]:frame===10?[9,10]:[9],ballId:'ball-a'});
+   if(frame===10)rolls.push({frame,ball:3,pins:all.slice(),ballId:'ball-a'});
+  }
+ }
+ return {id:'game-demo-'+type,includeStats:true,rolls};
+}
+function demoData(type){
+ return {
+  version:2,hand:type==='c'?'zurdo':'diestro',patterns:[],
+  balls:[{id:'ball-'+type,brand:'Prueba',model:'Bola '+type.toUpperCase()}],
+  sessions:[{id:'session-demo-'+type,type:'entrenamiento',title:'Entrenamiento ficticio '+type.toUpperCase(),
+    date:new Date().toISOString().slice(0,10),games:[fictitiousGame(type)]}]
+ };
+}
+if(!data.getItem('mi-bowling-local-profiles-v1')){
+ data.setItem('mi-bowling-local-profiles-v1',JSON.stringify({version:1,profiles:[
+  {id:ids[0],name:'Jugador A · Ejemplo',createdAt:'2026-11-08'},
+  {id:ids[1],name:'Jugador B · Sin partidas',createdAt:'2026-11-08'},
+  {id:ids[2],name:'Jugador C · Pleno',createdAt:'2026-11-08'}
+ ]}));
+ data.setItem('mi-bowling-profile:'+ids[0]+':mi-bowling-analitica-v2',JSON.stringify(demoData('a')));
+ data.setItem('mi-bowling-profile:'+ids[2]+':mi-bowling-analitica-v2',JSON.stringify(demoData('c')));
+}
+document.getElementById('lab-clear').addEventListener('click',()=>{
+ if(!confirm('¿Reiniciar únicamente los datos ficticios de esta demostración?'))return;
+ data.clear();tab.clear();location.reload();
+});
+document.addEventListener('change',event=>{
+ if(event.target?.matches?.('input[type="file"]')){
+  event.stopImmediatePropagation();event.preventDefault();event.target.value='';
+  alert('No adjuntes archivos reales a esta demostración.');
+ }
+},true);
+const observer=new MutationObserver(records=>{
+ for(const record of records)for(const node of record.addedNodes){
+  if(node.nodeType===1&&node.tagName==='SCRIPT'&&node.src?.includes('app.js?v=')){
+   node.addEventListener('load',()=>{
+    if(typeof window.go==='function'){
+     window.statPane='bolos'; // Global let is not a window property: use indirect call below.
+     try{Function("statPane='bolos';go('estadisticas')")()}catch(e){console.error(e)}
+     document.getElementById('lab-show-home').hidden=false;
+    }
+   });
+  }
+ }
+});
+observer.observe(document.body,{childList:true});
+document.body.dataset.labReady='true';
+})();
+</script>
+<script src="stats-bolos.js?v=1"></script>
+<script src="profiles.js?v=1"></script>
+<script>
+if(document.body.dataset.labReady==='true')MiBowlingProfiles.init();
+</script>
+</body></html>
