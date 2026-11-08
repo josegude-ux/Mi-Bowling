@@ -169,7 +169,7 @@ function laneVisualSvg(s){
  const guides=positions.map(f=>`<g><line x1="76" y1="${f.y}" x2="444" y2="${f.y}" stroke="${f.color}" stroke-width="1.5" opacity=".7" stroke-dasharray="7 6"/><text x="12" y="${f.y-10}" fill="#e5edf5" font-size="12" font-weight="750">${f.key==='approach'?'SALIDA':f.key==='arrow'?'FLECHAS':'BREAK'}</text></g>`).join('');
  const pins=pinPositions;
  const markers=positions.map(f=>f.board===null?'':`<g pointer-events="none"><circle cx="${laneX(f.board,hand)}" cy="${f.y}" r="17" fill="${f.color}" opacity=".21"/><circle cx="${laneX(f.board,hand)}" cy="${f.y}" r="9" fill="${f.color}" stroke="#fff" stroke-width="3"/><rect x="${Math.max(84,Math.min(391,laneX(f.board,hand)-23)).toFixed(1)}" y="${f.y-34}" width="46" height="19" rx="9" fill="#0d3353" stroke="${f.color}"/><text x="${Math.max(84,Math.min(391,laneX(f.board,hand)-23))+23}" y="${f.y-20.5}" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">${f.board}</text></g>`).join('');
- const zones=positions.map(f=>`<rect class="lane-hit-area" x="76" y="${f.y-(f.key==='breakpoint'?44:43)}" width="368" height="${f.key==='approach'?63:86}" fill="#fff" fill-opacity=".002" role="button" tabindex="0" aria-label="Seleccionar tabla en ${f.name}" onclick="laneSelect(event,'${f.key}')" onkeydown="laneKeyboard(event,'${f.key}')"/>`).join('');
+ const zones=positions.map(f=>`<rect class="lane-hit-area" data-lane-key="${f.key}" x="76" y="${f.y-(f.key==='breakpoint'?44:43)}" width="368" height="${f.key==='approach'?63:86}" fill="#fff" fill-opacity=".002" role="button" tabindex="0" aria-label="Seleccionar tabla en ${f.name}" onclick="laneSelect(event,'${f.key}')" onkeydown="laneKeyboard(event,'${f.key}')"/>`).join('');
  return `<svg class="lane-graphic" viewBox="0 0 520 700" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Pista esquemática vista desde arriba. Toca una zona para seleccionar la tabla.">
  <defs><linearGradient id="mb-lane-border" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#133956"/><stop offset=".5" stop-color="#386786"/><stop offset="1" stop-color="#133956"/></linearGradient></defs>
  <rect width="520" height="700" fill="#0e2a47" rx="15"/>
@@ -189,7 +189,7 @@ function laneVisual(s){
  const labels=[['approach','Posición inicial','#22c58b'],['arrow','Flechas','#37b7ff'],['breakpoint','Breakpoint','#ffb343']];
  const rows=labels.map(([k,label,color])=>{
   const num=laneBoardNum(s.currentLine[k]);
-  return `<div class="lane-control-row"><span class="lane-control-indicator" style="background:${color}"></span><span class="lane-control-name">${label}<small>${num===null?'Sin seleccionar':'Tabla '+num}</small></span><button type="button" class="lane-control-nudge" onclick="laneNudge('${k}',-1)" aria-label="${label}: reducir una tabla">−</button><button type="button" class="lane-control-nudge" onclick="laneNudge('${k}',1)" aria-label="${label}: aumentar una tabla">+</button></div>`;
+  return `<div class="lane-control-row" data-lane-row="${k}"><span class="lane-control-indicator" style="background:${color}"></span><span class="lane-control-name">${label}<small>${num===null?'Sin seleccionar':'Tabla '+num}</small></span><button type="button" class="lane-control-nudge" onclick="laneNudge('${k}',-1)" aria-label="${label}: reducir una tabla">−</button><button type="button" class="lane-control-nudge" onclick="laneNudge('${k}',1)" aria-label="${label}: aumentar una tabla">+</button></div>`;
  }).join('');
  return `<section class="lane-visual" aria-label="Registro visual de la línea de juego"><div class="lane-visual-title"><div><h3>Pista interactiva · vista superior</h3><p>Elige la tabla tocando la pista o ajusta con + y −.</p></div><span class="lane-visual-tag">39 tablas · ${hand==='zurdo'?'zurdo':'diestro'}</span></div><div id="lane-visual-live" class="lane-visual-layout"><div class="lane-visual-scene">${laneVisualSvg(s)}</div><div class="lane-visual-sidebar"><div class="lane-visual-help">Selecciona el punto de <strong>salida</strong>, las <strong>flechas</strong> y el <strong>breakpoint</strong>. Los valores se guardan para el siguiente lanzamiento.</div>${rows}<p class="lane-visual-caption">Representación esquemática, no simulación física 3D. Puedes introducir valores manualmente debajo.</p></div></div></section>`;
 }
@@ -197,10 +197,12 @@ function laneVisual(s){
 function laneSync(){
  const el=$('lane-visual-live'),s=session();
  if(!el||!s)return;
- const temp=document.createElement('div');
- temp.innerHTML=laneVisual(s);
- const next=temp.querySelector('#lane-visual-live');
- if(next)el.innerHTML=next.innerHTML;
+ const scene=el.querySelector('.lane-visual-scene');
+ if(scene)scene.innerHTML=laneVisualSvg(s);
+ for(const key of ['approach','arrow','breakpoint']){
+  const label=el.querySelector('[data-lane-row="'+key+'"] .lane-control-name small');
+  if(label){const value=laneBoardNum(s.currentLine[key]);label.textContent=value===null?'Sin seleccionar':'Tabla '+value;}
+ }
 }
 
 function laneSelect(event,key){
@@ -230,6 +232,8 @@ function laneKeyboard(event,key){
   event.preventDefault();
   const direction=event.key==='ArrowLeft'?(db.hand==='zurdo'?-1:1):(db.hand==='zurdo'?1:-1);
   laneNudge(key,direction);
+  const updated=$('lane-visual-live')?.querySelector('.lane-hit-area[data-lane-key="'+key+'"]');
+  if(updated)updated.focus();
  }else if(event.key==='Enter'||event.key===' '){
   event.preventDefault();
   const n=laneBoardNum(session()?.currentLine?.[key])??20;
