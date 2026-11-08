@@ -86,7 +86,7 @@
    function smoke(){
      try{
        if(!window.MiBowlingLane3D||!window.MiBowlingLineEditor)throw Error('Módulos visuales ausentes');
-       if(!document.getElementById('app').textContent.includes('Mi Bowling'))throw Error('Portada no cargada');
+       if(!/mi\s+bowling/i.test(document.getElementById('app').textContent))throw Error('Portada no cargada');
        go('nueva');
        const form=document.getElementById('newSessionForm');
        if(!form)throw Error('Formulario de sesión ausente');
