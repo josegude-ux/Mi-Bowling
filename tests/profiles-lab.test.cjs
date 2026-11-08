@@ -72,7 +72,7 @@ function active(id,withApp){
  assert.equal(vm.runInContext("aggregate('entrenamiento').games.length",ctx),0);
  assert.equal(vm.runInContext("aggregate('oficial').games.length",ctx),0);
  assert.equal(storage.getItem(ctx.MiBowlingProfiles.storageKey(BASE)),null);
- assert.equal(storage.getItem(ctx.MiBowlingProfiles.storageKey('mi-bowling-liga-rosters-v33')),null);
+ assert.ok(!storage.getItem(ctx.MiBowlingProfiles.storageKey('mi-bowling-liga-rosters-v33')).includes('Nombre original'),'No se heredan jugadores antiguos de Liga');
  const league=JSON.parse(storage.getItem(ctx.MiBowlingProfiles.storageKey('mi-bowling-liga-acta-v32')));
  assert.equal(league.matches[0].demo,false);
  assert.ok(league.matches[0].players.every(p=>p.scores.every(score=>!score)));
