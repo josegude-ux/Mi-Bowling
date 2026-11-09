@@ -12,8 +12,8 @@ on:
 permissions:
   contents: read
 jobs:
-  contracts:
-    name: I18 · CP-020/FGB, I11-I17, preservación forense y escalada manual
+  node_validation:
+    name: I18 Node · CP020 FGB and I11-I18 security contracts
     runs-on: ubuntu-24.04
     timeout-minutes: 28
     steps:
