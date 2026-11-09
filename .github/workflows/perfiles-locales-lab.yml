@@ -1,0 +1,43 @@
+name: MI BOWLING · Perfiles locales LAB
+on:
+  push:
+    branches:
+      - feature/perfiles-locales-lab-20261108
+  pull_request:
+    paths:
+      - app.js
+      - index.html
+      - profiles.js
+      - profiles.css
+      - sw.js
+      - tests/profiles-lab.test.cjs
+      - tests/profiles-faults.test.cjs
+      - lab/perfiles.html
+      - tests/profiles-browser.html
+      - tests/profiles-browser.test.cjs
+      - .github/workflows/perfiles-locales-lab.yml
+permissions:
+  contents: read
+jobs:
+  lab:
+    name: Aislamiento, migración y PIN local
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Revisar sintaxis y perfiles ficticios
+        run: |
+          node --check app.js
+          node --check profiles.js
+          node --check sw.js
+          node --check tests/profiles-lab.test.cjs
+          node --check tests/profiles-faults.test.cjs
+          node tests/profiles-lab.test.cjs
+          node tests/profiles-faults.test.cjs
+      - name: Comprobar selector y partidas con Chrome real
+        run: |
+          node --check tests/profiles-browser.test.cjs
+          node tests/profiles-browser.test.cjs

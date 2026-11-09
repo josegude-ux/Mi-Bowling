@@ -4,9 +4,9 @@ const root=path.resolve(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f
 const app=read('app.js').toString(),css=read('styles.css').toString(),sw=read('sw.js').toString(),html=read('index.html').toString();
 new Function(app);
 assert(app.includes("const APP_VERSION='3.3.10-catalogo'"),'Versión funcional preservada');
-assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Sin migración de datos');
+assert(app.includes("const KEY=MiBowlingProfiles.storageKey('mi-bowling-analitica-v2'), OLDKEY=MiBowlingProfiles.storageKey('mi-bowling-v1')"),'Almacenamiento aislado por jugador');
 assert(html.includes('app.js?v=3310cat1')&&html.includes('styles.css?v=3310cat1'),'Recursos nuevos');
-assert(sw.includes('mi-bowling-analitica-v3-3-10-catalogo-cp035'),'Caché nueva');
+assert(sw.includes('mi-bowling-analitica-v3-3-10-ui-cp036-perfiles-lab1'),'Caché nueva');
 assert(css.includes("url('./home-estadisticas-limpio.jpg')"),'Tarjeta usa imagen sin porcentajes ilustrativos');
 assert(!css.includes("url('./home-estadisticas.jpg')"),'Tarjeta no usa fondo anterior del 85%');
 const jpg=read('home-estadisticas-limpio.jpg');

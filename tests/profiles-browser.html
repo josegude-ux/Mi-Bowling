@@ -1,0 +1,87 @@
+<!doctype html><html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="../">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="profiles.css">
+<title>MI BOWLING · Prueba de perfiles locales LAB</title>
+</head>
+<body class="player-gated">
+<div id="profile-gate"></div>
+<header class="topbar"><div class="topbar-inner"><span class="brand">🎳 MI BOWLING</span>
+  <div class="header-actions"><button type="button" id="player-switch" onclick="MiBowlingProfiles.leave()" hidden><span id="player-current"></span></button></div></div></header>
+<main id="app" class="app-main"></main>
+<nav id="bottom-nav" class="bottom-nav"></nav>
+<input id="restore-file" type="file" accept=".json" hidden>
+<script>
+const base = new Map([
+ ['mi-bowling-analitica-v2',JSON.stringify({version:2,hand:'zurdo',balls:[{id:'legacy-ball',brand:'No borrar',model:'Antigua'}],
+ patterns:[],sessions:[{id:'legacy-session',type:'entrenamiento',date:'2026-11-08',games:[{id:'legacy-g',rolls:[]}]}]})],
+ ['mi-bowling-liga-rosters-v33',JSON.stringify({own:['Antiguo']})]
+]);
+const mem={getItem:k=>base.has(String(k))?base.get(String(k)):null,setItem:(k,v)=>base.set(String(k),String(v)),
+ removeItem:k=>base.delete(String(k)),clear:()=>base.clear(),key:i=>Array.from(base.keys())[i],get length(){return base.size}};
+const tabData=new Map(),testTabStore={getItem:k=>tabData.get(k)||null,setItem:(k,v)=>tabData.set(k,String(v)),
+ removeItem:k=>tabData.delete(k),clear:()=>tabData.clear()};
+Object.defineProperty(window,'localStorage',{configurable:true,value:mem});
+Object.defineProperty(window,'sessionStorage',{configurable:true,value:testTabStore});
+</script>
+<script src="profiles.js"></script>
+<script>
+function sleep(t){return new Promise(r=>setTimeout(r,t))}
+async function until(fn,max=6000){for(let elapsed=0;elapsed<max;elapsed+=25){if(fn())return;await sleep(25)}throw Error('Timed out while opening app')}
+async function test(){
+ try{
+  MiBowlingProfiles.init();
+  if(document.body.classList.contains('player-gated')!==true)throw Error('Falta la pantalla de selección');
+  const before=base.get('mi-bowling-analitica-v2');
+  if(MiBowlingProfiles.profiles().length!==1)throw Error('El perfil legado no aparece');
+  if(MiBowlingProfiles.profiles()[0].id!=='legacy')throw Error('Datos anteriores no asociados al perfil legado');
+  if(base.get('mi-bowling-profile:legacy:mi-bowling-analitica-v2')!==before)throw Error('La copia anterior difiere');
+  document.getElementById('player-show-create').click();
+  if(document.getElementById('player-create-form').hidden)throw Error('Formulario no visible');
+  const pin=new URL(location.href).searchParams.has('pin');
+  document.getElementById('player-name').value=pin?'Jugador protegido':'Jugador nuevo';
+  document.getElementById('player-pin').value=pin?'1234':'';
+  document.getElementById('player-pin-check').value=pin?'1234':'';
+  if(pin){await MiBowlingProfiles.create('Jugador protegido','1234','1234');}
+  else document.getElementById('player-create-form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  await until(()=>window.__miBowlingTest&&typeof window.go==='function');
+  if(document.body.classList.contains('player-gated'))throw Error('El selector no se ha cerrado');
+  const active=MiBowlingProfiles.current();
+  if(active?.name!==(pin?'Jugador protegido':'Jugador nuevo'))throw Error('Perfil activo incorrecto');
+  if(MiBowlingProfiles.profiles().length!==2)throw Error('No se conservó el perfil anterior');
+  if(document.getElementById('player-current').textContent.indexOf(active.name)<0)throw Error('No se muestra el jugador activo');
+  const scoped=MiBowlingProfiles.storageKey('mi-bowling-analitica-v2');
+  if(base.get(scoped)!==undefined)throw Error('Nuevo jugador no empieza vacío');
+  if(db.sessions.length!==0||db.balls.length!==0)throw Error('El nuevo jugador hereda puntuaciones');
+  if(db.hand!=='diestro')throw Error('Se hereda la mano de otro jugador');
+  if(aggregate('entrenamiento').games.length||aggregate('oficial').games.length)throw Error('Estadísticas heredadas');
+  go('nueva');
+  const form=document.getElementById('newSessionForm');
+  if(!form)throw Error('No se abre el formulario para partidas');
+  createSession({preventDefault(){},currentTarget:form});
+  if(!document.getElementById('app').textContent.includes('Frame 1'))throw Error('No se abre el registro');
+  recordRoll();
+  const saved=JSON.parse(base.get(scoped));
+  if(saved.sessions.length!==1||saved.sessions[0].games[0].rolls.length!==1)throw Error('No se guarda la tirada en el perfil nuevo');
+  if(base.get('mi-bowling-analitica-v2')!==before)throw Error('Se ha alterado el historial original');
+  if(base.get('mi-bowling-profile:legacy:mi-bowling-analitica-v2')!==before)throw Error('Se ha alterado la copia antigua');
+  if(document.documentElement.scrollWidth>innerWidth+3)throw Error('Desbordamiento en móvil');
+  if(pin){
+    const stored=JSON.parse(base.get('mi-bowling-local-profiles-v1'));
+    const p=stored.profiles.find(x=>x.id===active.id);
+    if(!p.pin?.salt||!/^[a-f0-9]{64}$/.test(p.pin.hash))throw Error('PIN no almacenado con derivación');
+    if(!(await MiBowlingProfiles.verifyPin(p,'1234')))throw Error('PIN correcto rechazado');
+    if(await MiBowlingProfiles.verifyPin(p,'0000'))throw Error('PIN erróneo admitido');
+  }
+  document.body.dataset.profilesTest='PASS';
+  document.body.dataset.profilesMode=pin?'pin':'simple';
+ }catch(err){
+  document.body.dataset.profilesTest='FAIL';
+  document.body.dataset.profilesError=String(err&&err.stack||err);console.error(err);
+ }
+}
+test();
+</script>
+</body></html>

@@ -13,14 +13,16 @@
   <link rel="apple-touch-icon" href="icon-180.png?v=338icon1">
   <link rel="stylesheet" href="styles.css?v=3310cat1">
   <link rel="stylesheet" href="design-lab.css?v=20261109-lab1">
+  <link rel="stylesheet" href="profiles.css?v=1">
   <title>MI BOWLING · Jugar, analizar y mejorar</title>
 </head>
-<body>
+<body class="player-gated">
+ <div id="profile-gate" aria-live="polite"></div>
  <header class="topbar">
    <div class="topbar-inner">
      <button class="brand" type="button" onclick="go('inicio')" aria-label="Ir al inicio"><span class="brand-mark" aria-hidden="true"><img src="./icon-192.png?v=338icon1" alt="" width="35" height="35"></span>Mi <b>Bowling</b><span class="brand-sub">ANALÍTICA</span></button>
      <span class="design-lab-motto">Tu juego · Tus datos · Tu evolución</span>
-     <div class="header-actions"><span class="offline-label"><i></i> En tu dispositivo</span><button type="button" class="design-lab-header-theme" data-design-theme="compact" aria-label="Activar modo oscuro" aria-pressed="false">☾</button><button type="button" class="icon-button" onclick="go('ajustes')" aria-label="Ajustes" title="Ajustes">⚙</button></div>
+     <div class="header-actions"><button id="player-switch" type="button" onclick="MiBowlingProfiles.leave()" hidden aria-label="Cambiar jugador"><span id="player-current">Jugador</span> <span aria-hidden="true">⌄</span></button><span class="offline-label"><i></i> En tu dispositivo</span><button type="button" class="design-lab-header-theme" data-design-theme="compact" aria-label="Activar modo oscuro" aria-pressed="false">☾</button><button type="button" class="icon-button" onclick="go('ajustes')" aria-label="Ajustes" title="Ajustes">⚙</button></div>
    </div>
  </header>
  <aside class="design-lab-sidebar" aria-label="Navegación de escritorio de MI BOWLING">
@@ -44,7 +46,8 @@
  <script src="official-calendar-2026-2027.js?v=338fgb1"></script>
  <script src="arsenal-insights.js?v=arsenal-catalog-cp035"></script>
  <script src="arsenal-view-lab.js?v=arsenal-catalog-cp035"></script>
- <script src="app.js?v=3310cat1"></script>
  <script src="design-lab.js?v=20261109-lab1"></script>
+ <script src="profiles.js?v=1" data-app-src="app.js?v=3310cat1"></script>
+ <script>MiBowlingProfiles.init()</script>
 </body>
 </html>

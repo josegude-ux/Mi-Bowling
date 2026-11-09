@@ -142,7 +142,7 @@ async function offline(browser,url){
   }));
   assert(cached.css&&cached.js&&cached.html,'Recursos nuevos realmente precargados offline');
   assert(cached.keys.some(x=>x.includes('mi-bowling-')),'Caché Mi Bowling presente');
-  const expected=mode==='local'?'mi-bowling-analitica-v3-3-10-ui-cp036':'mi-bowling-lab-visual-20261109-r1';
+  const expected=mode==='local'?'mi-bowling-analitica-v3-3-10-ui-cp036-perfiles-lab1':'mi-bowling-lab-visual-20261109-r1';
   assert(cached.keys.includes(expected),'Versión PWA correcta '+expected+': '+cached.keys);
   await page.evaluate(data=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data)),fixture);
   await page.reload({waitUntil:'load'});

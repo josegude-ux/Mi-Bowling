@@ -3,13 +3,14 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const read=p=>fs.readFileSync(path.resolve(__dirname,'..',p),'utf8');
 const app=read('app.js'),html=read('index.html'),sw=read('sw.js'),insights=read('arsenal-insights.js'),view=read('arsenal-view-lab.js'),css=read('styles.css');
-const VERSION='3.3.10-catalogo',CACHE='mi-bowling-analitica-v3-3-10-catalogo-cp035',QUERY='3310cat1',MODULES='arsenal-catalog-cp035';
+const VERSION='3.3.10-catalogo',CACHE='mi-bowling-analitica-v3-3-10-ui-cp036-perfiles-lab1',QUERY='3310cat1',MODULES='arsenal-catalog-cp035';
 assert(app.includes("const APP_VERSION='"+VERSION+"'"),'Versión visible en la aplicación');
-assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Mismo contrato de almacenamiento');
+assert(app.includes("const KEY=MiBowlingProfiles.storageKey('mi-bowling-analitica-v2'), OLDKEY=MiBowlingProfiles.storageKey('mi-bowling-v1')"),'Almacenamiento aislado por jugador');
 assert(sw.includes("const CACHE='"+CACHE+"'"),'Caché PWA renovada');
-const scripts=['official-calendar-2026-2027.js?v=338fgb1','arsenal-insights.js?v='+MODULES,'arsenal-view-lab.js?v='+MODULES,'app.js?v='+QUERY];
+const scripts=['official-calendar-2026-2027.js?v=338fgb1','arsenal-insights.js?v='+MODULES,'arsenal-view-lab.js?v='+MODULES,'design-lab.js?v=20261109-lab1'];
 let last=-1;
 for(const s of scripts){const pos=html.indexOf('<script src="'+s+'"></script>');assert(pos>last,'Scripts necesarios y en orden: '+s);last=pos}
+assert(html.includes('data-app-src="app.js?v='+QUERY+'"'),'Profile gate loads versioned app after player selection');
 assert(html.includes('styles.css?v='+QUERY),'CSS con query nueva');
 for(const file of ['index.html','sw.js','app.js','styles.css']){
  const s=read(file);for(const stale of ['v3-3-9-arsenal-f1','3.3.9-arsenal-f1','339f1','arsenal-catalog-lab1'])assert(!s.includes(stale),'No reutilizar recurso obsoleto: '+stale+' en '+file);

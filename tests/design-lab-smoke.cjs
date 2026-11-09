@@ -24,10 +24,10 @@ for(const token of ['MutationObserver','aria-current','aria-pressed','classList.
 for(const forbidden of ['localStorage.setItem','sessionStorage.setItem','indexedDB','fetch(','XMLHttpRequest','WebSocket','recordRoll()','save()']){
  assert(!js.includes(forbidden),'El complemento no debe ejecutar '+forbidden);
 }
-assert(/const CACHE='(?:mi-bowling-lab-visual-20261109-r1|mi-bowling-analitica-v3-3-10-ui-cp036)'/.test(sw),'Caché visual separada de CP-035 y versionada');
+assert(/const CACHE='(?:mi-bowling-lab-visual-20261109-r1|mi-bowling-analitica-v3-3-10-ui-cp036-perfiles-lab1)'/.test(sw),'Caché visual separada de CP-035 y versionada');
 assert(sw.includes("'./design-lab.css?v=20261109-lab1'"),'CSS offline LAB');
 assert(sw.includes("'./design-lab.js?v=20261109-lab1'"),'JS offline LAB');
-assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Datos existentes intactos');
+assert(app.includes("const KEY=MiBowlingProfiles.storageKey('mi-bowling-analitica-v2')"),'Datos existentes aislados por jugador');
 assert(app.includes('function recordRoll('),'Registro funcional preservado');
 assert(app.includes('function undoRoll('),'Deshacer funcional preservado');
 assert(app.includes('function ballsView('),'Arsenal funcional preservado');

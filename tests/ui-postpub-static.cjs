@@ -14,11 +14,11 @@ assert(!index.includes('Laboratorio de diseño · Funcionalidad existente preser
 assert(index.includes('Juega · Analiza · Mejora'),'Pie informativo normalizado');
 assert(index.includes('design-lab.css?v=20261109-lab1')&&index.includes('design-lab.js?v=20261109-lab1'),
  'CSS y JS de la integración visual siguen conectados');
-assert(sw.includes("const CACHE='mi-bowling-analitica-v3-3-10-ui-cp036'"),'Caché nueva');
+assert(sw.includes("const CACHE='mi-bowling-analitica-v3-3-10-ui-cp036-perfiles-lab1'"),'Caché nueva');
 for(const name of ['design-lab.css?v=20261109-lab1','design-lab.js?v=20261109-lab1','arsenal-insights.js?v=arsenal-catalog-cp035',
  'official-calendar-2026-2027.js?v=338fgb1'])assert(sw.includes(name),'Precarga '+name);
 assert(app.includes("const APP_VERSION='3.3.10-catalogo'"),'Versión funcional sin alterar');
-assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Mismo esquema de datos');
+assert(app.includes("const KEY=MiBowlingProfiles.storageKey('mi-bowling-analitica-v2')"),'Almacenamiento aislado por jugador');
 assert(oldCss.includes('.registry-v4')&&styles.includes('.registry-v4'),'Registro conserva CSS anterior');
 assert(app.includes("function undoRoll()")&&app.includes("function recordRoll("),'Operación de juego intacta');
 assert(app.includes("function ballsView()")&&app.includes("function stats()"),'Arsenal y estadísticas intactas');

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+ <meta charset="utf-8">
+ <base href="../">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#edf5fb">
+ <title>MI BOWLING · LAB perfiles de jugadores</title>
+ <link rel="stylesheet" href="styles.css?v=337prueba">
+ <link rel="stylesheet" href="profiles.css?v=1">
+ <style>
+ .lab-perfiles-warning{position:sticky;top:0;z-index:1001;background:#174667;color:#fff;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;padding:7px 12px;text-align:center;font:700 11px/1.4 system-ui}
+ .lab-perfiles-warning button{min-height:34px;border:1px solid #a2d7e8;border-radius:8px;background:#225c80;color:#fff;padding:6px 11px}
+ .lab-perfiles-warning strong{letter-spacing:1px}
+ body.player-gated .lab-perfiles-warning{position:fixed;left:0;right:0}
+ #profile-gate{padding-top:24px}
+ </style>
+</head>
+<body class="player-gated">
+ <div class="lab-perfiles-warning"><strong>🧪 MI BOWLING LAB</strong><span>Solo datos ficticios. La prueba NO accede a tu aplicación publicada.</span><button id="lab-clear" type="button">Reiniciar demo</button></div>
+ <div id="profile-gate"></div>
+ <header class="topbar">
+  <div class="topbar-inner">
+   <button class="brand" type="button" onclick="go('inicio')" aria-label="Ir al inicio"><span class="brand-mark">🎳</span>Mi <b>Bowling</b><span class="brand-sub">LAB PERFILES</span></button>
+   <div class="header-actions"><button id="player-switch" type="button" onclick="MiBowlingProfiles.leave()" hidden><span id="player-current">Cambiar jugador</span> <span aria-hidden="true">⌄</span></button><span class="offline-label">🧪 Demo temporal</span></div>
+  </div>
+ </header>
+ <main id="app" class="app-main" role="main"></main>
+ <nav id="bottom-nav" class="bottom-nav" aria-label="Navegación"></nav>
+ <input id="restore-file" type="file" accept=".json" hidden disabled>
+ <script>
+ (function(){
+   'use strict';
+   // Separación del proveedor externo: solo se utiliza memoria de ESTA pestaña
+   // y todas las claves de la demo llevan un prefijo propio.
+   const prefix='mi-bowling-lab-perfiles:';
+   const store={
+     getItem(key){return sessionStorage.getItem(prefix+String(key));},
+     setItem(key,value){sessionStorage.setItem(prefix+String(key),String(value));},
+     removeItem(key){sessionStorage.removeItem(prefix+String(key));},
+     clear(){
+       for(let i=sessionStorage.length-1;i>=0;i--){
+         const key=sessionStorage.key(i);
+         if(key?.startsWith(prefix))sessionStorage.removeItem(key);
+       }
+     }
+   };
+   try{
+     Object.defineProperty(window,'localStorage',{configurable:true,value:store});
+     if(window.localStorage!==store)throw Error('La memoria de demo no se pudo aislar');
+     // Se prohíbe adjuntar fotos o PDF en este laboratorio público.
+     Object.defineProperty(window,'indexedDB',{configurable:true,value:undefined});
+     document.addEventListener('change',event=>{
+       const el=event.target;
+       if(el?.matches?.('input[type="file"]')){
+         event.preventDefault();event.stopImmediatePropagation();
+         el.value='';
+         alert('Por seguridad, no cargues archivos en la demo pública.');
+       }
+     },true);
+     document.getElementById('lab-clear').addEventListener('click',()=>{
+       if(!confirm('¿Borrar solamente los perfiles y las partidas ficticias de esta pestaña?'))return;
+       store.clear();sessionStorage.removeItem('mi-bowling-local-selected-v1');
+       location.reload();
+     });
+     document.body.dataset.labSafe='true';
+   }catch(error){
+     document.body.dataset.labSafe='false';
+     document.getElementById('profile-gate').textContent='Este navegador no permite aislar la demo. No se abrirá. '+error.message;
+     return;
+   }
+   const script=document.createElement('script');
+   script.src='profiles.js?v=1';
+   script.onload=()=>window.MiBowlingProfiles.init();
+   script.onerror=()=>{document.getElementById('profile-gate').textContent='No se han podido cargar los perfiles de prueba.'};
+   document.body.appendChild(script);
+ })();
+ </script>
+</body>
+</html>
