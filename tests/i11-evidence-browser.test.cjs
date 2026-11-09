@@ -287,6 +287,49 @@ async function test(base){
   },{A,V,E,proof:outcome.proof});
   assert.equal(corruptNotOverwritten,true);
   console.log('PASS I11 Chromium · tampered encrypted receipt cannot be silently replaced even with valid external witness');
+  // Two concurrent imports of DIFFERENT, legitimate score backups must not
+  // fork the audit head. Retry of the fuller archive preserves its own WAL.
+  const parallelBrowser=await chromium.launch({headless:true,executablePath,
+   args:['--no-sandbox']});
+  const fresh=await parallelBrowser.newContext({
+   ignoreHTTPSErrors:true,viewport:{width:1280,height:850}});
+  await isolate(fresh);
+  try{
+   const left=await fresh.newPage(),right=await fresh.newPage();
+   await Promise.all([left.goto(base+PAGE),right.goto(base+PAGE)]);
+   const attempt=(page,file)=>page.evaluate(async({A,V,BP,file})=>{
+    const j=await MiBowlingI11EncryptedJournal.unlock({owner:A,passphrase:V});
+    try{
+     try{return {ok:true,result:await MiBowlingI11Backup.restoreBackup(j,A,file,BP,
+      'CONFIRMAR-RESTAURACION-FICTICIA')}}
+     catch(error){return {ok:false,error:error.message}}
+    }finally{j.close()}
+   },{A,V,BP,file});
+   const results=await Promise.all([
+    attempt(left,outcome.f1),attempt(right,outcome.f2)]);
+   assert.ok(results.some(x=>x.ok&&x.result.status==='restored'));
+   assert.ok(results.every(x=>x.ok||/abortada|concurrente|CONFLICTO/.test(x.error)));
+   const retry=await attempt(left,outcome.f2);
+   assert.equal(retry.ok,true);
+   assert.ok(['restored','already-present'].includes(retry.result.status));
+   const audits=await left.evaluate(async({A,V})=>{
+    const j=await MiBowlingI11EncryptedJournal.unlock({owner:A,passphrase:V});
+    try{
+     const chain=await j.auditRestores(A);
+     return {chain,confirmed:await j.readConfirmed(A),pending:await j.list(A)}
+    }finally{j.close()}
+   },{A,V});
+   assert.ok([1,2].includes(audits.chain.count));
+   assert.ok(audits.chain.receipts.every(x=>x.kind==='restore'&&x.reason==='none'));
+   assert.equal(audits.confirmed.revision,1);
+   assert.equal(audits.pending.length,1);
+   const raw=await readAll(right,base);
+   assert.equal(raw['encrypted-confirmed'].length,1);
+   assert.equal(raw['encrypted-operations'].length,1);
+   assert.equal(raw['encrypted-audit-head'].length,1);
+   assert.equal(raw['encrypted-restore-audit'].length,audits.chain.count);
+   console.log('PASS I11 Chromium · competing parallel imports plus explicit retry keep one confirmed, one WAL and a linear receipt chain');
+  }finally{await fresh.close();await parallelBrowser.close()}
   await witness.close();await p.close();
  }finally{if(ctx)await ctx.close();fs.rmSync(profile,{recursive:true,force:true})}
 }
