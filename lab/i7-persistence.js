@@ -7,8 +7,9 @@
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const clone=x=>JSON.parse(JSON.stringify(x)),eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 function validate(p){
- if(!p||p.version!==2||!Array.isArray(p.sessions)||!Array.isArray(p.balls)||
-  !Array.isArray(p.patterns)||['leagueNational','matches','rosters'].some(k=>
+ if(!p||typeof p!=='object'||Array.isArray(p)||p.version!==2||
+  !Array.isArray(p.sessions)||!Array.isArray(p.balls)||
+  !Array.isArray(p.patterns)||['leagueNational','matches','rosters','leagueRosters'].some(k=>
     Object.prototype.hasOwnProperty.call(p,k)))throw Error('I7: documento personal no permitido');
  if(JSON.stringify(p).length>8*1024*1024)throw Error('I7: archivo demasiado grande');
  return clone(p);
