@@ -45,6 +45,27 @@ La razón `lost-quorum` o `suspected-compromise` es una **declaración de ensayo
 
 Las pruebas del navegador son WebKit Linux emulado y Chromium de laboratorio; no Safari iPhone físico, corte eléctrico, varios dispositivos reales ni servicios.
 
+## Checkpoint verificable · BOWLING-I15-CP-001
+
+**Código funcional exactamente probado:** `717c94450f629407e5455bcbafc3c7ab4d4faccd`.  
+**GitHub Actions código funcional:** [push 42616510879](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42616510879), **SUCCESS 2/2 jobs**, comprobado mediante GitHub y registros de ambos trabajos.  
+**PR:** [#35](https://github.com/josegude-ux/Mi-Bowling/pull/35), abierta draft sobre PR #34 y no fusionada.  
+**Diff GitHub exacto frente a I14:** 8 archivos I15 **solo añadidos** (workflow, documentación, motor, interfaz, página LAB y tres ficheros de pruebas), sin modificar ni eliminar ninguno de I11–I14 o los activos CP-020/FGB; merge base `12e723d4736f13b7233ca34e491ab21a346526a6`, ahead 9, behind 0 antes de este checkpoint documental.  
+**Main corroborado:** `7fbb3fb32d889c3213626e5f73c49b0885ef9911`, no editado.
+
+**Resultados observados de la CI funcional:**
+- **Node CP-020/FGB:** PASS, 31 eventos FGB (10 gallegos y 21 nacionales), contenido y filtros intactos.
+- **Node I11–I14:** PASS, regresiones criptográficas y testigos anteriores.
+- **Node I15:** PASS, historia previa I14 anclada, 2/3 quórum de rescate precomprometido y 2/3 nueva política disjunta, cifrado, alteración, pérdida, suplantación del quórum antiguo, cambio de políticas/identidades, firmas en dominios separados, A/B/C y concurrencia solo lectura.
+- **WebKit Linux móvil emulado:** PASS, archivos separados y PIN, precompromiso, rollback, manipulación, aislamiento sin IndexedDB ni solicitudes fuera de loopback.
+- **Chromium escritorio:** PASS, mismos controles con un perfil temporal.
+
+**Historial de CI con fallos documentado:** los primeros SHA I15 anteriores a `717c94450...` fallaron por una expectativa de prueba que exigía un rechazo textual del motivo de rescate. El verificador lo rechaza antes por firma RECOVERY inválida. Se corrigió el caso para aceptar el rechazo criptográfico temprano; se ejecutaron otra vez tanto Node como los navegadores y **solo entonces** se calificó el código funcional como aprobado.
+
+**Límites aún vigentes:** la separación física efectiva, el momento de compromiso previo, la imposibilidad de replay, la titularidad de las claves, los sellos de tiempo y la inmutabilidad siguen sin probarse. No se conectaron servicios o datos reales. No se afirma Safari iPhone físico.
+
+**Checkpoint documental:** el SHA de este documento será distinto del código probado; solo puede acreditarse definitivamente cuando su propia CI del SHA exacto termine correctamente. La PR permanece en borrador, sin merge ni publicación.
+
 ## CI, preservación y continuidad
 
 `.github/workflows/integracion-i15-lab.yml`: dos trabajos: contratos CP-020/FGB/regresiones I11–I14 y pruebas de ataque I15 con A/B/C; y navegador WebKit/Chromium mediante HTTPS loopback y bloqueo de red ajena. No usar credenciales ni cuentas reales.
