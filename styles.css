@@ -490,3 +490,12 @@ body.home-screen .app-main{max-width:1440px}
  .calendar-provisional{margin-left:auto}
  .calendar-day .calendar-markers i{width:5px;height:5px}
 }
+
+
+/* CATÁLOGO Y ARSENAL F1 · control local por sesión, sin alterar fichas */
+.ball-session-toggle{display:flex;align-items:center;gap:12px;margin:12px 0;padding:12px 14px;border:1px solid #b7d9e7;border-radius:12px;background:#f0f9fd;color:#174766;font-size:14px;font-weight:700;line-height:1.4;cursor:pointer;min-height:48px}
+.ball-session-toggle input{width:21px;height:21px;flex:0 0 21px;accent-color:#0871b7;cursor:pointer}
+.ball-session-toggle:focus-within{outline:3px solid #267cca;outline-offset:2px}
+.ball-pick-toolbar{margin-bottom:14px}
+.ball-pick-toolbar strong{display:block;margin-bottom:6px}
+@media(max-width:420px){.ball-session-toggle{font-size:13px;padding:11px 12px}}
