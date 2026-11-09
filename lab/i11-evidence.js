@@ -87,11 +87,19 @@ async function exportEvidence(journal,owner,pass){
 }
 async function previewEvidence(journal,owner,file,pass){
  const data=await open(file,pass,owner);
- const local=await journal.exportAuditEvidence(owner);
+ let local;
+ try{local=await journal.exportAuditEvidence(owner)}
+ catch(error){
+  // A damaged local chain should not prevent verifying the external witness.
+  // However, never claim local integrity or automatically overwrite it.
+  return Object.freeze({verified:true,owner,verdict:'local-chain-unverifiable',
+   localCount:null,sourceCount:data.events.length,newEvents:null,
+   independent:true,noWrites:true,containsScores:false,requiresManualRecovery:true});
+ }
  const comparison=await C.compare(owner,local.events,local.head,data.events,data.head);
  return Object.freeze({...comparison,owner,sourceCount:data.events.length,
   localCount:local.events.length,independent:true,noWrites:true,
-  containsScores:false});
+  containsScores:false,requiresManualRecovery:false});
 }
 async function importEvidence(journal,owner,file,pass,confirmation){
  if(confirmation!=='CONFIRMAR-EVIDENCIA-FICTICIA')
