@@ -158,7 +158,13 @@ async function verify(history,package15,source15,owner,pass,externalRoot,externa
     throw Error('I16: copia con generación superior: marca retenida OBSOLETA');
    const expected=await anchorCopy(c.slot,externalMark);
    if(same(c,expected)){good++;continue}
-   if(c.sequence<expectedMark.sequence){stale++;continue}
+   if(Number.isSafeInteger(c.sequence)&&c.sequence>=1&&
+      c.sequence<expectedMark.sequence){
+    const earlier=history.records.slice(0,c.sequence);
+    const mark=await highWatermark({...history,records:earlier},externalRoot);
+    const expectedOld=await anchorCopy(c.slot,mark);
+    if(same(c,expectedOld)){stale++;continue}
+   }
   }
   invalid++;
  }
