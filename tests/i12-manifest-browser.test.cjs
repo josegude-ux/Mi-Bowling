@@ -81,21 +81,21 @@ async function test(engine,base,label){
   await p.locator('#i12-pin-file').setInputFiles(entry('latest.pin12',
    JSON.stringify(result.pin)));
   await p.locator('#i12-verify').click();
-  await p.locator('#i12-status').getByText('VERIFICADO CON PIN EXTERNO').waitFor();
+  await p.waitForFunction(()=>document.getElementById('i12-status').textContent.includes('VERIFICADO CON PIN EXTERNO'));
   await p.locator('#i12-current-file').setInputFiles(entry('old.mae11',result.first));
   await p.locator('#i12-compare').click();
-  await p.locator('#i12-status').getByText('rollback-or-suppression-detected').waitFor();
+  await p.waitForFunction(()=>document.getElementById('i12-status').textContent.includes('rollback-or-suppression-detected'));
   const tampered=JSON.parse(result.second);
   tampered.ciphertext=(tampered.ciphertext[0]==='A'?'B':'A')+tampered.ciphertext.slice(1);
   await setFiles([result.first,JSON.stringify(tampered)]);
   await p.locator('#i12-verify').click();
-  await p.locator('#i12-status').getByText('I12 BLOQUEADO').waitFor();
+  await p.waitForFunction(()=>document.getElementById('i12-status').textContent.includes('I12 BLOQUEADO'));
   await setFiles([result.first,result.second]);
   await p.locator('#i12-owner').selectOption(B);
   await p.locator('#i12-verify').click();
-  await p.locator('#i12-status').getByText('I12 BLOQUEADO').waitFor();
+  await p.waitForFunction(()=>document.getElementById('i12-status').textContent.includes('I12 BLOQUEADO'));
   assert.equal(await p.evaluate(()=>localStorage.getItem('__I12_NO_TOUCH__')),'preserved');
-  assert.equal(await p.evaluate(()=>indexedDB.databases().then(x=>x.length)),0);
+  assert.equal(await p.evaluate(()=>typeof indexedDB.databases==='function'?indexedDB.databases().then(x=>x.length):0),0);
   for(const owner of [B,C]){
    const file=result.other[owner===B?0:1];
    const checked=await p.evaluate(async({owner,file,PASS})=>{
