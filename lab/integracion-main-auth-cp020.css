@@ -1,0 +1,51 @@
+/* MI BOWLING · LAB I2 · only the isolated integration screen. */
+*{box-sizing:border-box}
+body{max-width:100vw;overflow-x:hidden}
+[hidden]{display:none!important}
+.i2-ribbon{position:sticky;top:0;z-index:500;background:#123d62;color:#e5f6ff;display:flex;align-items:center;justify-content:center;gap:8px 20px;flex-wrap:wrap;padding:10px 12px;font:600 12px/1.5 system-ui;text-align:center}
+.i2-ribbon strong{font-weight:850;letter-spacing:.04em}
+#lab-safety-status{background:#fff0e9;color:#9a352e;padding:20px;text-align:center;font-weight:800}
+.i2-auth-area{min-height:calc(100vh - 70px);padding:20px max(16px,calc((100vw - 1260px)/2));background:#f0f7fb;display:grid;grid-template-columns:minmax(240px,1fr) minmax(310px,1.05fr);align-items:start;gap:25px}
+.i2-intro{padding:clamp(12px,4vw,50px) 0}
+.i2-eyebrow{color:#0782b6;font-size:12px;letter-spacing:.09em;font-weight:850;margin:0 0 14px}
+.i2-intro h1{font:800 clamp(26px,4vw,43px)/1.15 system-ui;color:#163f63;margin:0 0 14px;letter-spacing:-.7px}
+.i2-intro>p{color:#53758e;font:400 14px/1.6 system-ui;margin-bottom:20px}
+.i2-demo-accounts{display:grid;grid-template-columns:1fr;gap:9px;max-width:425px}
+.i2-demo-login{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:5px;background:white;color:#1b567a;border:1px solid #c6e0ed;border-radius:12px;padding:14px 16px;text-align:left;min-height:52px;font:750 14px system-ui;cursor:pointer}
+.i2-demo-login small{font-size:11px;color:#68869c;font-weight:500}
+.i2-demo-login:hover{background:#eaf6ff}
+.i2-small{font-size:11px!important;color:#7490a6!important;margin-top:13px}
+.i2-auth-area .auth-lab-screen{min-height:0;padding:8px 0 25px}
+.i2-auth-area .auth-lab-panel{box-shadow:0 12px 37px #1b5e7b14}
+.i2-toolbar{position:relative;background:#e8f4fb;border-bottom:1px solid #c9e2f0;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:11px max(15px,calc((100vw - 1440px)/2))}
+.i2-owner{font:850 13px system-ui;color:#185479}
+.i2-toolbar-buttons{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.i2-toolbar-buttons button{background:#fff;color:#126a95;border:1px solid #bcd8e8;border-radius:9px;min-height:44px;padding:8px 12px;cursor:pointer;font:750 12px system-ui}
+.i2-toolbar-buttons button[aria-pressed="true"]{background:#086eaa;color:#fff}
+.i2-toolbar-buttons #lab-logout{color:#9a4040;border-color:#ead3d2}
+.i2-toolbar-buttons button:focus-visible,.i2-demo-login:focus-visible{outline:3px solid #21a2d2;outline-offset:2px}
+.i2-summary{background:#f3f9fd;padding:10px max(15px,calc((100vw - 1440px)/2));color:#305e7a;font:600 12px/1.6 system-ui;min-height:40px}
+.i2-verified{color:#427b93;font:600 11px system-ui}
+#lab-visual{max-width:1440px;margin:0 auto;padding:18px 15px 45px}
+.i2-archive{background:#f0f7fc;border:1px solid #d6e8f3;border-radius:14px;max-width:1380px;margin:22px auto;padding:16px 20px;font:400 13px/1.55 system-ui;color:#446c88}
+.i2-archive h2{font:800 17px system-ui;color:#1c5373;margin:0 0 6px}
+.i2-archive p{margin:7px 0}
+.i2-archive code{overflow-wrap:anywhere}
+#lab-archive-proof{font-weight:750;color:#156b91}
+#lab-app-shell #lab-live-app{padding-bottom:30px}
+#lab-app-shell #lab-live-app .app-main{min-height:180px}
+@media(max-width:850px){
+ .i2-auth-area{grid-template-columns:1fr;gap:3px}
+ .i2-intro{padding:15px 0 0}
+ .i2-intro h1{font-size:28px}
+ .i2-auth-area .auth-lab-panel{max-width:600px;margin:auto}
+ .i2-toolbar{padding:11px 14px}
+}
+@media(max-width:490px){
+ .i2-ribbon{font-size:11px}
+ .i2-toolbar-buttons{display:grid;grid-template-columns:1fr 1fr;width:100%}
+ .i2-toolbar-buttons button{padding:8px 6px}
+ .i2-demo-login{gap:4px}
+ .i2-verified{display:none}
+ .i2-archive{margin:16px 12px}
+}
