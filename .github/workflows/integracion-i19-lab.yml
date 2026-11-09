@@ -1,0 +1,63 @@
+name: MI BOWLING · LAB I19 · Revisión manual no autorizativa
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i19-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i19-*'
+      - 'lab/integracion-main-auth-i19.html'
+      - 'tests/i19-*'
+      - '.github/workflows/integracion-i19-lab.yml'
+permissions:
+  contents: read
+jobs:
+  node_validation:
+    name: I19 Node · CP020 FGB I11-I19 reviewer-trace integrity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificar sintaxis I19
+        run: |
+          node --check lab/i19-manual-review.js
+          node --check lab/i19-ui.js
+          node --check tests/i19-review-fixture.cjs
+          node --check tests/i19-review-contract.test.cjs
+          node --check tests/i19-review-browser.test.cjs
+      - name: Contratos protegidos CP-020 y calendario FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones documentadas I11-I18
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+          node tests/i16-anchor-contract.test.cjs
+          node tests/i17-forensics-contract.test.cjs
+          node tests/i18-forensic-contract.test.cjs
+      - name: I19 · revisión lógica sin promoción operativa
+        run: node tests/i19-review-contract.test.cjs
+  browser:
+    name: I19 · WebKit Chromium · manual review no-write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright solo de laboratorio
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux emulado móvil
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Revisión manual A/B/C y exportación local sin servicios
+        run: node tests/i19-review-browser.test.cjs
