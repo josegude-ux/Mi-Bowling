@@ -159,7 +159,14 @@ async function caseBrowser(browser,base,device,label){
    'losing tab must not overwrite winning confirmed score');
   const draft=await tab2.evaluate(()=>MiBowlingIntegrationI6.verifyPending());
   assert.equal(draft.owner,user.A);
-  await tab2.evaluate(()=>MiBowlingIntegrationI6.mergePending());
+  const mergedStatus=await tab2.evaluate(()=>MiBowlingIntegrationI6.mergePending());
+  if(mergedStatus.blocked||mergedStatus.revision!==4)
+   throw Error('I6 merge diagnostics (no scores): '+JSON.stringify({
+    phase:mergedStatus.phase,blocked:mergedStatus.blocked,
+    revision:mergedStatus.revision,error:mergedStatus.error,
+    serverRevision:(await confirmed(tab2)).revision,
+    pending:mergedStatus.pending
+   }));
   await waitSaved(tab2,4);
   assert.ok((await confirmed(tab2)).payload.sessions.some(s=>s.id===label+'-TAB-ONE'));
   assert.ok((await confirmed(tab2)).payload.sessions.some(s=>s.id===label+'-TAB-TWO'));
