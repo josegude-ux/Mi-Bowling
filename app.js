@@ -62,14 +62,15 @@ function latestBallSelections(){
 }
 function cleanSelectedBallIds(ids){
  if(!Array.isArray(ids))return [];
- // Una pestaña puede conservar db obsoleto tras retirar una bola en otra.
- // Consultar solo el estado de retirada persistido; no sincronizar ni reescribir partidas.
- let retiredInStorage=new Set();
+ // El catálogo persistido es la fuente vigente entre pestañas: una restauración
+ // puede sustituir IDs y una retirada puede volver obsoleta la copia en memoria.
+ // Si el almacenamiento no es legible, se mantiene el comportamiento local previo.
+ let activeCatalog=db.balls;
  try{
   const stored=JSON.parse(localStorage.getItem(KEY)||'null');
-  if(Array.isArray(stored?.balls))retiredInStorage=new Set(stored.balls.filter(b=>b&&b.retired).map(b=>b.id));
+  if(Array.isArray(stored?.balls))activeCatalog=stored.balls;
  }catch{}
- return [...new Set(ids)].filter(id=>typeof id==='string'&&!retiredInStorage.has(id)&&db.balls.some(b=>b.id===id&&!b.retired));
+ return [...new Set(ids)].filter(id=>typeof id==='string'&&activeCatalog.some(b=>b&&b.id===id&&!b.retired));
 }
 function selectedBallsFor(key){
  const current=latestBallSelections();
