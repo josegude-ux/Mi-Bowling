@@ -31,6 +31,24 @@
 
 Los registros I11 y los archivos `.mae11` no guardan puntuaciones en el manifiesto, y `.mw13` solo puede incluir `.mae11` cifrados: no son copias de recuperación de partidas.
 
+## Checkpoint BOWLING-I13-CP-001 · evidencias verificadas
+
+**Código funcional exacto probado:** `4fe2ec68e406f02e0fd5ec252191a3260908bb7f`.  
+**CI funcional:** [GitHub Actions push 42609910018](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42609910018) — **SUCCESS 2/2 jobs**, verificados en GitHub y en logs de Node/WebKit/Chromium.  
+**Código + este informe inicial probado:** `f1808996616e423eed56b9cef35df9e221c8d895` — [push 42610051049](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42610051049) **SUCCESS 2/2 jobs**.  
+**Ejecución en PR asociada al mismo SHA:** [42610112153](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42610112153) (comprobar conclusión antes de acreditar resultados).  
+**PR:** [#33](https://github.com/josegude-ux/Mi-Bowling/pull/33), abierta en borrador y apilada sobre PR #32.  
+**Comparación GitHub contra I12:** 8 archivos **añadidos** en el espacio I13, sin editar ni eliminar archivos previos. Merge base exacto I12 `fa136ec8f8feca26da76bf9a44ba28fab87cae5f`; 9 commits nuevos antes del cierre de checkpoint.  
+**Protección main:** `7fbb3fb32d889c3213626e5f73c49b0885ef9911`, sin cambio verificado antes del cierre.
+
+Logs confirmados de `42609910018`:
+- **FGB:** PASS, 31 eventos (10 gallegos, 21 nacionales), filtros y datos intactos.
+- **I11/I12:** PASS, contratos regresivos de cadena, prueba externa, manifiestos y firma P-256.
+- **I13 Node:** PASS, quórum 2/3, firmas públicas previamente aprobadas, PIN, sustitución de política y firmante, pérdida/corrupción, A/B/C y cuatro verificaciones simultáneas solo lectura.
+- **I13 WebKit (móvil emulado)/Chromium (escritorio):** PASS, archivos locales, quórum, PIN, rollback, identidad cruzada, sin IndexedDB ni conexiones externas.
+
+**Precisión:** las claves están separadas criptográficamente en ensayos Node, **no hay prueba de custodia por operadores independientes**, sello de tiempo fiable, inmovilidad física, firma externa real o Safari iPhone físico. Ningún dato/servicio real conectado. El commit documental del presente checkpoint requiere nueva CI sobre su SHA antes de considerarlo aprobado definitivamente.
+
 ## Continuidad
 
 CI y checkpoint SHA se completarán solo tras comprobar GitHub Actions reales. **Ningún cambio en main, producción, FGB CP-020, PR #1–#32, PWA, credenciales o servicios reales. No fusionar ni publicar.**
