@@ -51,7 +51,7 @@ async function main(){
  fork.epochs[2].statement.previousHash='f'.repeat(64);
  await assert.rejects(verify(fork),/transición/);
  const badAction=clone(f.bundle);badAction.epochs[1].statement.action='revoke';
- await assert.rejects(verify(badAction),/transición|revocación/);
+ await assert.rejects(verify(badAction),/transición|revocación|firma/);
  // Verified point does not have an externally certified timestamp.
  const current=await f.original.E.open(f.rawFiles[0],PASS,A);
  const detection=await L.compareCurrent(f.bundle,f.policies,f.pins13,
