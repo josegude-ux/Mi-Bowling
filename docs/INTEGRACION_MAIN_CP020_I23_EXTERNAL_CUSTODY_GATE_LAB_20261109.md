@@ -40,6 +40,28 @@ Una etiqueta de grupo distinta, un valor SHA coincidente o tres declaraciones de
 - No hay acceso a custodios físicos reales, hardware WORM, sellado temporal externo, certificados de firma de quienes custodian, identidades de administradores, repositorios operativos ni autoridades independientes. **Ninguna capacidad puede simular pruebas físicas o humanas inexistentes.**
 - Solo pruebas y datos sintéticos A/B/C. Sin servicios, mensajes, llamadas, producción, fusiones, despliegues ni modificaciones de la PWA existente.
 
+## Checkpoint funcional · BOWLING-I23-CP-001
+
+**SHA funcional I23 definitivo:** `a89bb4e45ca6f00cc26a16c2d222bd40fe2f06ae`.  
+**CI funcional push:** [42700246876](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42700246876) — `completed/SUCCESS`, **2 de 2 jobs**, en ese SHA exacto.  
+**CI funcional PR:** [42700260211](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42700260211) — `completed/SUCCESS`, **2 de 2 jobs**, sobre el mismo SHA funcional.  
+**PR:** [#45](https://github.com/josegude-ux/Mi-Bowling/pull/45), OPEN/DRAFT/UNMERGED, apilada directamente en la rama de PR #44.  
+**Comparación con I22:** `d3999b98847673b19e69eec6602575f48b4ddfbc` como base, 8 archivos **solo añadidos** en I23, 0 modificados, 0 eliminados; 10 commits delante y 0 detrás antes del presente commit de checkpoint. `main` sigue `1a8fe012ca6b515dcb35161c1aa5f4fa01a689f3` con la PR #41 fusionada por otro flujo; PR #43 de PWA sigue independiente y sin fusionar.
+
+**Evidencia literal en logs funcionales:**
+- FGB CP-020 **PASS 31 eventos** (10 gallegos, 21 nacionales), sin duplicados; regresiones I11–I22 completadas.
+- I23 Node `PASS`: recibos A/B/C declarados fuera de línea permanecen **no autenticados**, **0/6 requisitos de evidencia externa acreditados**, se retienen archivos conflictivos, duplicados, de caso cruzado y dañados; sustitución conjunta y falsa autoridad, tiempo o custodia rechazados, sin escrituras.
+- I23 WebKit Linux móvil emulado `PASS` y Chromium escritorio `PASS`: 0/6 requisitos externos, sustitución coherente sin demostrar anterioridad, cuarentena de fuentes, exportación solo por clic, ninguna llamada de red ajena ni IndexedDB.
+
+**Programar → Probar → Corregir → Reprobar, sin reiniciar la orden:**
+1. La primera CI I23 detectó un error de **expectativa del fixture**: mezclaba una versión rival con un documento de caso diferente, dando `quarantine-cross-case` en lugar de `quarantine-competing-versions`. Se corrigió solo `tests/i23-external-evidence-fixture.cjs` (commit `6f15d24e81e110436f5cedea06d8c253e091cfe6`) para separar los dos casos; no se modificó el motor.
+2. Un test seguía exigiendo tres copias válidas cuando el fixture corregido contiene **dos copias válidas y una posición ausente**. Se corrigió solo esa aserción en `tests/i23-external-evidence-contract.test.cjs` (commit `a89bb4e45ca6f00cc26a16c2d222bd40fe2f06ae`). La suite Node y la de navegadores terminaron verdes sobre este último SHA.
+3. Las CI antiguas fallidas (`42699491779`, `42699677752`, `42699776980`, `42699914297`, `42699929208`) se conservan como historial real, **no** se presentan como aprobadas ni se reejecutaron sus fases ya superadas fuera de CI. La prueba definitiva es el par `42700246876` / `42700260211`.
+
+**Límites irrenunciables:** ni un SHA de JSON, ni `preIncidentClaimed:true`, ni grupos con etiquetas diferentes, ni la coincidencia con un PIN aportado acredita identidad, custodia externa independiente, hora, WORM, inmutabilidad o ausencia de sustitución conjunta. Ningún registro local I23 crea autoridad o contacto con humanos reales.
+
+**Segundo gate:** el commit documental que incorpora este checkpoint cambia el HEAD de I23. Deben comprobarse nuevas CI completas `push` y `pull_request` con ambas 2/2 en el SHA documental exacto. El cierre definitivo se documentará solo en el **cuerpo de la PR #45**, sin otro commit después de las CI. Si la orquestación falla, declarar el bloqueo con la evidencia disponible.
+
 ## Gating CI, checkpoint y continuidad
 
 Acreditar primero el SHA funcional exacto y las CI `push` y `pull_request` en 2/2 jobs cada una. Registrar entonces `BOWLING-I23-CP-001` en este documento, incluyendo diagnóstico de cualquier fallo real, que origine un commit documental nuevo. **Exigir otra vez 2/2 jobs de push y PR sobre el HEAD documental final** antes de cerrar el checkpoint. El cierre y la preparación de I24 se anotarán **solo en el cuerpo de la PR**, sin modificar de nuevo su HEAD.
