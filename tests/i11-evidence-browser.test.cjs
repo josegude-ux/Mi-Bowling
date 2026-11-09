@@ -156,6 +156,32 @@ async function test(base){
   assert.equal(after.preview.verdict,'identical');
   assert.equal(after.repeat.status,'already-present');
   console.log('PASS I11 Chromium · full browser process restart retains verified 4-event chain and independent witness');
+  // Verify the actual mobile-friendly controls: chain check, encrypted local
+  // download and file preview. No remote upload happens.
+  await p.locator('#lab-i11-passphrase').fill(V);
+  await p.locator('[data-demo-account="A"]').click();
+  await p.waitForFunction(()=>MiBowlingIntegrationI11.getState().recoveryOnly===true);
+  await p.locator('#lab-i11-evidence-pass').fill(E);
+  await p.locator('#lab-i11-chain-check').click();
+  await p.waitForFunction(()=>document.querySelector('#lab-i11-evidence-status')
+   ?.textContent.includes('cadena VERIFICADA'));
+  const [download]=await Promise.all([
+   p.waitForEvent('download',{timeout:15000}),
+   p.locator('#lab-i11-evidence-download').click()
+  ]);
+  assert.ok(download.suggestedFilename().endsWith('.mae11'));
+  const parts=[];
+  for await(const part of await download.createReadStream())parts.push(part);
+  const downloaded=Buffer.concat(parts).toString('utf8');
+  assert.ok(!downloaded.includes('I11-FAKE-SESSION'));
+  await p.locator('#lab-i11-evidence-file').setInputFiles({
+   name:'i11-outside-browser.mae11',mimeType:'application/json',
+   buffer:Buffer.from(downloaded)
+  });
+  await p.locator('#lab-i11-evidence-preview').click();
+  await p.waitForFunction(()=>document.querySelector('#lab-i11-evidence-status')
+   ?.textContent.includes('identical'));
+  console.log('PASS I11 Chromium · real evidence export/download and read-only verified file preview buttons');
   const witness=await ctx.newPage();
   const before=await readAll(witness,base);
   const confBefore=JSON.stringify(before['encrypted-confirmed']),walBefore=JSON.stringify(before['encrypted-operations']);
@@ -173,6 +199,13 @@ async function test(base){
    finally{j.close()}
   },{A,V,proof:outcome.proof,E});
   assert.equal(preview.verdict,'local-chain-unverifiable');
+  await p.locator('#lab-i11-evidence-consent').check();
+  await p.locator('#lab-i11-evidence-preview').click();
+  await p.waitForFunction(()=>document.querySelector('#lab-i11-evidence-status')
+   ?.textContent.includes('local-chain-unverifiable'));
+  await p.locator('#lab-i11-evidence-import').click();
+  await p.waitForFunction(()=>document.querySelector('#lab-i11-evidence-status')
+   ?.textContent.includes('evidence-restored'));
   const restored=await p.evaluate(async({A,V,proof,E})=>{
    const j=await MiBowlingI11EncryptedJournal.unlock({owner:A,passphrase:V});
    try{
@@ -182,7 +215,8 @@ async function test(base){
     return {result,verified}
    }finally{j.close()}
   },{A,V,proof:outcome.proof,E});
-  assert.equal(restored.result.eventsAdded,1);
+  assert.equal(restored.result.status,'already-present');
+  assert.equal(restored.result.eventsAdded,0);
   assert.equal(restored.verified.count,4);
   console.log('PASS I11 Chromium · missing middle receipt detected, recovered exclusively from authenticated external witness');
   await mutate(witness,base,'encrypted-restore-audit',A+':audit:'+outcome.chain.receipts[3].auditId,'delete');
