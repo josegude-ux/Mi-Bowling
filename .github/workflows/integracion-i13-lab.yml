@@ -1,0 +1,56 @@
+name: MI BOWLING · LAB I13 · Firmas múltiples y pin externo
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i13-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i13-*'
+      - 'lab/integracion-main-auth-i13.html'
+      - 'tests/i13-*'
+      - '.github/workflows/integracion-i13-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I13 · CP-020/FGB, firmas quorum, PIN externo y regresiones
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis I13
+        run: |
+          node --check lab/i13-witnesses.js
+          node --check lab/i13-ui.js
+          node --check tests/i13-witness-fixture.cjs
+          node --check tests/i13-witness-contract.test.cjs
+          node --check tests/i13-witness-browser.test.cjs
+      - name: Activos originales CP-020 y FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresión I11/I12 + ataque y firma I13
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+  browser:
+    name: I13 · WebKit/Chromium, política externa y rollback
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright sintético
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux (simulación de navegador móvil)
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Ficheros de prueba, firmas y PIN independiente, sin acceso externo
+        run: node tests/i13-witness-browser.test.cjs
