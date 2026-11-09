@@ -40,6 +40,7 @@ jobs:
           node --check tests/i11-audit-contract.test.cjs
           node --check tests/integracion-i11-browser.test.cjs
           node --check tests/i11-resilience-browser.test.cjs
+          node --check tests/i11-evidence-browser.test.cjs
       - name: Validar cadena, testigo externo y regresiones
         run: |
           node tests/i11-audit-contract.test.cjs
@@ -65,6 +66,8 @@ jobs:
         run: node tests/integracion-i11-browser.test.cjs
       - name: Rollback IDB, auditoría cifrada, ACK perdido y reinicio Chromium
         run: node tests/i11-resilience-browser.test.cjs
+      - name: Múltiples restauraciones, cadena cifrada, supresión, prueba externa y recuperación
+        run: node tests/i11-evidence-browser.test.cjs
       - name: Evidencia visual sintética aislada
         if: always()
         uses: actions/upload-artifact@v4
