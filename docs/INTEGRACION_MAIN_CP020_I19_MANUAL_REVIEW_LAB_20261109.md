@@ -39,6 +39,25 @@ El registro I19 es una **declaración introducida manualmente** o simulada por e
 
 No hay integraciones con servicios de identidad, almacenamiento o aprobación; no se realizan solicitudes de seguridad a personas reales, no se envían comunicaciones y no se toca producción. Tampoco hay comprobación de Safari en iPhone físico ni verificación de custodios reales.
 
+## Checkpoint funcional · BOWLING-I19-CP-001
+
+**Código funcional aprobado:** `4ed8589c6cf7a065537a5f5abab1cef6d041d549`.  
+**CI GitHub Actions push funcional:** [42677192653](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42677192653) — **SUCCESS 2/2** sobre dicho SHA.  
+**CI GitHub Actions PR funcional:** [42677268005](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42677268005) — **SUCCESS 2/2** sobre el mismo SHA.  
+**PR de laboratorio:** [#39](https://github.com/josegude-ux/Mi-Bowling/pull/39), estado draft/open/unmerged y base `feature/integracion-main-auth-i18-lab-20261109`.  
+**Comparación GitHub con I18:** merge base exacta `12148a870d42f4705964a38111b63d224f2e0f6f`; 8 archivos I19 **solo añadidos**; 8 commits ahead/0 behind en el SHA funcional. Ningún archivo de I11–I18, PWA, calendario FGB CP-020 o producción modificado ni eliminado.  
+**Main verificado:** `7fbb3fb32d889c3213626e5f73c49b0885ef9911`, inalterado.
+
+**Evidencias extraídas directamente de los logs funcionales:**
+- Node: **PASS FGB 31 eventos** (10 gallegos, 21 nacionales), contrato CP-020 y regresiones I11–I18, sin duplicados ni variación de datos.
+- Node I19: **PASS** retención de discrepancias firmadas, bloqueo de alias duplicado, exigencia de dos alias lógicos para una escalada no autorizativa, cadena de SHA, pérdida total I15/I16, PIN externo incompatible, rechazo de falsa aprobación y de afirmaciones sobre custodia/tiempo, aislamiento A/B/C, concurrencia sin escrituras.
+- WebKit Linux móvil emulado: **PASS** revisión manual, duplicados rechazados, escalada pendiente sin aprobación, exportación local explícita, expediente alterado rechazado, pérdida de confianza I15 y sin IndexedDB/red externa.
+- Chromium escritorio: **PASS** mismas pruebas LAB aisladas.
+
+**Restricción esencial del resultado:** ni dos etiquetas de revisión ni un hash firmado internamente acreditan custodios reales, consentimiento, identidad humana, seguridad de almacenamiento o frescura. Las pruebas **no convierten** el expediente I18 en autorizado ni acreditan un re-root. Todas las pruebas usan A/B/C ficticios.
+
+**HEAD documental:** se obtendrá en el commit que incorpore el presente checkpoint. No declarar éxito final hasta comprobar `push` y `pull_request` con todos los jobs finalizados sobre ese HEAD exacto. Si la orquestación Actions falla, registrar el bloqueo sin reinterpretar trabajos ausentes.
+
 ## Protección y cierre de CI
 
 La PR I19 debe quedar **draft** apilada sobre #38, con archivos I19 exclusivamente nuevos y sin modificaciones o eliminaciones de I11–I18, FGB CP-020, PWA, `main` ni las PR previas. El flujo obligatorio es PROGRAMAR → PROBAR → CORREGIR → REPROBAR → ENTREGAR y `GLOBAL-CONTINUIDAD-001 R1`, sin repetir pruebas superadas innecesariamente.
