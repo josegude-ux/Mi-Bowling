@@ -117,7 +117,7 @@ async function lastPin(bundle,policy){
   lastStatementHash:await statementHash(last.statement),
   finalManifestDigest:last.statement.manifestDigest});
 }
-async function verify(bundle,snapshots,policy,externalPin,owner){
+async function verify(bundle,snapshots,policy,externalPin,owner,passphrase){
  if(!UUID.test(owner||'')||!exact(bundle,['format','version','owner','records'])||
    bundle.format!==F||bundle.version!==1||bundle.owner!==owner||
    !Array.isArray(bundle.records)||bundle.records.length<1||bundle.records.length>MAX||
@@ -150,10 +150,9 @@ async function verify(bundle,snapshots,policy,externalPin,owner){
   // passwords, credentials or private keys in a portable I13 file.
   if(typeof snap.passphrase!=='undefined')
    throw Error('I13: el paquete no puede almacenar contraseñas');
-  const pass=arguments.length>5?arguments[5]:null;
-  if(typeof pass!=='string'||pass.length<12||pass.length>256)
+  if(typeof passphrase!=='string'||passphrase.length<12||passphrase.length>256)
    throw Error('I13: se requiere frase ficticia fuera del paquete');
-  const inputs=snap.files.map(file=>({file,passphrase:pass}));
+  const inputs=snap.files.map(file=>({file,passphrase}));
   const proof=await M.verify(snap.manifest,inputs,owner,snap.pin12);
   if(!proof.externallyPinned)throw Error('I13: PIN I12 requerido para cada manifiesto');
   if(previousManifest){
