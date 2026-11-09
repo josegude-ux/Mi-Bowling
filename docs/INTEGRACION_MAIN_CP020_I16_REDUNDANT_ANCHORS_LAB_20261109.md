@@ -42,6 +42,18 @@ Los tres checkpoints firmados en pruebas no equivalen a tres cambios en los dato
 
 No se pretende curar una pérdida total de anclas, recuperar claves privadas, certificar cronología ni desplegar infraestructura PKI. Las claves privadas de firma de los ensayos se mantienen únicamente en RAM de Node. No se ha probado Safari iPhone físico ni concurrencia de dispositivos reales.
 
+## Checkpoint BOWLING-I16-CP-001
+
+Código funcional: `541593f819f881ea9989daface62dbda17e46b96`.
+
+CI funcional [42633253421](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42633253421): **SUCCESS 2/2**; contratos CP-020/FGB/I11-I15/I16, WebKit y Chromium confirmados en logs.
+
+PR [#36](https://github.com/josegude-ux/Mi-Bowling/pull/36) draft sobre #35. Comparación con I15: 8 archivos I16 añadidos, ninguna modificación/borrado anterior, `main` sin cambios en `7fbb3fb32d889c3213626e5f73c49b0885ef9911`.
+
+Se registraron fallos iniciales de prueba en CI [42632907444](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42632907444) y [42633077489](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42633077489): una lectura de estado anterior en navegador. La UI pasa al estado «comprobación en curso» y el test aguarda el resultado específico de replay. Después se obtuvo 2/2 SUCCESS en el SHA funcional anterior.
+
+Límites: sin prueba de custodia independiente, reloj, inmutabilidad, ni replay cuando la última marca exterior deja de existir. El commit documental de este checkpoint requiere CI propia antes del cierre.
+
 ## Control de continuidad y CI
 
 Nuevo workflow `.github/workflows/integracion-i16-lab.yml`: dos jobs independientes de pruebas Node con CP-020/FGB/I11–I15 y ataques I16, y WebKit/Chromium en entorno local aislado. Solo pruebas con A/B/C ficticios. Mantener PR I16 en borrador apilada sobre #35. La recuperación I15 queda inalterada, y ninguna orden da permiso de fusionar, publicar o tocar producción.
