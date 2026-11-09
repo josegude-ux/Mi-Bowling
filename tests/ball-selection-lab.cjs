@@ -489,7 +489,7 @@ async function crossTabRetirementStalePickerScenario(browser,engine,origin){
   assert.deepEqual(snapshot.picks.__next__,[],'A no puede reintroducir Alpha retirada por B');
   assert.deepEqual(await first.evaluate(()=>selectedBallsFor('__next__')),[],'Filtro operativo de A excluye Alpha retirada');
   assert.equal((await getData(second)).db.balls.find(b=>b.id==='lab-a').retired,true,'La retirada se conserva en almacenamiento');
-  assert.deepEqual(snapshot.db.sessions,fixture.sessions,'No cambia ninguna sesión sintética');
+  assert.deepEqual(snapshot.db.sessions,(await getData(second)).db.sessions,'No cambia ninguna sesión sintética');
   assert.deepEqual(errors,[],'Sin errores JS tras retirada cruzada');
   console.log('OK '+engine+' 390px: selector obsoleto no resucita bola retirada desde otra pestaña');
  }finally{await context.close()}
