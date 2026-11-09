@@ -18,16 +18,16 @@
 
 ## Matriz de aceptación antes de CI
 
-- [ ] Copia cifrada contiene confirmados y dos o más WAL; no hay puntuaciones ni contraseña en texto claro.
-- [ ] Exportación en WebKit emulando iPhone A, restauración en Chromium de una base *nueva* del mismo LAB con contraseña del vault diferente; el contenido se vuelve a cifrar usando la clave local nueva.
-- [ ] Identidad A/B/C estricta: backup A no puede abrir ni modificarse bajo B.
-- [ ] Contraseña de backup incorrecta, AES-GCM alterado, metadatos AAD alterados o SHA de WAL incorrecto se rechazan sin escritura.
-- [ ] Restauración del mismo archivo y mismos IDs contra un confirmado idéntico: idempotencia, ningún duplicado.
-- [ ] Restauración más antigua que el confirmado actual: rechazar como OBSOLETO, sin degradar revisiones ni borrar WAL.
-- [ ] Respaldo con mismo número de revisión pero contenido divergente: conflicto, sin sustituciones.
-- [ ] Una restauración iniciada desde dos pestañas contra la misma base vacía: CAS transaccional, ningún doble insertado; una puede abortar y otra aplicarse.
-- [ ] Recuperación explícita y fusión no destructiva de varias operaciones tras importar; revisión incrementada y hash comprobado.
-- [ ] Main ajeno preservado sin modificaciones en I9, PR anteriores abiertas y no fusionadas; seis activos CP-020 originales de LAB y calendario FGB 31 eventos sin cambios.
+- [x] Copia cifrada contiene confirmados y dos o más WAL; no hay puntuaciones ni contraseña en texto claro.
+- [x] Exportación en WebKit emulando iPhone A, restauración en Chromium de una base *nueva* del mismo LAB con contraseña del vault diferente; el contenido se vuelve a cifrar usando la clave local nueva.
+- [x] Identidad A/B/C estricta: backup A no puede abrir ni modificarse bajo B.
+- [x] Contraseña de backup incorrecta, AES-GCM alterado, metadatos AAD alterados o SHA de WAL incorrecto se rechazan sin escritura.
+- [x] Restauración del mismo archivo y mismos IDs contra un confirmado idéntico: idempotencia, ningún duplicado.
+- [x] Restauración más antigua que el confirmado actual: rechazar como OBSOLETO, sin degradar revisiones ni borrar WAL.
+- [x] Respaldo con mismo número de revisión pero contenido divergente: conflicto, sin sustituciones.
+- [x] Una restauración iniciada desde dos pestañas contra la misma base vacía: CAS transaccional, ningún doble insertado; una puede abortar y otra aplicarse.
+- [x] Recuperación explícita y fusión no destructiva de varias operaciones tras importar; revisión incrementada y hash comprobado.
+- [x] Main ajeno preservado sin modificaciones en I9, PR anteriores abiertas y no fusionadas; seis activos CP-020 originales de LAB y calendario FGB 31 eventos sin cambios.
 
 ## Límites y seguridad no negociables
 
@@ -36,3 +36,31 @@ No se hace copia de partidas reales, ni se accede a Gmail/Drive/SQL/Auth, ni se 
 El cifrado está sujeto a la seguridad del propio origen web y sus scripts. La operación previa al acuse de durabilidad de IndexedDB no puede protegerse ante un cierre instantáneo. La restauración de una instantánea antigua se rechaza cuando ya existen confirmados de revisión diferente, en vez de hacer sobrescritura destructiva. La semántica de conflicto se limita a documentos de laboratorio y puntuaciones ficticias.
 
 **NO FUSIONAR, NO PUBLICAR, NO DATOS REALES.**
+
+
+## Checkpoint I9 verificable · 9 noviembre 2026
+
+**Código funcional exacto probado:** 1f0c26c20ddf66d11e15280f5b950f95a451fe95
+**Evidencia GitHub Actions:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42585082515 — **SUCCESS · 2/2 jobs**, Node + WebKit/Chromium, sobre el código indicado.
+**PR draft:** https://github.com/josegude-ux/Mi-Bowling/pull/28, apilada sobre PR #25.
+
+### Evidencias verificadas
+
+1. Node: seis activos CP-020 de la rama LAB idénticos a su referencia contractual; calendario FGB 31 eventos (10 gallegos, 21 nacionales). Contratos A/B/C, AES-GCM, firma SHA-256, claves incorrectas, cabeceras AAD alteradas, duplicados en archivo, identidad ajena, separación de Liga Nacional y consentimiento explícito.
+2. WebKit emulando iPhone A y tablet B, Chromium escritorio C: motor original CP-020 verificado por SHA, sin leer localStorage auténtico, sin PWA y sin servicios remotos.
+3. WebKit A: exportación cifrada con un confirmado revisión 1 y dos WAL independientes, sin identificadores de partidas en claro. **Botón real de descarga** en archivo .mbi9 y **botón real de previsualización** verifican el respaldo descargado, sin modificar el almacén.
+4. WebKit: clave de respaldo incorrecta y UUID del jugador B rechazan el respaldo de A antes de escribir.
+5. Chromium: importación en un origen LAB nuevo antes de sembrar fixtures, usando clave de vault distinta de la del origen; se recuperan confirmado y dos WAL. Reimportar el mismo archivo por API y botón de UI es idempotente: already-present, sin duplicación.
+6. Chromium: mismo número de revisión confirmado con contenido diferente se rechaza (conflicto). Un WAL con **mismo opId y distinto tabId** también se rechaza aun cuando su nueva firma SHA esté correctamente calculada; ningún confirmado ni WAL anterior se sustituye.
+7. Chromium: intento de restaurar archivo A en cuenta B bloqueado sin sembrar datos ajenos. El jugador B sigue pudiendo iniciar limpio.
+8. Chromium: recuperación manual del primer WAL, fusión conservadora del segundo, revisión confirmada 3 con ambas sesiones ficticias sin duplicados. Un backup anterior revisión 1 se rechaza como OBSOLETO: sin downgrade ni borrado.
+9. Chromium: modificación del ciphertext del archivo AES-GCM causa rechazo antes de escribir.
+10. Chromium: dos pestañas de una base nueva restauran el mismo respaldo concurrentemente; una confirma, la otra es idempotente o aborta por CAS, conservando un confirmado y solo dos operaciones.
+
+### Límites y coordinación
+
+El almacenamiento confirmado y el journal son únicamente IndexedDB del mismo origen LAB ficticio. El archivo se cifra con una frase de exportación independiente y no persistida. La cabecera expone UUID/revisión y metadatos; puntuaciones y operaciones quedan bajo AES-GCM. No se certifica servidor real, sincronización, Safari iPhone físico, recuperación sin clave ni protección antes del acuse asíncrono.
+
+Main observado antes de comenzar I9: 6dd7d486268a4ba23302559bebf209d531cc4964 (cambiado por otra línea de trabajo respecto al main del checkpoint I8). No se ha modificado, revertido, fusionado ni publicado main en I9. Solo se añadieron archivos I9 en la rama de laboratorio apilada.
+
+**Estado: I9 VALIDADO SOLO EN LAB con datos ficticios; PR #28 DRAFT. No fusionar ni publicar.**
