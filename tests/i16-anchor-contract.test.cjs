@@ -102,7 +102,7 @@ async function main(){
    other.externalRoot,other.externalMark,other.copies);
   assert.equal(r.verified,true);
  }
- const oldWitness=await f.E.open(f.previous.previous.rawFiles[0],PASS,A);
+ const oldWitness=await f.previous.E.open(f.previous.previous.rawFiles[0],PASS,A);
  const verdict=await K.compareCurrent(history,f.package15,f.source,A,PASS,
   externalRoot,externalMark,copies,oldWitness);
  assert.equal(verdict.verdict,'rollback-or-suppression-detected');
