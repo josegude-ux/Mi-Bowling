@@ -1,0 +1,45 @@
+name: "MI BOWLING | LAB Inicio limpio R1"
+on:
+  push:
+    branches: [design/inicio-limpio-r1-20261109]
+  pull_request:
+    branches: [main]
+    paths:
+      - app.js
+      - tests/home-clean-lab.cjs
+      - .github/workflows/home-clean-lab.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Sintaxis, rutas y contratos previos
+        run: |
+          node --check app.js
+          node --check tests/home-clean-lab.cjs
+          node tests/home-clean-lab.cjs
+          node tests/ui-postpub-static.cjs
+          node tests/design-lab-smoke.cjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar navegadores en runner aislado
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Inicio, MIS BOLAS, Liga y responsive Chromium/WebKit
+        run: node tests/home-clean-lab.cjs --browser
+      - name: Regresiones scoring, persistencia y PWA LAB local
+        run: LAB_AUDIT_MODE=local node tests/ui-postpub-browser.cjs

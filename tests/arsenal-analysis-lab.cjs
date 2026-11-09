@@ -21,12 +21,14 @@ const fixture={version:2,hand:'diestro',balls:[
  {...newBall('lab-retired','Track','Legion Pearl'),retired:true}
 ],patterns:[],sessions:[]};
 const store=page=>page.evaluate(()=>({db:JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')),picks:JSON.parse(localStorage.getItem('mi-bowling-ball-selection-v1')||'{}')}));
+const openBalls=page=>page.evaluate(()=>go('bolas'));
+const openNew=page=>page.evaluate(()=>go('nueva'));
 async function run(browser,name,width,origin){
  const ctx=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
  try{
   await page.goto(origin,{waitUntil:'load'});await page.evaluate(data=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data)),fixture);await page.reload({waitUntil:'load'});
-  await page.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(page);
   assert.equal(await page.locator('.ball-card').count(),6,'Arsenal original intacto');
   await page.getByRole('button',{name:/Comparar marcadas/}).click();
   assert.match(await page.locator('#app').innerText(),/Marca las bolas mediante sus checks/,'Sin selección no recomienda bolas');
@@ -65,7 +67,7 @@ async function run(browser,name,width,origin){
 
   // Asistente desde el marcador: conserva bolos en pie y no crea tiros al consultar.
   await page.getByRole('button',{name:/Volver a Mis bolas/}).click();
-  await page.getByRole('button',{name:'Nueva',exact:true}).click();
+  await openNew(page);
   await page.locator('#s-title').fill('Competicicón ficticia de análisis');
   await page.locator('#s-venue').fill('Bolera LAB');
   await page.locator('#s-ball').selectOption('lab-rally');

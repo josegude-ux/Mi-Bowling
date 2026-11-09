@@ -23,10 +23,10 @@ assert.equal(events.filter(e=>e.start==='2026-11-28').length,4,'Cuatro campeonat
 const app=read('app.js'),html=read('index.html'),sw=read('sw.js'),css=read('styles.css');
 new Function(app);
 assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Persistencia inalterada');
-assert(app.includes("const APP_VERSION='3.3.9-arsenal-f1'"),'Versión funcional inalterada');
-assert(html.indexOf('official-calendar-2026-2027.js?v=338fgb1')<html.indexOf('app.js?v=339f1'),'Calendario carga antes de aplicación');
+assert(app.includes("const APP_VERSION='3.3.10-catalogo'"),'Versión funcional inalterada');
+assert(html.indexOf('official-calendar-2026-2027.js?v=338fgb1')<html.indexOf('app.js?v=3310cat1'),'Calendario carga antes de aplicación');
 assert(sw.includes("'./official-calendar-2026-2027.js?v=338fgb1'"),'Datos disponibles offline');
-assert(sw.includes("mi-bowling-analitica-v3-3-9-arsenal-f1"),'Nueva caché aislada');
+assert(sw.includes("mi-bowling-analitica-v3-3-10-ui-cp036"),'Nueva caché aislada');
 assert(css.includes('.calendar-dot-gallego')&&css.includes('.calendar-dot-nacional'),'Colores independientes');
 const begin=app.indexOf('let calendarMonth='),end=app.indexOf('let newMode=',begin);
 assert(begin>0&&end>begin);

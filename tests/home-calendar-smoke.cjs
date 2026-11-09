@@ -6,7 +6,7 @@ new Function(app);
 assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'No cambia el almacenamiento');
 assert(app.includes("['calendario'")&&app.includes("'Calendario']"),'Calendario sustituye a Mis bolas en menú inferior');
 assert(app.includes("tab==='calendario'?calendarView()"),'Ruta calendario funcional');
-assert(app.includes('data-target="bolas"')&&app.includes('<strong>Mis bolas</strong>'),'Mis bolas accesible desde herramientas');
+assert(app.includes('data-target="estadisticas"')&&app.includes('Ver mis bolas →'),'Mis bolas accesible desde Análisis');
 assert.equal((app.slice(app.indexOf('function home(){'),app.indexOf("let calendarMonth=")).match(/class="bowling-home-module bowling-home-module-/g)||[]).length,3,'Tres tarjetas VISURA');
 assert(css.includes("url('./home-registro.jpg')")&&css.includes("url('./home-partidas.jpg')")&&css.includes("url('./home-estadisticas-limpio.jpg')"),'Tres fondos independientes');
 assert(css.includes('.calendar-grid')&&css.includes('.calendar-day.selected'),'Estilos de calendario');
@@ -16,8 +16,8 @@ for(const filename of ['home-registro.jpg','home-partidas.jpg','home-estadistica
  assert(bytes.length>20000&&bytes.length<150000,'Imagen ligera con contenido');
  assert(sw.includes("'./"+filename+"'"),'Disponible sin conexión: '+filename);
 }
-assert(index.includes('styles.css?v=339f1')&&index.includes('app.js?v=339f1'),'Recursos PWA actualizados');
-assert(sw.includes('mi-bowling-analitica-v3-3-9-arsenal-f1'),'Caché distinta de producción previa');
+assert(index.includes('styles.css?v=3310cat1')&&index.includes('app.js?v=3310cat1'),'Recursos PWA actualizados');
+assert(sw.includes('mi-bowling-analitica-v3-3-10-ui-cp036'),'Caché distinta de producción previa');
 const begin=app.indexOf('let calendarMonth='),end=app.indexOf("let newMode=",begin);
 assert(begin>0&&end>begin,'Bloque de calendario encontrado');
 const fixture={sessions:[
