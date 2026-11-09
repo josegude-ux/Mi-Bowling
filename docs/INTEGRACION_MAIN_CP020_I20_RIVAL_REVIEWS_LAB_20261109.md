@@ -37,6 +37,24 @@ I20 crea un **paquete forense de discrepancias**, con todas las fuentes presenta
 
 El nombre A/B/C describe archivos ficticios y no seres humanos. El sistema no comprueba independencia humana, titularidad de claves, WORM, testigos, firmas legales, sellos temporales, conservación en un medio externo, procedimiento jurídico ni disponibilidad del último PIN exterior. Una historia de hash verificable no equivale a evidencia de custodia real. Los archivos I20 no son una autorización ni una recuperación de acceso o puntuaciones.
 
+## Checkpoint funcional · BOWLING-I20-CP-001
+
+**SHA funcional exacto probado:** `def4e88d40ad039083e9c8123832175b869c3274`.  
+**CI push:** [42680298196](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42680298196) — `completed/SUCCESS`, **2/2 jobs**, sobre el mismo SHA.  
+**CI PR:** [42680385869](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42680385869) — `completed/SUCCESS`, **2/2 jobs**, sobre el SHA funcional exacto.  
+**PR:** [#40](https://github.com/josegude-ux/Mi-Bowling/pull/40), draft/open/unmerged, base `feature/integracion-main-auth-i19-lab-20261109`.  
+**Base I19:** `6f5e22d53812f434f8609edd9bf8bbff091fa891`, CI I19 cerrada.  
+**Comparación real GitHub:** 8 nuevos ficheros I20, **todos `added`**, ningún archivo previo modificado o eliminado; 9 commits ahead y 0 behind antes de este commit documental. `main` intacta en `7fbb3fb32d889c3213626e5f73c49b0885ef9911`.
+
+**Verificación directa de los logs de la CI funcional:**
+- CP-020/FGB **PASS 31 eventos** (10 gallegos, 21 nacionales), filtros y datos preservados; regresiones I11–I19 `SUCCESS`.
+- Node I20 `PASS`: ramas I19 discrepantes y copias idénticas conservadas, entradas inválidas retenidas, pérdida de fuentes o prefijos, SHA externo opcional sin confianza automática, falsos permisos rechazados, A/B/C ficticios y concurrencia sin escrituras.
+- WebKit móvil Linux emulado `PASS` y Chromium escritorio `PASS`: preservación de rivales, duplicados sin independencia humana, pérdida total I18, solicitud externa **no enviada**, exportación explícita y bloqueo de paquete alterado, sin IndexedDB ni conexiones externas.
+
+**Afirmaciones prohibidas aun después de las pruebas:** el expediente NO demuestra identidad real de revisores, que A/B/C sean custodios distintos, firma humana, autenticidad de fecha, hora de conservación, última versión vigente, WORM, inmutabilidad, ni que una referencia externa aportada fuera guardada de forma independiente. `operationalApproval:false` y `authority:'none'` son invariantes.
+
+**Segundo paso de cierre:** el commit que introduce este checkpoint crea un HEAD documental nuevo. Deben aprobarse **ambas CI push y pull_request sobre ese SHA**, no bastan los resultados verdes funcionales anteriores. Cerrar la PR únicamente a nivel documental (en su descripción) tras la validación; mantenerla draft/unmerged. Preparar I21 solo como orden, sin ejecutarlo.
+
 ## CI, checkpoint y continuidad
 
 `.github/workflows/integracion-i20-lab.yml`: contratos protegidos CP-020/FGB, regresiones I11–I19, Node I20 adversarial, WebKit móvil emulado y Chromium escritorio, usando únicamente A/B/C. La PR I20 debe ser **draft** apilada sobre PR #39. El cierre se hará en dos pasos: CI del SHA funcional exacto, documentación de `BOWLING-I20-CP-001` con datos reales, nueva CI del HEAD documental y publicación del estado final **solo en la descripción de la PR**, para no generar otro commit tras la validación.
