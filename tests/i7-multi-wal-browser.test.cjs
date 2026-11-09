@@ -190,7 +190,7 @@ async function webkitMultiWal(browser,base){
   assert.equal((await confirmed(verify)).revision,2);
   const finalB=(await confirmed(verify)).payload.sessions.map(x=>x.id);
   assert.ok(finalB.includes('I7-B-RAPID-ONE')&&finalB.includes('I7-B-RAPID-TWO'));
-  assert.equal(finalB.filter(x=>x.id==='I7-B-RAPID-ONE').length,1,'idempotent cumulative session');
+  assert.equal(finalB.filter(id=>id==='I7-B-RAPID-ONE').length,1,'idempotent cumulative session');
   assert.equal((await status(verify)).length,0);
   console.log('PASS I7 WebKit · two rapid cumulative saves in one tab have separate durable WAL and idempotent reconciliation');
   await open(verify,base,'C');await waitFor(verify,'ready','C');
