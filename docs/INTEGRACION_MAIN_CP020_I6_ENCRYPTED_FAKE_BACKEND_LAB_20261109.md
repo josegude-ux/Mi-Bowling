@@ -25,14 +25,38 @@
 6. Las pruebas de WebKit se ejecutan en Linux con emulación de tamaño/dispositivo; no certifican Safari en un iPhone físico. Pendientes también cuota agotada, modo privado, bloqueo de DB y pruebas con dispositivos diferentes.
 7. El cifrado es experimental y no protege frente a código malicioso que se ejecute en la misma página. No introducir frases de contraseña reales ni datos auténticos.
 
-## Aceptación pendiente de evidencia CI
+## Aceptación verificada mediante GitHub Actions
 
-- [ ] SHA de seis activos publicados CP-020 intactos; 31 fechas FGB: 10 gallegas y 21 nacionales.
-- [ ] Sintaxis, regresiones I3/I4, acceso A/B/C.
-- [ ] WebKit y Chromium: puntuaciones confirmadas cifradas tras cierre y recarga real, sin escribir localStorage nativo.
-- [ ] Contraseña errónea bloquea y los jugadores quedan aislados.
-- [ ] WAL inmediato antes de backend confirmado y recuperable tras cierre.
-- [ ] Dos pestañas del mismo propietario: CAS, conflicto explícito y fusión de sesiones nuevas no solapadas.
-- [ ] Nueva PR draft; CI verificada y checkpoint documental.
+- [x] SHA de seis activos publicados CP-020 intactos; 31 fechas FGB: 10 gallegas y 21 nacionales.
+- [x] Sintaxis, regresiones I3/I4, acceso A/B/C.
+- [x] WebKit y Chromium: puntuaciones confirmadas cifradas tras cierre y recarga real, sin escribir localStorage nativo.
+- [x] Contraseña errónea bloquea y los jugadores quedan aislados.
+- [x] WAL inmediato antes de backend confirmado y recuperable tras cierre.
+- [x] Dos pestañas del mismo propietario: CAS, conflicto explícito y fusión de sesiones nuevas no solapadas.
+- [x] Nueva PR draft; CI verificada y checkpoint documental.
 
 **NO FUSIONAR · NO PUBLICAR · NO CONECTAR SERVICIOS REALES · NO PARTIDAS AUTÉNTICAS.**
+
+
+## Checkpoint I6 · 9 noviembre 2026 · VALIDADO SOLO EN LAB
+
+**Código funcional exacto probado:** f9dc401e28b569d6d79afbe0588df4bb5a1f2fe3.
+**CI de PR:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42541270744 — SUCCESS, 2/2 jobs, SHA del código indicado.
+**PR apilada:** https://github.com/josegude-ux/Mi-Bowling/pull/23 — borrador sobre PR #22; sin fusionar.
+**Evidencia del navegador:** job I6 WebKit y Chromium, ejecución 42541270744, salida PASS para ambos motores.
+
+Resultados comprobados, no supuestos:
+
+- El SHA contractual de los seis activos publicados CP-020 permanece intacto, así como el calendario FGB 2026-2027: 31 pruebas oficiales, 10 gallegas y 21 nacionales.
+- WebKit móvil A/tablet B y Chromium escritorio C: carga de app.js verificada por hash en memoria y guardado ficticio asíncrono sin tocar el localStorage real ni registrar PWA.
+- WebKit iPhone simulado y Chromium escritorio: puntuación **confirmada** cifrada persiste tras cerrar de verdad la pestaña y recargar; un lector sin contraseña no ve datos de partidas en texto claro en la tabla confirmada.
+- A y B: almacenes separados; una frase errónea bloquea la lectura de confirmados sin alterar el ciphertext del documento A.
+- Al fallar la escritura simulada, el WAL comienza inmediatamente desde el save del motor (sin el retraso artificial de 80 ms); el test espera a que su transacción cifrada esté confirmada antes de cerrar de verdad la pestaña. Reabre, inspecciona revisión/hash y recupera explícitamente; la revisión de confirmado avanza, y el WAL se limpia solo después de verificarla.
+- Dos pestañas del jugador A cargan la misma revisión; gana una escritura CAS. La segunda queda bloqueada con una copia pendiente intacta y debe solicitar una fusión conservadora de sesiones distintas. La fusión solo se ejecuta tras comparar documentos y actualizar mediante una nueva revisión CAS. Ambos IDs ficticios llegan al confirmado cifrado.
+- Regresiones de I3, I4 y control de propietarios A/B/C: SUCCESS.
+
+**Correcciones documentadas durante I6:** (1) composición de snapshot a partir de repositorio inmutable sin mutar objetos congelados; (2) uso del normalizador real CP-020 para crear sesiones ficticias completas antes de comprobar fusión de tres vías. Se evitó relajar las protecciones contra cambios en sesiones existentes.
+
+**LÍMITES NO RESUELTOS:** almacenamiento **del navegador de LAB** y no remoto; no probado Safari físico; clave de prueba no persistente; colisiones de journaling simultáneo sobre un único WAL/UUID; commit asíncrono no garantiza inmunidad a cierre instantáneo antes de confirmar; sin servidor real, migración de partidas ni publicación. I6 **no es apta para puntuaciones auténticas**.
+
+**Referencia inmutable de main:** 566aafdc05be163baf8c7f82e60433b0f532d748. Respetar las PR #1/#8/#10/#12/#13/#18/#20/#21/#22 y sus checks. No merge, no deploy.
