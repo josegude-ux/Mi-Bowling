@@ -137,7 +137,7 @@ async function main(){
   /SHA mismatch/);
  // Corrupted JSON is retained by I25 after safe bytes were imported.
  const broken=f.raws.slice();broken[3]='{"unfinished":';
- const packet=await P.run(f.makeFiles(broken),undefined,{profile:'constrained'});
+ const packet=await P.run(f.fromRaws(broken),undefined,{profile:'constrained'});
  assert.equal(packet.classification,'quarantine-invalid-stages');
  assert.equal(packet.packet.sources[3],broken[3]);
  assert.equal(packet.report.operationalApproval,false);
