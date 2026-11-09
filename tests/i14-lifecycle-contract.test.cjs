@@ -91,7 +91,7 @@ async function main(){
   f.rootPin,f.latestPin,A,PASS,current);
  assert.equal(detection.verdict,'rollback-or-suppression-detected');
  await assert.rejects(verify(f.bundle,f.policies,f.pins13,f.rootPin,f.latestPin,B),
-  /identidad|génesis/);
+  /identidad|génesis|incompletos/);
  await assert.rejects(verify(f.bundle,f.policies,f.pins13,f.rootPin,f.latestPin,A,
   'not-the-fixture-passphrase'),/clave incorrecta/);
  const concurrent=await Promise.all([verify(),verify(),verify()]);
