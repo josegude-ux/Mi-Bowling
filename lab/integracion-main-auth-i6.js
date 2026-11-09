@@ -127,7 +127,11 @@ const fixtureRepo=root.MiBowlingPrivateRepository.create(fakeClient);
 // authenticated, owner-bound encrypted IndexedDB CAS.
 repo=Object.freeze({
  async load(owner){
-  const docs=await fixtureRepo.load(owner); // mock RLS identity check on EVERY call
+  const verified=await fixtureRepo.load(owner); // mock RLS identity check on EVERY call
+  // The repository intentionally returns frozen documents. Recompose a fresh
+  // read-only snapshot rather than mutating its object or bypassing RLS.
+  const docs={owner:verified.owner,personal:clone(verified.personal),
+    league:clone(verified.league)};
   if(journal){
    const confirmed=await journal.readConfirmed(owner);
    if(!confirmed)throw Error('I6: servidor cifrado ficticio sin inicializar');
