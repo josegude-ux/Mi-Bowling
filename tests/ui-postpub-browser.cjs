@@ -60,6 +60,13 @@ async function regular(browser,engine,width,height,url){
   await page.evaluate(data=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data)),fixture);
   await page.reload({waitUntil:'load',timeout:35000});
   assert.equal(await page.locator('.bowling-home-module').count(),3,'Inicio sin regresiones');
+  if(width===1280){
+   const tops=await page.locator('.bowling-home-module').evaluateAll(nodes=>
+    nodes.map(n=>Math.round(n.getBoundingClientRect().top)));
+   if(mode==='local')assert(tops.every(v=>Math.abs(v-tops[0])<=2),
+    'Las tres tarjetas quedan alineadas en escritorio LAB: '+tops.join(','));
+   else console.log('DIAGNÓSTICO PUBLICADO: tres tarjetas en Y='+tops.join(','));
+  }
   assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--teal').trim()),
    '#086fd4','Tema azul activo');
   if(width>=1120){
