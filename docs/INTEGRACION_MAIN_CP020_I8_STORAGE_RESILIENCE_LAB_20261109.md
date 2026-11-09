@@ -5,7 +5,7 @@
 **Origen verificable:** PR #24, checkpoint I7 c46a6ccd205a45031e4e8c441d5de349f5c64c07, código probado 532daefe608636ecf7ec5c530bd014116af67a3b.
 **Nueva rama:** feature/integracion-main-auth-i8-lab-20261109, apilada sobre I7 y aislada de main.
 **Referencia main:** 566aafdc05be163baf8c7f82e60433b0f532d748.
-**Estado de aceptación:** candidato, pendiente de evidencia GitHub Actions.
+**Estado de aceptación:** I8 VALIDADA EN LAB con datos ficticios; evidencia GitHub Actions 2/2 aprobada.
 
 ## Diseño y modificaciones implementadas
 
@@ -21,14 +21,14 @@
 
 ## Matriz de aceptación previa a CI
 
-- [ ] SHA/contratos de seis activos de main CP-020, FGB 31 pruebas (10 gallegas y 21 nacionales).
-- [ ] Solo datos sintéticos A/B/C; no se conectan servicios reales ni se importa un documento auténtico.
-- [ ] QuotaExceededError **simulado dentro de la transacción IDB**: no ACK durable, backend intacto, otro jugador conserva sus WAL.
-- [ ] Bloqueo **real** de actualización de esquema IDB: modo bloqueado y recuperación después de liberar el lock antiguo, sin sobrescrituras.
-- [ ] AES-GCM adulterado: WAL ilegible causa bloqueo total del propietario, otras entradas quedan byte a byte intactas y B/C siguen independientes.
-- [ ] Contraseña errónea/perdida: no lectura, no limpieza ni sustitución; clave correcta recupera operaciones válidas.
-- [ ] Cierre y reinicio completos de navegador Chromium: N pendientes por pestaña/operación sobreviven y se concilian con CAS y confirmación explícita; sin duplicados.
-- [ ] Sintaxis, contratos I7 y regresión de CP-020 en WebKit iPhone/tablet emulados y Chromium, CI con checkpoint verificable.
+- [x] SHA/contratos de seis activos de main CP-020, FGB 31 pruebas (10 gallegas y 21 nacionales).
+- [x] Solo datos sintéticos A/B/C; no se conectan servicios reales ni se importa un documento auténtico.
+- [x] QuotaExceededError **simulado dentro de la transacción IDB**: no ACK durable, backend intacto, otro jugador conserva sus WAL.
+- [x] Bloqueo **real** de actualización de esquema IDB: modo bloqueado y recuperación después de liberar el lock antiguo, sin sobrescrituras.
+- [x] AES-GCM adulterado: WAL ilegible causa bloqueo total del propietario, otras entradas quedan byte a byte intactas y B/C siguen independientes.
+- [x] Contraseña errónea/perdida: no lectura, no limpieza ni sustitución; clave correcta recupera operaciones válidas.
+- [x] Cierre y reinicio completos de navegador Chromium: N pendientes por pestaña/operación sobreviven y se concilian con CAS y confirmación explícita; sin duplicados.
+- [x] Sintaxis, contratos I7 y regresión de CP-020 en WebKit iPhone/tablet emulados y Chromium, CI con checkpoint verificable.
 
 ## Límites no resueltos (obligatorio)
 
@@ -39,3 +39,32 @@ I8 NO proporciona sincronización entre dispositivos ni servidor remoto: los con
 En particular, **no ofrecer reseteo de clave ni borrado automático** de diarios ante contraseña perdida; no se pueden recuperar copias cifradas sin la frase correcta. Las operaciones corruptas se retienen y requieren investigación segura (no reparación especulativa).
 
 **Prohibiciones:** no modificar main, app.js publicado, calendario FGB, datos auténticos ni PR #1/#8/#10/#12/#13/#18/#20/#21/#22/#23/#24. No fusionar, publicar, contactar servicios externos ni iniciar fases posteriores sin nueva orden.
+
+
+## Checkpoint I8 · 9 noviembre 2026 · VALIDADO EN LAB (sin publicación)
+
+**Código funcional exacto verificado:** 2a1eb32a57b42ff9e8768c57488261ec32966a62.
+**CI push del código:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42545530413 — **SUCCESS, 2/2 jobs**.
+**PR #25:** https://github.com/josegude-ux/Mi-Bowling/pull/25 (draft, base I7 PR #24).
+**Rama:** feature/integracion-main-auth-i8-lab-20261109.
+**Checkpoint anterior intacto:** I7 c46a6ccd205a45031e4e8c441d5de349f5c64c07.
+
+### Evidencias independientes de GitHub Actions
+
+- Node: seis activos publicados de CP-020 con hash idéntico; calendario oficial FGB 31 eventos (10 gallegos y 21 nacionales), sin duplicación ni cambios en otros módulos. Contratos I7 y prueba de abortos I8 pasan. Las pruebas de I8 distinguen WAL volátil (sin transacción confirmada) de WAL duradero y no permiten escribir confirmados después de una cuota simulada.
+- WebKit en Linux emulando iPhone A y tablet B, y Chromium escritorio C: motor CP-020 verificado y conservado, guardado con datos ficticios, aislamiento sin acceder al localStorage real ni registrar PWA.
+- WebKit: el fixture **QuotaExceededError** aborta la transacción real de IDB. No hay acuse ni escritura confirmada, la modificación sigue señalada como volátil, y el WAL cifrado preexistente de B queda intacto. No se llenó una cuota de disco real.
+- WebKit: contraseña errónea/perdida bloquea el acceso y una auditoría solo lectura cuenta WAL ilegibles, sin alterar ciphertext. Al introducir la frase correcta, el WAL íntegro vuelve a ser legible.
+- Chromium: se mantiene abierta una conexión genuina IndexedDB v1 mientras I8 solicita v2. La página se bloquea (sin cargar editor ni sobrescribir archivos), y funciona después de liberar la conexión antigua.
+- Chromium: con **dos WAL cifrados de A**, se altera un ciphertext. La apertura de A se bloquea y el diagnóstico identifica exactamente 1 ilegible y 1 legible sin descartar ninguno; B y C siguen independientes. La auditoría no borra ni edita registros.
+- Chromium: con el documento **confirmado** cifrado alterado, el sistema también bloquea la entrada al motor editable; no sustituye el registro inválido por la fixture y B permanece independiente.
+- Chromium con **perfil persistente temporal**: se cierra completamente el proceso/contexto de navegador, se vuelve a lanzar Chrome en el mismo perfil, se desbloquean dos WAL, se recupera expresamente uno y se fusiona el otro de forma conservadora con CAS. Ambos IDs ficticios quedan confirmados sin duplicarse, también después de recargar.
+- Los casos demostrados son cierres y reaperturas de **proceso con perfil persistente**, no una garantía de restauración tras un crash brutal o pérdida física de almacenamiento.
+
+### Correcciones en esta fase
+
+El primer test de diagnóstico externo intentó construir una URL relativa desde about:blank. Se corrigió usando el origen HTTPS efímero verificado de LAB. Se amplió después la matriz para probar también corrupción del documento confirmado y se reprodujo de nuevo CI con resultado SUCCESS.
+
+**Limitaciones no superadas:** pérdida posible de cualquier operación sin ACK tras interrupción instantánea; cuota real no agotada en CI; no Safari iPhone físico, almacenamiento privado, cuotas iOS reales, sincronización entre dispositivos ni backend externo. Una frase perdida no puede restituirse automáticamente, y una copia corrupta se conserva sin reparación destructiva.
+
+**Decisión de entrega:** Fase I8 aprobada **solo como laboratorio de datos ficticios**. Sin autorización de merge, publicación ni uso de partidas reales.
