@@ -158,6 +158,41 @@ async function webkitMultiWal(browser,base){
   assert.ok(!(await engineSessions(verify)).includes('I7-OP-TAB1'));
   await mutate(verify,'I7-B-SCORE');await drain(verify);
   assert.equal((await confirmed(verify)).revision,0);
+  // Two fast, cumulative snapshots from the SAME tab must have distinct
+  // operation IDs, both independently durable, even if the first network
+  // write fails and the second contains the first new session.
+  await verify.evaluate(()=>MiBowlingIntegrationI7.simulateNetworkFailure(true));
+  await verify.evaluate(()=>{
+   for(const id of ['I7-B-RAPID-ONE','I7-B-RAPID-TWO']){
+    const raw={id,type:'entrenamiento',date:'2026-11-09',
+     games:[{id:'g-'+id,rolls:[],includeStats:true}]};
+    Function('return db')().sessions.push(
+     Function('return migrate')()({sessions:[raw]}).sessions[0]);
+    Function('return save')()();
+   }
+  });
+  const burst=await drain(verify);
+  assert.equal(burst.blocked,'uncertain');
+  assert.equal((await status(verify)).length,2);
+  assert.equal(new Set((await status(verify)).map(x=>x.opId)).size,2);
+  await verify.close();verify=await ctx.newPage();
+  await open(verify,base,'B');await waitFor(verify,'recovery','B');
+  let burstOps=await status(verify);
+  assert.equal(burstOps.length,2);
+  assert.ok(burstOps.every(x=>x.status==='can-resume'));
+  assert.equal((await verify.evaluate(id=>
+   MiBowlingIntegrationI7.recoverOperation(id),burstOps[0].opId)).status,'saved');
+  burstOps=await status(verify);
+  assert.equal(burstOps.length,1);assert.equal(burstOps[0].status,'conflict');
+  const mergedBurst=await verify.evaluate(id=>
+   MiBowlingIntegrationI7.mergeOperation(id,'CONFIRMAR-FUSION-FICTICIA'),burstOps[0].opId);
+  assert.equal(mergedBurst.status,'merged');
+  assert.equal((await confirmed(verify)).revision,2);
+  const finalB=(await confirmed(verify)).payload.sessions.map(x=>x.id);
+  assert.ok(finalB.includes('I7-B-RAPID-ONE')&&finalB.includes('I7-B-RAPID-TWO'));
+  assert.equal(finalB.filter(x=>x.id==='I7-B-RAPID-ONE').length,1,'idempotent cumulative session');
+  assert.equal((await status(verify)).length,0);
+  console.log('PASS I7 WebKit · two rapid cumulative saves in one tab have separate durable WAL and idempotent reconciliation');
   await open(verify,base,'C');await waitFor(verify,'ready','C');
   assert.equal((await status(verify)).length,0);
   assert.ok(!(await engineSessions(verify)).includes('I7-B-SCORE'));
