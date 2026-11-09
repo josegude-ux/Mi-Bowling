@@ -38,6 +38,24 @@ async function fixture(owner=A){
   const history=f.older(generation),mark=await K.highWatermark(history,f.externalRoot);
   return {slot,history,copy:await K.anchorCopy(slot,mark)};
  };
- return {...f,F,K,reports,branch,stale};
+ const advance=async(slot='C')=>{
+  const history=clone(f.history),last=history.records.at(-1).statement;
+  const digest=await f.previous.I12.hashText(JSON.stringify(f.source.externalLatestPin));
+  const trust=await f.previous.I13.verifyPolicy(f.source.newPolicy,owner);
+  const st=K.checkpoint(owner,history.seriesId,last.sequence+1,
+   '00000004-1616-4161-8161-000000000016',
+   await K.stHash(last),digest,trust.policyDigest,
+   f.previous.manifest.digest,f.previous.recoveryStatement.newAuditCount);
+  const signatures=[];
+  for(let i=0;i<2;i++){
+   const sig=await webcrypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},
+     f.previous.fresh.pairs[i].privateKey,K.signBytes(st));
+   signatures.push({keyId:f.source.newPolicy.keys[i].keyId,signature:b64(sig)});
+  }
+  history.records.push({statement:st,signatures});
+  const mark=await K.highWatermark(history,f.externalRoot);
+  return {slot,history,copy:await K.anchorCopy(slot,mark)};
+ };
+ return {...f,F,K,reports,branch,stale,advance};
 }
 module.exports={fixture,A,B,C_ID,PASS,clone,module17};
