@@ -123,6 +123,26 @@ async function makeSource(browser,base){
   const details=await p.evaluate(({file,pass})=>
    MiBowlingIntegrationI9.inspectBackup(file,pass),{file,pass:PASSWORD});
   assert.equal(details.operationCount,2);assert.equal(details.confirmedRevision,1);
+  // Test the ACTUAL HTML buttons, not just the exported JavaScript methods.
+  await p.locator('#lab-i9-backup-password').fill(PASSWORD);
+  await p.locator('#lab-i9-backup-file').setInputFiles({
+   name:'i9-lab-encrypted.mbi9',mimeType:'application/json',buffer:Buffer.from(file)
+  });
+  await p.locator('#lab-i9-preview').click();
+  await p.waitForFunction(()=>document.querySelector('#lab-i9-backup-status')
+   ?.textContent.includes('firma verificada'));
+  const [download]=await Promise.all([
+   p.waitForEvent('download',{timeout:15000}),
+   p.locator('#lab-i9-download').click()
+  ]);
+  assert.ok(download.suggestedFilename().endsWith('.mbi9'));
+  const chunks=[];
+  for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  const actualFile=Buffer.concat(chunks).toString('utf8');
+  const fromDownload=await p.evaluate(({f,pass})=>
+   MiBowlingIntegrationI9.inspectBackup(f,pass),{f:actualFile,pass:PASSWORD});
+  assert.equal(fromDownload.operationCount,2);
+  assert.equal(fromDownload.confirmedRevision,1);
   console.log('PASS I9 WebKit · encrypted portable export includes confirmed revision and 2 independent WAL, no score plaintext');
   const wrong=await p.evaluate(async text=>{
    try{await MiBowlingIntegrationI9.inspectBackup(text,'WRONG-backup-passphrase-2026');return false}
@@ -165,6 +185,10 @@ async function verifyFreshRestore(browser,base,file){
   assert.equal(again.status,'already-present');
   assert.equal(again.operationsExisting,2);
   assert.equal((await pending(p)).length,2);
+  await p.locator('#lab-i9-import').click(); // UI: explicit checked consent
+  await p.waitForFunction(()=>document.querySelector('#lab-i9-backup-status')
+   ?.textContent.includes('already-present'));
+  assert.equal((await pending(p)).length,2);
   console.log('PASS I9 Chromium · cold restore with different vault password; idempotent duplicate import cannot duplicate operations');
   const pre=await confirmed(p);
   // A verified, correctly encrypted *forked* backup at same revision MUST
@@ -182,6 +206,27 @@ async function verifyFreshRestore(browser,base,file){
   },{file:fork,pass:PASSWORD});
   assert.equal(refused,true);
   assert.deepEqual(await confirmed(p),pre);
+  assert.equal((await pending(p)).length,2);
+  // Same operation UUID with a DIFFERENT tab must be rejected: the composite
+  // storage key alone is insufficient to prevent cross-tab replay.
+  const replay=await p.evaluate(async({file,pass})=>{
+   const x=await MiBowlingI9Backup.open(file,pass,
+    '11111111-1111-4111-8111-111111111111');
+   const e=x.operations[0];e.tabId='ffffffff-ffff-4fff-8fff-ffffffffffff';
+   const unsigned={version:e.version,owner:e.owner,tabId:e.tabId,opId:e.opId,
+    createdAt:e.createdAt,baseRevision:e.baseRevision,basePayload:e.basePayload,
+    baseHash:e.baseHash,payload:e.payload,payloadHash:e.payloadHash};
+   const dig=await crypto.subtle.digest('SHA-256',
+    new TextEncoder().encode(JSON.stringify(unsigned)));
+   e.checksum=[...new Uint8Array(dig)].map(v=>v.toString(16).padStart(2,'0')).join('');
+   return MiBowlingI9Backup.seal(x,pass);
+  },{file,pass:PASSWORD});
+  const replayDenied=await p.evaluate(async({file,pass})=>{
+   try{await MiBowlingIntegrationI9.restoreBackup(file,pass,
+    'CONFIRMAR-RESTAURACION-FICTICIA');return false}
+   catch(err){return /duplicada|otra pestaña/.test(err.message)}
+  },{file:replay,pass:PASSWORD});
+  assert.equal(replayDenied,true);
   assert.equal((await pending(p)).length,2);
   // Owner switch with file A is denied and does not seed or modify B.
   const b=await ctx.newPage();
