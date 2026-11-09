@@ -1,0 +1,65 @@
+name: MI BOWLING · LAB I21 · Procedencia y sustitución coordinada
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i21-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i21-*'
+      - 'lab/integracion-main-auth-i21.html'
+      - 'tests/i21-*'
+      - '.github/workflows/integracion-i21-lab.yml'
+permissions:
+  contents: read
+jobs:
+  node_validation:
+    name: I21 Node · CP020/FGB I11-I21 joint-substitution limits
+    runs-on: ubuntu-24.04
+    timeout-minutes: 38
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis I21
+        run: |
+          node --check lab/i21-provenance-doubt.js
+          node --check lab/i21-ui.js
+          node --check tests/i21-provenance-fixture.cjs
+          node --check tests/i21-provenance-contract.test.cjs
+          node --check tests/i21-provenance-browser.test.cjs
+      - name: Contrato CP-020 y FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones I11-I20
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+          node tests/i16-anchor-contract.test.cjs
+          node tests/i17-forensics-contract.test.cjs
+          node tests/i18-forensic-contract.test.cjs
+          node tests/i19-review-contract.test.cjs
+          node tests/i20-rival-contract.test.cjs
+      - name: I21 · Sustitución coordinada y procedencia no verificable
+        run: node tests/i21-provenance-contract.test.cjs
+  browser:
+    name: I21 · WebKit Chromium · no fake source authority
+    runs-on: ubuntu-24.04
+    timeout-minutes: 36
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright solo para tests
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: Instalar WebKit Linux emulado móvil
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Simulación A/B/C local sin red externa
+        run: node tests/i21-provenance-browser.test.cjs

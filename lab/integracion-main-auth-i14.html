@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I14 · Ciclo de vida de claves</title>
+<style>
+:root{font:16px system-ui,sans-serif;color-scheme:light;background:#f3f8fc;color:#173451}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:840px;margin:auto}
+header,.card{background:white;border:1px solid #d5e4f0;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 15px #15416a0c}
+h1{font-size:clamp(1.35rem,4vw,2rem);margin:7px 0}h2{font-size:1.1rem;margin:0 0 12px}
+.kicker{color:#0864b7;font-size:.84rem;font-weight:700;letter-spacing:.06em}
+label{display:block;font-weight:650;margin:14px 0 7px}
+input,select{font:inherit;width:100%;padding:10px;border:1px solid #a0b7cd;border-radius:9px;min-height:44px}
+button{min-height:44px;padding:11px 14px;border:0;border-radius:10px;background:#0869ba;color:white;font-weight:700;cursor:pointer}
+button.secondary{background:#e9f3ff;color:#12548a;border:1px solid #b3d1ef}
+.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.buttons>*{flex:1 1 240px}
+#i14-status{background:#edf6ff;border-left:4px solid #1975c8;padding:14px;min-height:64px;white-space:pre-wrap;overflow-wrap:anywhere}
+p{line-height:1.5}.warning{background:#fff5df;border-radius:10px;padding:12px}.note{color:#506880}
+</style></head>
+<body data-lab="I14-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LABORATORIO I14</span>
+<h1>Rotación y retirada de claves · evidencias</h1>
+<p>Comprueba la continuidad de las políticas criptográficas del LAB I13. Las autorizaciones antiguas y nuevas, el origen de confianza y la última referencia se verifican por separado y únicamente con A/B/C ficticios.</p>
+<p class="warning">No acredita una hora real de firma, independencia entre custodios ni revocación retrospectiva. Una clave comprometida puede impedir autorizar nuevas transiciones con seguridad. Nunca conectes cuentas o servicios reales.</p>
+</header>
+<section class="card"><h2>1. Cargar fuentes independientes</h2>
+<label for="i14-owner">Jugador ficticio</label>
+<select id="i14-owner">
+<option value="11111111-1111-4111-8111-111111111111">Jugador A</option>
+<option value="22222222-2222-4222-8222-222222222222">Jugador B</option>
+<option value="33333333-3333-4333-8333-333333333333">Jugador C</option>
+</select>
+<label for="i14-bundle">Cadena I14 firmada con pruebas cifradas (.ml14)</label>
+<input id="i14-bundle" type="file" accept=".ml14,.json,application/json">
+<label for="i14-policies">Políticas públicas I13 conservadas separadamente, JSON array (.trust14)</label>
+<input id="i14-policies" type="file" accept=".trust14,.json,application/json">
+<label for="i14-pins13">PIN externos I13 por época, JSON array (.pins13)</label>
+<input id="i14-pins13" type="file" accept=".pins13,.json,application/json">
+<label for="i14-genesis">Ancla original I14 guardada fuera del paquete (.gen14)</label>
+<input id="i14-genesis" type="file" accept=".gen14,.json,application/json">
+<label for="i14-latest">Último PIN I14 independiente (.pin14)</label>
+<input id="i14-latest" type="file" accept=".pin14,.json,application/json">
+<label for="i14-pass">Frase de prueba solo para abrir las evidencias cifradas I11</label>
+<input id="i14-pass" type="password" autocomplete="off" minlength="12" maxlength="256" placeholder="Nunca uses claves reales">
+<div class="buttons"><button id="i14-verify">Verificar quórums, rotación, retirada y PIN finales</button></div>
+<p class="note">La pantalla solo verifica, no emite firmas ni claves. Los archivos JSON son prototipos de laboratorio; esta fase no establece una infraestructura externa de custodia.</p>
+</section>
+<section class="card"><h2>2. Comparar evidencias actuales</h2>
+<label for="i14-current">Testigo I11 actual (.mae11), opcional y de solo lectura</label>
+<input id="i14-current" type="file" accept=".mae11,.json,application/json">
+<div class="buttons"><button id="i14-compare" class="secondary">Detectar retroceso o bifurcación</button></div>
+</section>
+<section class="card"><h2>Resultado</h2>
+<p id="i14-status" role="status" aria-live="polite">Selecciona las fuentes del jugador A/B/C ficticio y verifica.</p>
+</section></main>
+<script src="i11-audit-core.js?v=i14"></script>
+<script src="i11-evidence.js?v=i14"></script>
+<script src="i12-manifest.js?v=i14"></script>
+<script src="i13-witnesses.js?v=i14"></script>
+<script src="i14-policy-lifecycle.js?v=i14"></script>
+<script src="i14-ui.js?v=i14"></script>
+</body></html>

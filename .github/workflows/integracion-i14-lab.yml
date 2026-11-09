@@ -1,0 +1,58 @@
+name: MI BOWLING · LAB I14 · Rotación y revocación firmada
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i14-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i14-*'
+      - 'lab/integracion-main-auth-i14.html'
+      - 'tests/i14-*'
+      - '.github/workflows/integracion-i14-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I14 · CP-020, FGB, I11/I12/I13, claves, rollback y quórums
+    runs-on: ubuntu-24.04
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis I14
+        run: |
+          node --check lab/i14-policy-lifecycle.js
+          node --check lab/i14-ui.js
+          node --check tests/i14-lifecycle-fixture.cjs
+          node --check tests/i14-lifecycle-contract.test.cjs
+          node --check tests/i14-lifecycle-browser.test.cjs
+      - name: Proteger activos CP-020 y FGB reales frente a edición
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones de testigos I11 a I13
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+      - name: I14 · rotación, retiro, concurrencia y firma dual
+        run: node tests/i14-lifecycle-contract.test.cjs
+  browser:
+    name: I14 · WebKit/Chromium aislados, políticas y anclas externas
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright local para pruebas sintéticas
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux para emulación móvil
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Ejecutar flujos de archivos y rotación sin servicios
+        run: node tests/i14-lifecycle-browser.test.cjs

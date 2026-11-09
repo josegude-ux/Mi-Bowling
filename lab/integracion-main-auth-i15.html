@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I15 · Rescate de confianza</title>
+<style>
+:root{color-scheme:light;font:16px system-ui,sans-serif;background:#f3f8fc;color:#173451}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:840px;margin:auto}
+header,.card{padding:20px;margin-bottom:16px;border:1px solid #d5e4f0;border-radius:16px;background:white;box-shadow:0 3px 15px #15416a0c}
+.kicker{color:#0864b7;font-size:.84rem;font-weight:700;letter-spacing:.05em}
+h1{font-size:clamp(1.4rem,4vw,2rem);margin:8px 0}h2{font-size:1.08rem;margin:0 0 12px}
+p{line-height:1.55}.warning{background:#fff4dc;border-radius:10px;padding:14px}
+.note{color:#506880;font-size:.93rem}label{display:block;font-weight:650;margin:14px 0 7px}
+input,select{width:100%;font:inherit;min-height:44px;padding:10px;border:1px solid #99b5ce;border-radius:9px}
+button{background:#0869ba;color:white;border:0;border-radius:9px;font:inherit;font-weight:700;cursor:pointer;padding:11px 14px;min-height:44px}
+button:disabled{opacity:.6;cursor:wait}button.secondary{background:#e9f3ff;color:#135487;border:1px solid #b3d1ef}
+.buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.buttons>*{flex:1 1 240px}
+#i15-status{background:#edf6ff;border-left:4px solid #1975c8;padding:14px;min-height:62px;white-space:pre-wrap;overflow-wrap:anywhere}
+</style></head><body data-lab="I15-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LABORATORIO I15</span>
+<h1>Recuperación excepcional de autoridades</h1>
+<p>Verificación de continuidad después de perder el quórum I14, con autoridades ficticias de recuperación previamente comprometidas y una nueva política totalmente separada.</p>
+<p class="warning"><strong>Sin autorización real ni restitución de cuentas:</strong> este prototipo solo verifica documentos sintéticos A/B/C. No demuestra que el compromiso precediese al incidente, que haya custodios independientes o que el último PIN no pueda sustituirse. No firma, no repara puntuaciones, no escribe en el navegador y no conecta servicios.</p>
+</header>
+<section class="card"><h2>1. Identidad ficticia y cadena I15</h2>
+<label for="i15-owner">Jugador</label><select id="i15-owner">
+<option value="11111111-1111-4111-8111-111111111111">A · jugador ficticio</option>
+<option value="22222222-2222-4222-8222-222222222222">B · jugador ficticio</option>
+<option value="33333333-3333-4333-8333-333333333333">C · jugador ficticio</option></select>
+<label for="i15-package">Paquete I15 de prueba (.mr15; contiene historia I14 y declaración de rescate)</label>
+<input id="i15-package" type="file" accept=".mr15,.json">
+<label for="i15-policies">Políticas históricas I14, conservadas aparte (.trust14)</label>
+<input id="i15-policies" type="file" accept=".trust14,.json">
+<label for="i15-pins13">PIN I13 históricos por época (.pins13)</label>
+<input id="i15-pins13" type="file" accept=".pins13,.json">
+<label for="i15-gen14">Ancla de génesis I14, fuera del paquete (.gen14)</label>
+<input id="i15-gen14" type="file" accept=".gen14,.json">
+<label for="i15-last14">Último PIN I14 previo al incidente (.pin14)</label>
+<input id="i15-last14" type="file" accept=".pin14,.json">
+</section>
+<section class="card"><h2>2. Autoridades de recuperación externas</h2>
+<label for="i15-recovery-policy">Política pública de rescate preautorizada (.trust15)</label>
+<input id="i15-recovery-policy" type="file" accept=".trust15,.json">
+<label for="i15-commitment">Compromiso independiente de génesis y rescate (.gen15)</label>
+<input id="i15-commitment" type="file" accept=".gen15,.json">
+<label for="i15-new-policy">Nueva política pública I13, separada de claves antiguas y de rescate (.new15)</label>
+<input id="i15-new-policy" type="file" accept=".new15,.json">
+<label for="i15-pin13">PIN I13 de los nuevos testigos cifrados (.pin13)</label>
+<input id="i15-pin13" type="file" accept=".pin13,.json">
+<label for="i15-last15">Último PIN I15 externo, conservado aparte (.pin15)</label>
+<input id="i15-last15" type="file" accept=".pin15,.json">
+<label for="i15-pass">Frase ficticia de los testigos cifrados I11</label>
+<input id="i15-pass" type="password" minlength="12" maxlength="256" autocomplete="off" placeholder="No introduzcas contraseñas reales">
+<div class="buttons"><button id="i15-verify" type="button">Verificar historia, quórums y anclas</button></div>
+</section>
+<section class="card"><h2>3. Comprobación de testigo actual (solo lectura)</h2>
+<label for="i15-current">Exportación I11 actual (.mae11), opcional</label>
+<input id="i15-current" type="file" accept=".mae11,.json">
+<div class="buttons"><button class="secondary" id="i15-compare" type="button">Comparar contra último testigo validado</button></div>
+</section>
+<section class="card"><h2>Resultado</h2><p id="i15-status" role="status" aria-live="polite">Selecciona las evidencias ficticias y las referencias externas independientes para iniciar la verificación.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i15"></script>
+<script src="i11-evidence.js?v=i15"></script>
+<script src="i12-manifest.js?v=i15"></script>
+<script src="i13-witnesses.js?v=i15"></script>
+<script src="i14-policy-lifecycle.js?v=i15"></script>
+<script src="i15-recovery.js?v=i15"></script>
+<script src="i15-ui.js?v=i15"></script>
+</body></html>
