@@ -1,0 +1,69 @@
+name: MI BOWLING · LAB I6 · Confirmados cifrados y CAS entre pestañas
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i6-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i6-*'
+      - 'lab/integracion-main-auth-i6*'
+      - 'tests/integracion-i6-*'
+      - 'tests/i6-*'
+      - '.github/workflows/integracion-i6-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I6 · contratos CP-020, FGB y regresiones
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar seis SHA de publicación y 31 fechas oficiales
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Sintaxis y módulos I6
+        run: |
+          node --check lab/i6-encrypted-store.js
+          node --check lab/i6-guard.js
+          node --check lab/i6-persistence.js
+          node --check lab/integracion-main-auth-i6.js
+          node --check tests/integracion-i6-browser.test.cjs
+          node --check tests/i6-encrypted-backend-browser.test.cjs
+      - name: Pruebas ya validadas de I4 e I3 sin servicios reales
+        run: |
+          node tests/integracion-i4-journal.test.cjs
+          node tests/score-sync-i3.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
+          node tests/stats-bolos.test.cjs
+  browser:
+    name: I6 · WebKit y Chromium, recargas y CAS multi-pestaña
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preparar Playwright aislado
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: Instalar navegador WebKit Linux emulado
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Motor original CP-020 con Fake Backend cifrado I6
+        run: node tests/integracion-i6-browser.test.cjs
+      - name: Guardado confirmado persistente, WAL inmediato y conflicto de pestañas
+        run: node tests/i6-encrypted-backend-browser.test.cjs
+      - name: Evidencias únicamente ficticias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-i6-encrypted-lab
+          path: tests/artifacts-integracion-i6/*.png
+          retention-days: 14
+          if-no-files-found: warn
