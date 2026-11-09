@@ -62,7 +62,14 @@ function latestBallSelections(){
 }
 function cleanSelectedBallIds(ids){
  if(!Array.isArray(ids))return [];
- return [...new Set(ids)].filter(id=>typeof id==='string'&&db.balls.some(b=>b.id===id&&!b.retired));
+ // Una pestaña puede conservar db obsoleto tras retirar una bola en otra.
+ // Consultar solo el estado de retirada persistido; no sincronizar ni reescribir partidas.
+ let retiredInStorage=new Set();
+ try{
+  const stored=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(Array.isArray(stored?.balls))retiredInStorage=new Set(stored.balls.filter(b=>b&&b.retired).map(b=>b.id));
+ }catch{}
+ return [...new Set(ids)].filter(id=>typeof id==='string'&&!retiredInStorage.has(id)&&db.balls.some(b=>b.id===id&&!b.retired));
 }
 function selectedBallsFor(key){
  const current=latestBallSelections();
