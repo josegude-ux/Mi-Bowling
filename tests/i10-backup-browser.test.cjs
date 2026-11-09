@@ -130,7 +130,7 @@ async function makeSource(browser,base){
   });
   await p.locator('#lab-i10-preview').click();
   await p.waitForFunction(()=>document.querySelector('#lab-i10-backup-status')
-   ?.textContent.includes('firma verificada'));
+   ?.textContent.includes('previsualización SIN ESCRIBIR'));
   const [download]=await Promise.all([
    p.waitForEvent('download',{timeout:15000}),
    p.locator('#lab-i10-download').click()
