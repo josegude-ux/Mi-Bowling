@@ -399,6 +399,64 @@ async function rewindUndoWithDeselectedBallScenario(browser,engine,origin){
  }finally{await context.close()}
 }
 
+async function crossTabRestoreClearsSelectionsScenario(browser,engine,origin){
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+ const first=await context.newPage(),second=await context.newPage(),errors=[];
+ let acceptRestore=false;
+ first.on('dialog',dialog=>acceptRestore?dialog.accept():dialog.dismiss());
+ first.on('pageerror',error=>errors.push('A: '+error.message));
+ second.on('pageerror',error=>errors.push('B: '+error.message));
+ try{
+  const before=JSON.parse(JSON.stringify(fixture));
+  const extra=JSON.parse(JSON.stringify(before.sessions[0]));
+  extra.id='lab-antes-de-importar';extra.title='Sesión para eliminar en LAB';
+  before.sessions.push(extra);
+  const scopes={__next__:['lab-a'],'lab-historica':['lab-b'],'lab-antes-de-importar':['lab-a']};
+  await first.goto(origin,{waitUntil:'load'});
+  await first.evaluate(({data,picks})=>{
+   localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data));
+   localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify(picks));
+  },{data:before,picks:scopes});
+  await second.goto(origin,{waitUntil:'load'});
+  await first.reload({waitUntil:'load'});
+  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  assert.equal(await second.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').isChecked(),true,
+   'Pestaña B muestra selección Alpha antes de restauración');
+  // Una restauración cancelada no debe alterar selecciones en ninguna pestaña.
+  const restoration={name:'copia-sintetica-lab.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fixture))};
+  await first.locator('#restore-file').setInputFiles(restoration);
+  assert.deepEqual((await getData(first)).picks,scopes,'Cancelar importación deja las selecciones originales');
+  assert.equal((await getData(first)).db.sessions.length,2,'Cancelar importación deja ambas sesiones');
+  assert.equal(await second.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').isChecked(),true,
+   'Cancelar importación no cambia los checks de B');
+  // Restauración autorizada sobre datos ficticios; sidecar queda vacío en ambas pestañas.
+  acceptRestore=true;
+  await first.locator('#restore-file').setInputFiles(restoration);
+  await first.waitForFunction(()=>JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')||'{}').sessions?.length===1);
+  await second.waitForFunction(()=>{
+   const alpha=[...document.querySelectorAll('.ball-card')].find(el=>el.textContent.includes('Alpha'));
+   return alpha?.querySelector('.ball-session-toggle input')?.checked===false;
+  });
+  let current=await getData(second);
+  assert.deepEqual(current.picks,{},'Restauración elimina las selecciones de la instalación anterior');
+  assert.equal(await second.locator('.ball-session-toggle input:checked').count(),0,'B quita marcas previas sin recarga');
+  await second.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').check();
+  current=await getData(second);
+  assert.deepEqual(current.picks,{__next__:['lab-b']},'Nueva selección B no resucita ninguna selección antigua');
+  const a=await getData(first);
+  assert.equal(a.db.sessions.length,1,'Solo queda la sesión de la copia restaurada');
+  assert.equal(a.db.sessions[0].games[0].rolls[0].ballId,'lab-b','Copia restaura bola de tiro histórico');
+  assert.deepEqual(a.db.balls,fixture.balls,'Restauración no altera atributos de bolas');
+  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  assert.equal(await first.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').isChecked(),true,
+   'A ve la nueva elección Beta desde la otra pestaña');
+  assert.equal(await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').isChecked(),false,
+   'A no conserva el antiguo check Alpha');
+  assert.deepEqual(errors,[],'Sin errores JS tras restaurar con otra pestaña abierta');
+  console.log('OK '+engine+' 390px: cancelar/restaurar JSON con otra pestaña borra selecciones antiguas y conserva historial');
+ }finally{await context.close()}
+}
+
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
@@ -546,7 +604,7 @@ async function run(browser,engine,width,origin){
  try{
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
    const browser=await type.launch({headless:true});
-   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin);await concurrentRollDeselectionScenario(browser,name,origin);await rewindUndoWithDeselectedBallScenario(browser,name,origin)}
+   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin);await concurrentRollDeselectionScenario(browser,name,origin);await rewindUndoWithDeselectedBallScenario(browser,name,origin);await crossTabRestoreClearsSelectionsScenario(browser,name,origin)}
    finally{await browser.close()}
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
