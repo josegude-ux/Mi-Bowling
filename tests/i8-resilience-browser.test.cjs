@@ -220,6 +220,32 @@ async function corruption(browser,base){
   await audit.close();
  }finally{await ctx.close()}
 }
+async function confirmedTamper(browser,base){
+ const ctx=await browser.newContext({ignoreHTTPSErrors:true,viewport:{width:1280,height:850}});
+ await isolate(ctx,base);
+ try{
+  const first=await ctx.newPage();
+  await login(first,base,'A');await ready(first,'A');
+  const confirmedBefore=await backend(first);
+  assert.equal(confirmedBefore.revision,0);
+  await first.close();
+  const page=await ctx.newPage();await page.goto(base+'/__blank');
+  const bad=await changeRaw(page,UUID.A,'CONFIRMED');
+  assert.equal(bad.kind,'CONFIRMED');
+  const bytesBefore=await rawRows(page,UUID.A,'encrypted-confirmed');
+  assert.equal(bytesBefore.length,1);
+  await login(page,base,'A');await forensic(page,'A');
+  assert.equal((await state(page)).opened,false,
+   'corrupt confirmed document must prohibit editable CP-020 engine');
+  assert.equal(await page.locator('#lab-live-app').isHidden(),true);
+  const bytesAfter=await rawRows(page,UUID.A,'encrypted-confirmed');
+  assert.deepEqual(bytesAfter,bytesBefore,
+   'seedConfirmed must NEVER overwrite corrupted ciphertext or reset scores');
+  await login(page,base,'B');await ready(page,'B');
+  assert.equal((await backend(page)).revision,null);
+  console.log('PASS I8 Chromium · confirmed ciphertext tamper blocks owner A without resetting encrypted scores; B still accessible');
+ }finally{await ctx.close()}
+}
 async function persistentRestart(browserType,base){
  const profile=fs.mkdtempSync(path.join(tmp,'persistent-profile-'));
  const binary=cp.execFileSync('which',['google-chrome'],{encoding:'utf8'}).trim();
@@ -280,7 +306,7 @@ async function main(){
  try{await fakeQuotaAndKey(wk,base)}finally{await wk.close()}
  const binary=cp.execFileSync('which',['google-chrome'],{encoding:'utf8'}).trim();
  const chrome=await chromium.launch({headless:true,executablePath:binary,args:['--no-sandbox']});
- try{await actualBlock(chrome,base);await corruption(chrome,base)}finally{await chrome.close()}
+ try{await actualBlock(chrome,base);await corruption(chrome,base);await confirmedTamper(chrome,base)}finally{await chrome.close()}
  await persistentRestart(chromium,base);
  console.log('PASS I8 · quota simulation, real blocked IDB upgrade, corruption, lost key, full process restart and multi-WAL recovery');
 }
