@@ -42,6 +42,24 @@ Los tres nombres de archivo A/B/C de I16 no acreditan custodia física independi
 
 No se han realizado pruebas en Safari de iPhone físico, ni con varios dispositivos reales, servicio externo, corte eléctrico o backup WORM real. La aplicación publicada y calendario FGB CP-020 permanecen fuera de alcance.
 
+## Checkpoint funcional · BOWLING-I17-CP-001
+
+**Código funcional exactamente probado:** `81723b8dd8fde1d478eac1a6a90167a8e8ba00b0`.  
+**CI funcional push:** [42637202508](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42637202508) — **SUCCESS 2/2**, verificada sobre ese SHA junto con ambos logs de trabajo.  
+**PR:** [#37](https://github.com/josegude-ux/Mi-Bowling/pull/37), abierta draft y apilada sobre #36; no fusionada.  
+**Comparación GitHub:** base I16 `2e5909cf296e10d16bc0a70b9986daeb46bca8f3`; ocho archivos I17 **solo añadidos**, ninguno de I11–I16, FGB CP-020, PWA o producción editado o eliminado. Ahead 11, behind 0 antes de este checkpoint documental.  
+**Main corroborado:** `7fbb3fb32d889c3213626e5f73c49b0885ef9911`, intacto.
+
+**Resultados extraídos de los logs CI del SHA funcional:**
+- Node CP-020 y FGB: PASS, 31 eventos oficiales (10 gallegos, 21 nacionales), sin modificación de datos ni filtros.
+- Regresiones I11–I16: PASS.
+- Node I17: PASS, bifurcación de checkpoint firmada que resulta en cuarentena, pérdida de raíz y marca exterior, pérdida total de confianza I15, dos copias vigentes y una ausente/antigua, copia incompatible, A/B/C y tres verificaciones concurrentes de solo lectura.
+- WebKit Linux emulado móvil: PASS; Chromium escritorio: PASS, pérdidas totales y parciales, bifurcación firmada, identidad cruzada B, sin IndexedDB ni conexiones externas.
+
+**Interpretación estricta:** las pruebas muestran que un sistema puede clasificar evidencias bajo anclas externas suministradas, no que exista realmente una fuente inmutable, sello temporal o tres custodios independientes. Sin referencias exteriores auténticas, el resultado sigue bloqueado. El checkpoint no concede permiso para publicar, fusionar ni recuperar cuentas reales.
+
+**Cierre del SHA documental:** este documento se actualizará mediante un commit distinto del funcional. Su CI definitiva deberá comprobarse antes de declarar el cierre documental.
+
 ## Orden de continuidad
 
 I17 debe quedar en nueva PR draft sobre #36, solo archivos nuevos, no reescribir I11–I16 ni modificar `main`. Mantener todos los checkpoints, PRs previas, datos publicados, producción y servicios protegidos. Ejecutar y verificar en GitHub la CI del código funcional, documentar SHA funcional y checkpoint `BOWLING-I17-CP-001`; después comprobar CI del HEAD documental exacto. No afirmar éxito sin registros completos ni prometer que el procedimiento resuelve frescura en ausencia de referencia externa independiente.
