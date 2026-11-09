@@ -50,9 +50,9 @@ function render(packet){
   body.appendChild(tr);
  }
 }
-async function readUTF8(file,stage){
+async function readUTF8(file,stage,limit=A.MAX_FILE_BYTES){
  if(!file)return null;
- if(!file.size||file.size>A.MAX_FILE_BYTES)
+ if(!file.size||file.size>limit)
   throw Error('I25: archivo vacío o supera 12 MiB: '+stage);
  const raw=new Uint8Array(await file.arrayBuffer());
  if(raw.length>=3&&raw[0]===0xef&&raw[1]===0xbb&&raw[2]===0xbf)
@@ -108,7 +108,7 @@ async function check(){
  if(!file||!file.size||file.size>44*1024*1024)
   throw Error('I25: seleccionar una copia válida (máximo 44 MiB)');
  let packet;
- try{packet=JSON.parse(await readUTF8(file,'sobre I25'))}
+ try{packet=JSON.parse(await readUTF8(file,'sobre I25',44*1024*1024))}
  catch(e){throw Error('I25: copia inválida: '+e.message)}
  const pin=$('i25-saved-sha').value.trim()||null;
  const proof=await A.verify(packet,pin);
