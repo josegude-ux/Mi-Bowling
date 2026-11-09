@@ -1,8 +1,8 @@
-name: "MI BOWLING | Auditoría postpublicación visual y PWA"
+name: "MI BOWLING | Verificación postdeploy PWA CP-036"
 on:
   push:
     branches:
-      - audit/visual-pwa-postpub-lab-20261109
+      - audit/pwa-cp036-postdeploy-20261109
   pull_request:
     branches: [main]
     paths:
@@ -51,7 +51,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mi-bowling-auditoria-postpublicacion
+          name: mi-bowling-postdeploy-cp036
           path: test-results/ui-postpub/
           if-no-files-found: ignore
           retention-days: 7
