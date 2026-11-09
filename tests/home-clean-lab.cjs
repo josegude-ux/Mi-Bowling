@@ -22,7 +22,7 @@ assert(app.includes('Biblioteca de patrones / PDF'),'Patrones accesibles desde J
 assert(html.includes('data-design-target="bolas"'),'Mis bolas en navegación de escritorio');
 for(const token of ["const APP_VERSION='3.3.10-catalogo'","const KEY='mi-bowling-analitica-v2'","const BALL_SELECTION_KEY='mi-bowling-ball-selection-v1'","function recordRoll(","function undoRoll(","function ligaView(","function ballsView(","function calendarView("])
  assert(app.includes(token),'Contrato preservado: '+token);
-assert(sw.includes("const CACHE='mi-bowling-analitica-v3-3-10-ui-cp036'"),'Caché publicada sin tocar');
+assert(sw.includes("const CACHE='mi-bowling-analitica-v3-3-10-catalogo-cp037'"),'Caché publicada sin tocar');
 console.log('PASS HOME CLEAN static: 3 rutas, navegación a arsenal/liga/patrones, datos y motor intactos.');
 
 if(!process.argv.includes('--browser'))process.exit(0);
