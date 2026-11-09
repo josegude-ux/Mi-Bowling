@@ -88,11 +88,24 @@ async function nativeRows(page,owner){
   })}finally{db.close()}
  },owner);
 }
+async function warmupCanonicalFixture(ctx,base){
+ // CP-020 migration normalizes older fixtures on first load. Persist this
+ // canonical snapshot with CAS before testing non-overlapping additions;
+ // otherwise strict three-way merge correctly flags legacy field changes.
+ const p=await ctx.newPage();
+ try{
+  await open(p,base,'A');await waitFor(p,'ready','A');
+  await p.evaluate(()=>Function('return save')()());
+  const done=await drain(p);
+  assert.equal(done.revision,1,'canonical fixture warmup must be confirmed');
+ }finally{await p.close()}
+}
 async function webkitMultiWal(browser,base){
  const ctx=await browser.newContext({...devices['iPhone 13 Pro Max'],
   viewport:{width:390,height:844},ignoreHTTPSErrors:true,locale:'es-ES'});
  await ctx.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());
  try{
+  await warmupCanonicalFixture(ctx,base);
   const t1=await ctx.newPage(),t2=await ctx.newPage();
   await open(t1,base,'A');await waitFor(t1,'ready','A');
   await open(t2,base,'A');await waitFor(t2,'ready','A');
@@ -105,7 +118,7 @@ async function webkitMultiWal(browser,base){
   assert.equal(s1.blocked,'uncertain');assert.equal(s2.blocked,'uncertain');
   assert.ok(s1.lastDurable&&s2.lastDurable,'durability ACK required');
   assert.notEqual(s1.lastDurable,s2.lastDurable);
-  assert.equal((await confirmed(t1)).revision,0,'failed pre-commit must not change confirmed server');
+  assert.equal((await confirmed(t1)).revision,1,'failed pre-commit must not change confirmed server');
   assert.equal((await rawPending(t1)).length,2,'both independent encrypted operations must survive');
   assert.equal((await rawPending(t2)).length,2);
   await t1.close();await t2.close();
@@ -129,7 +142,7 @@ async function webkitMultiWal(browser,base){
   const merged=await verify.evaluate(id=>
    MiBowlingIntegrationI7.mergeOperation(id,'CONFIRMAR-FUSION-FICTICIA'),second[0].opId);
   assert.equal(merged.status,'merged');
-  assert.equal((await confirmed(verify)).revision,2);
+  assert.equal((await confirmed(verify)).revision,3);
   assert.deepEqual((await status(verify)),[]);
   const names=await engineSessions(verify);
   assert.ok(names.includes('I7-OP-TAB1')&&names.includes('I7-OP-TAB2'));
@@ -186,6 +199,7 @@ async function chromiumCas(browser,base){
   ignoreHTTPSErrors:true,locale:'es-ES'});
  await ctx.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());
  try{
+  await warmupCanonicalFixture(ctx,base);
   const a=await ctx.newPage(),b=await ctx.newPage();
   await open(a,base,'A');await waitFor(a,'ready','A');
   await open(b,base,'A');await waitFor(b,'ready','A');
@@ -193,7 +207,7 @@ async function chromiumCas(browser,base){
   const result=await Promise.all([drain(a),drain(b)]);
   assert.ok(result.some(x=>x.phase==='saved'));
   assert.ok(result.some(x=>x.blocked));
-  const actual=await confirmed(a);assert.equal(actual.revision,1);
+  const actual=await confirmed(a);assert.equal(actual.revision,2);
   assert.equal((await rawPending(a)).length,1);
   await a.close();await b.close();
   let t=await ctx.newPage();await open(t,base,'A');await waitFor(t,'recovery','A');
@@ -201,7 +215,7 @@ async function chromiumCas(browser,base){
   const merged=await t.evaluate(id=>MiBowlingIntegrationI7.mergeOperation(id,'CONFIRMAR-FUSION-FICTICIA'),one[0].opId);
   assert.equal(merged.status,'merged');
   const post=await confirmed(t);
-  assert.equal(post.revision,2);
+  assert.equal(post.revision,3);
   assert.ok(post.payload.sessions.some(x=>x.id==='I7-CHROME-A'));
   assert.ok(post.payload.sessions.some(x=>x.id==='I7-CHROME-B'));
   console.log('PASS I7 Chromium · genuine parallel CAS, loser retained, nonoverlap 3-way merge, no overwrite');
