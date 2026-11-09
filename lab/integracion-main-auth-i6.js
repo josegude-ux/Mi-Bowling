@@ -389,6 +389,24 @@ root.MiBowlingIntegrationI6=Object.freeze({
  simulateNetworkFailure(value){if(!current)throw Error('I6: solo identidad ficticia');
   simulateWriteFailure=!!value;return simulateWriteFailure;},
  async hasOwnerPending(){return journal?journal.hasPending(current.id):false;},
- async confirmed(){return journal?journal.readConfirmed(current.id):null;}
+ async confirmed(){return journal?journal.readConfirmed(current.id):null;},
+ async inspectMergeShape(){
+  if(!current||!i4)throw Error('I6: cuenta LAB ausente');
+  const e=await i4.exportPending(),server=(await repo.load(current.id)).personal.payload;
+  if(!e)return {status:'none'};
+  const B=e.basePayload,L=e.payload,R=server;
+  const meta=x=>{const y=clone(x);delete y.sessions;return JSON.stringify(y)};
+  const identical=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  const checkOld=(arr)=>B.sessions.every(s=>identical(s,arr.find(x=>x.id===s.id)));
+  return {status:'ok',baseSessions:B.sessions.length,
+   localSessions:L.sessions.length,remoteSessions:R.sessions.length,
+   metaBaseLocal:meta(B)===meta(L),metaBaseRemote:meta(B)===meta(R),
+   previousBaseLocal:checkOld(L),previousBaseRemote:checkOld(R),
+   newIdsOverlap:L.sessions.filter(s=>!B.sessions.some(x=>x.id===s.id)).some(s=>
+    R.sessions.some(x=>x.id===s.id)),
+   normBaseLocal:identical(Function('return migrate('+JSON.stringify(B)+')')(),
+     Function('return migrate('+JSON.stringify(L)+')')())
+  };
+ }
 });
 })(window);
