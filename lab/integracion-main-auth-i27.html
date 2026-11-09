@@ -1,0 +1,61 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I27 · Perfil de importación móvil</title>
+<style>
+:root{font:16px system-ui,sans-serif;background:#f2f7fb;color:#173a53;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:1000px;margin:auto}
+header,.card{background:white;border:1px solid #d3e2ef;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 15px #1443630c}
+h1{font-size:clamp(1.35rem,4vw,2rem);margin:8px 0}h2{font-size:1.1rem;margin:0 0 12px}
+p{line-height:1.5}.kicker{font-size:.81rem;font-weight:800;color:#126faf;letter-spacing:.04em}
+.warning{background:#fff1d6;border-radius:10px;padding:14px}
+.note{font-size:.9rem;color:#536c80}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input,select{font:inherit;min-height:44px;width:100%;padding:9px;border:1px solid #a7bfcd;border-radius:9px}
+button{font:inherit;font-weight:700;min-height:44px;padding:12px;background:#126eac;color:white;border:0;border-radius:9px;cursor:pointer}
+button.secondary{background:#ecf5fd;color:#175983;border:1px solid #b5d1e8}
+button.warning{background:#fff0dc;border:1px solid #d8c098;color:#765015}
+button:disabled{opacity:.5;cursor:not-allowed}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.controls>*{flex:1 1 220px}
+.stage{padding:12px 0;border-bottom:1px solid #e1ebf1}.stage:last-child{border-bottom:0}
+table{border-collapse:collapse;width:100%;font-size:.89rem}
+th,td{text-align:left;padding:9px;border-bottom:1px solid #dbe6f0;overflow-wrap:anywhere}
+#i27-status{white-space:pre-wrap;overflow-wrap:anywhere;background:#ecf6ff;border-left:4px solid #1478bc;padding:14px;min-height:80px}
+</style></head><body data-lab="I27-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LAB I27 · SOLO A/B/C FICTICIOS</span>
+<h1>Perfilado reproducible de importaciones I18–I24</h1>
+<p>Reutiliza el importador I26 y la verificación I25, con presupuestos de tamaño más conservadores y observaciones locales del tiempo transcurrido. Sin servicios ni cuentas reales.</p>
+<p class="warning"><strong>Importante:</strong> el tiempo observado no es un sello temporal. Los fragmentos de lectura no limitan la memoria total del navegador. En esta pantalla no hay muestreador fiable de RAM, por lo que <strong>no se presenta una cifra de RAM</strong>. Emular un móvil no acredita rendimiento en un iPhone físico ni custodia externa.</p></header>
+<section class="card"><h2>1. Perfil y archivos de entrada</h2>
+<label for="i27-profile">Perfil de entrada (no equivale a límite de RAM)</label>
+<select id="i27-profile">
+<option value="constrained">Restringido · 4 MiB/archivo · 8 MiB total · 32 KiB/fragmento</option>
+<option value="standard">Estándar · 12 MiB/archivo · 28 MiB total · 128 KiB/fragmento</option>
+</select>
+<p class="note">Se preservan archivos malformados cuando el UTF-8 es válido y los presupuestos admiten su tamaño; las entradas rechazadas no se reparan ni borran. A/B/C son solo datos de prueba.</p>
+<div id="i27-files"></div>
+<div class="controls">
+<button id="i27-run" type="button">Importar y observar</button>
+<button id="i27-cancel" type="button" class="warning" disabled>Cancelar operación</button>
+<button id="i27-clear" type="button" class="secondary">Limpiar resultado</button>
+</div></section>
+<section class="card"><h2>2. Observaciones y estado</h2>
+<table><thead><tr><th>Etapa</th><th>Resultado I25</th><th>Conservación</th></tr></thead><tbody id="i27-matrix">
+<tr><td>Sin importar</td><td>No verificado</td><td>No acreditado</td></tr></tbody></table>
+<p class="note">El tiempo se mide con el reloj monotónico disponible durante la sesión. Variaciones entre dispositivos, carga del sistema o ejecuciones son esperables; no se imponen umbrales de rendimiento no demostrados.</p></section>
+<section class="card"><h2>3. Exportación de un sobre válido</h2>
+<div class="controls"><button id="i27-export" class="secondary" type="button" disabled>Exportar sobre I25 mediante pulsación</button></div>
+<p class="note">La exportación conserva el estado del expediente I25 en memoria local. No registra custodia fuera del dispositivo, hora segura ni aprobación.</p></section>
+<section class="card"><h2>Estado</h2><p role="status" aria-live="polite" id="i27-status">Sin observación. Ninguna custodia o autoridad acreditada.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i27"></script><script src="i11-evidence.js?v=i27"></script>
+<script src="i12-manifest.js?v=i27"></script><script src="i13-witnesses.js?v=i27"></script>
+<script src="i14-policy-lifecycle.js?v=i27"></script><script src="i15-recovery.js?v=i27"></script>
+<script src="i16-anchors.js?v=i27"></script><script src="i17-forensics.js?v=i27"></script>
+<script src="i18-forensic-hold.js?v=i27"></script><script src="i19-manual-review.js?v=i27"></script>
+<script src="i20-rival-reviews.js?v=i27"></script><script src="i21-provenance-doubt.js?v=i27"></script>
+<script src="i22-uncertainty-matrix.js?v=i27"></script><script src="i23-external-evidence-gate.js?v=i27"></script>
+<script src="i24-manual-crosscheck.js?v=i27"></script><script src="i25-retention-audit.js?v=i27"></script>
+<script src="i26-bounded-import.js?v=i27"></script><script src="i27-resource-profile.js?v=i27"></script>
+<script src="i27-ui.js?v=i27"></script></body></html>
