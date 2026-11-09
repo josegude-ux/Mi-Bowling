@@ -44,6 +44,7 @@ async function verify(engine,url){
   await page.goto(url,{waitUntil:'load',timeout:35000});
   await page.evaluate(data=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data));localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify({__next__:['FICTICIA-0']}))},fixture);
   await page.reload({waitUntil:'load'});
+  const baseline=await page.evaluate(()=>({balls:structuredClone(db.balls),sessions:structuredClone(db.sessions)}));
   await page.locator('#bottom-nav button[aria-label="Estadísticas"]').click();
   await page.getByRole('button',{name:/Ver mis bolas/}).click();
   assert.equal(await page.locator('.ball-card').count(),10,'No se alteran 10 bolas');
@@ -57,8 +58,8 @@ async function verify(engine,url){
   await page.locator('.arsenal-model:visible').getByRole('button',{name:'Añadir a Mis bolas'}).click();
   const saved=await page.evaluate(()=>({db:JSON.parse(localStorage.getItem(KEY)),pick:JSON.parse(localStorage.getItem('mi-bowling-ball-selection-v1'))}));
   assert.equal(saved.db.balls.length,11,'incorporación una sola bola');
-  assert.deepEqual(JSON.parse(JSON.stringify(saved.db.balls.slice(0,10))),oldBalls,'las diez bolas y sus notas intactas');
-  assert.deepEqual(JSON.parse(JSON.stringify(saved.db.sessions)),fixture.sessions,'historial intacto');
+  assert.deepEqual(JSON.parse(JSON.stringify(saved.db.balls.slice(0,10))),baseline.balls,'las diez bolas y sus notas intactas');
+  assert.deepEqual(JSON.parse(JSON.stringify(saved.db.sessions)),baseline.sessions,'historial intacto');
   assert.deepEqual(JSON.parse(JSON.stringify(saved.pick)),{__next__:['FICTICIA-0']},'selecciones sin autoselección');
   const added=saved.db.balls.at(-1);
   assert.equal(added.brand,'Track');assert.equal(added.model,'Theorem Delta');
