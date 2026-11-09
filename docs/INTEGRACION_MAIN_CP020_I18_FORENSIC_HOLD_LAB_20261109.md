@@ -68,3 +68,16 @@ No se han realizado pruebas de Safari en iPhone físico, dispositivos reales mú
 `.github/workflows/integracion-i18-lab.yml`: dos jobs (Node CP-020/FGB e I11–I18; navegador WebKit Linux móvil emulado y Chromium escritorio, HTTPS loopback privado). **No modificar ni fusionar** PR anteriores, `main`, producción, plataforma publicada, calendario FGB CP-020 ni servicios.
 
 Registrar el SHA funcional preciso únicamente tras ver la CI en GitHub; añadir `BOWLING-I18-CP-001` y verificar después de nuevo la CI del HEAD documental final. No se considerará aprobada una prueba fallida. Mantener la PR I18 draft apilada sobre #37.
+
+
+## Anexo de continuidad · I18-CI-DIAG-001 · 09/11/2026
+
+**Origen inmutado del código funcional:** `ee59878e9e81bc89f48741750793c9cae2103743`; `push 42672681138` y `pull_request 42672802996` completaron **dos trabajos de dos, SUCCESS**, con Node CP-020/FGB/I11–I18 y WebKit/Chromium.
+
+**Diagnóstico exacto de orquestación:** en el HEAD documental `a058cee2601afa4735d74534b3fd956015ce4524`, `push 42673093348` y `pull_request 42673101078` terminaron `failure`: solo se registró el job Node, que terminó `success`, y el navegador no se programó. Un intento secuencial intermedio `bac4dc467c8d528f7a33b00cfbdd0255fa347e77` (runs `42673405031` y `42673414939`) terminó `failure` con **cero jobs**. Se restauró el workflow de dos jobs, exactamente el blob original de la CI funcional (SHA de contenido `659a7ef86a20553fe038e2b228f6e98096df1f28`), en `e1c020fcd5f7da6a26b2174d7b47c11bce4147eb`; sus runs `42673758632` y `42673768234` también terminaron `failure` sin ningún job. GitHub rechazó reejecutar los jobs fallidos (`403: This workflow run cannot be retried`). Sin logs de trabajos inexistentes, **la causa raíz no está acreditada**.
+
+**Separación de evidencias:** `failure` de orquestación no equivale a una prueba I18 fallida, pero tampoco equivale a CI documental aprobada. No se han modificado archivos funcionales ni pruebas desde la CI verde; se han editado únicamente la documentación y el workflow (finalmente restaurado idéntico al funcional). Se mantiene PR #38 en borrador, ninguna fusión/publicación, ninguna operación sobre servicios, usuarios o evidencias reales.
+
+**Orden de diagnóstico pendiente:** activar una CI real, comprobar que los dos jobs se programan y terminan `success` sobre el **mismo HEAD definitivo**. Si vuelve a fallar sin jobs, tratar como bloqueo externo real, documentar identificadores de runs, no fingir aprobación y no empezar I19. La disponibilidad o el historial de incidentes de GitHub por sí solos no prueban la causa de este caso.
+
+**Checkpoint actual:** `BOWLING-I18-CP-001` acreditado a nivel funcional; estado documental **pendiente de validación sobre el commit final**. El SHA documental deberá añadirse a la PR únicamente después de verificar GitHub Actions. No se genera raíz, custodio, prueba de frescura ni inmutabilidad.
