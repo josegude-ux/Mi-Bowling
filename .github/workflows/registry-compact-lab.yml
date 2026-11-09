@@ -4,6 +4,10 @@ on:
     branches: [main]
     paths:
       - 'app.js'
+      - 'arsenal-insights.js'
+      - 'arsenal-view-lab.js'
+      - 'tests/arsenal-analysis-lab.cjs'
+      - 'tests/arsenal-catalog-selectable-lab.cjs'
       - 'styles.css'
       - 'index.html'
       - 'sw.js'
@@ -38,7 +42,7 @@ permissions:
 
 jobs:
   validar-registro:
-    if: github.head_ref == 'release/arsenal-f1-cp034-20261109' || github.head_ref == 'feature/catalogo-arsenal-f1-lab-20261108' || github.head_ref == 'feature/calendario-fgb-2026-2027-lab-20261108' || github.head_ref == 'design/inicio-visura-refinamiento-3d-20261108' || github.head_ref == 'design/inicio-visura-calendario-20261108' || github.head_ref == 'design/icono-mi-bowling-visura-20261108' || github.head_ref == 'design/registro-compacto-r1-20261108' || github.head_ref == 'fix/mini-pins-black-red-after-second-20261108' || github.head_ref == 'fix/mini-bolos-rojos-fin-frame-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/fix/mini-bolos-rojos-fin-frame-20261108'
+    if: github.head_ref == 'feature/arsenal-catalogo-seleccionable-f2-lab-20261109' || github.head_ref == 'release/arsenal-f1-cp034-20261109' || github.head_ref == 'feature/catalogo-arsenal-f1-lab-20261108' || github.head_ref == 'feature/calendario-fgb-2026-2027-lab-20261108' || github.head_ref == 'design/inicio-visura-refinamiento-3d-20261108' || github.head_ref == 'design/inicio-visura-calendario-20261108' || github.head_ref == 'design/icono-mi-bowling-visura-20261108' || github.head_ref == 'design/registro-compacto-r1-20261108' || github.head_ref == 'fix/mini-pins-black-red-after-second-20261108' || github.head_ref == 'fix/mini-bolos-rojos-fin-frame-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/fix/mini-bolos-rojos-fin-frame-20261108'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -65,8 +69,14 @@ jobs:
       - name: Validación real Chromium + WebKit (emulación móvil, tablet y escritorio)
         run: node tests/registry-browser-smoke.cjs
       - name: Arsenal F1 - selección por sesión, compatibilidad y WebKit
-        if: github.head_ref == 'release/arsenal-f1-cp034-20261109' || github.head_ref == 'feature/catalogo-arsenal-f1-lab-20261108'
+        if: github.head_ref == 'feature/arsenal-catalogo-seleccionable-f2-lab-20261109' || github.head_ref == 'release/arsenal-f1-cp034-20261109' || github.head_ref == 'feature/catalogo-arsenal-f1-lab-20261108'
         run: node tests/ball-selection-lab.cjs
+      - name: Arsenal R1 - ficha, comparativa y asistente (datos ficticios)
+        if: github.head_ref == 'feature/arsenal-catalogo-seleccionable-f2-lab-20261109'
+        run: node tests/arsenal-analysis-lab.cjs
+      - name: Catálogo - búsqueda, añadir sin duplicar, dos pestañas (datos ficticios)
+        if: github.head_ref == 'feature/arsenal-catalogo-seleccionable-f2-lab-20261109'
+        run: node tests/arsenal-catalog-selectable-lab.cjs
       - name: Guardar capturas de pantalla de LAB
         if: always()
         uses: actions/upload-artifact@v4
