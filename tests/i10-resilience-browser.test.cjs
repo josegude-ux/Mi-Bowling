@@ -125,6 +125,13 @@ async function persistentProof(base,file){
  await route(ctx,base);
  try{
   const p=await ctx.newPage();await openLab(p,base);
+  // Let the REAL I10 encrypted-store module initialize its three stores.
+  // A raw indexedDB.open() on a virgin profile would create an empty schema,
+  // which is a test setup error, not an application storage failure.
+  await p.evaluate(async({owner,vault})=>{
+   const j=await MiBowlingI10EncryptedJournal.unlock({owner,passphrase:vault});
+   try{await j.auditRestores(owner)}finally{j.close()}
+  },{owner,vault});
   const nullState=await data(p,base);
   assert.equal(nullState.counts['encrypted-operations'],0);
   assert.equal(nullState.counts['encrypted-confirmed'],0);
