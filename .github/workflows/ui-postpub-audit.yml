@@ -1,0 +1,57 @@
+name: "MI BOWLING | Auditoría postpublicación visual y PWA"
+on:
+  push:
+    branches:
+      - audit/visual-pwa-postpub-lab-20261109
+  pull_request:
+    branches: [main]
+    paths:
+      - index.html
+      - sw.js
+      - tests/ui-postpub-browser.cjs
+      - tests/ui-postpub-static.cjs
+      - .github/workflows/ui-postpub-audit.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Sintaxis y contrato de compatibilidad
+        run: |
+          node --check app.js
+          node --check design-lab.js
+          node --check tests/ui-postpub-browser.cjs
+          node --check tests/ui-postpub-static.cjs
+          node tests/ui-postpub-static.cjs
+          node tests/design-lab-smoke.cjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalación aislada de Playwright
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Probar rama LAB local en Chromium y WebKit
+        run: LAB_AUDIT_MODE=local node tests/ui-postpub-browser.cjs
+      - name: Leer aplicación realmente publicada en GitHub Pages (solo navegador efímero)
+        run: LAB_AUDIT_MODE=deployed node tests/ui-postpub-browser.cjs
+      - name: Capturas verificables de la rama y de la web publicada
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-auditoria-postpublicacion
+          path: test-results/ui-postpub/
+          if-no-files-found: ignore
+          retention-days: 7

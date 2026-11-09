@@ -194,3 +194,13 @@ body.lab-dark .design-lab-header-theme{background:#153c69;color:#fff;border-colo
 @media(prefers-reduced-motion:reduce){
  .bowling-home-module,.btn,.stat-tile,.ball-card{transition:none!important}
 }
+
+/* BOWLING-UI-POSTPUB-CP-001 · El tercer módulo no debe quedar huérfano en escritorio. */
+@media(min-width:1120px) and (max-width:1239px){
+ .bowling-home-menu{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bowling-home-menu>.bowling-home-module:last-child{grid-column:1/-1}
+}
+@media(min-width:1240px) and (max-width:1300px){
+ .bowling-home-menu{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .bowling-home-menu>.bowling-home-module{min-width:0}
+}
