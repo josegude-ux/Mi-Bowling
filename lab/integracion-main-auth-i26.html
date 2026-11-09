@@ -1,0 +1,61 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';object-src 'none';frame-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I26 · Importación segura</title>
+<style>
+:root{font:16px system-ui,sans-serif;background:#f3f8fc;color:#183b54;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:1000px;margin:auto}
+header,.card{background:white;border:1px solid #d7e5ed;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 15px #153d620b}
+h1{font-size:clamp(1.35rem,4vw,2rem);margin:8px 0}
+h2{font-size:1.1rem;margin:0 0 12px}p{line-height:1.52}
+.kicker{color:#176fac;font-size:.8rem;letter-spacing:.06em;font-weight:800}
+.warn{background:#fff0d5;padding:13px;border-radius:10px}
+.note{font-size:.91rem;color:#526f81}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input{min-height:44px;width:100%;font:inherit;padding:9px;border:1px solid #adc4d1;border-radius:9px}
+button{min-height:44px;font:inherit;font-weight:700;background:#146eac;color:white;border:0;border-radius:9px;padding:11px;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.secondary{background:#eaf4fd;color:#175e89;border:1px solid #b3d0e4}
+button.warnbutton{background:#fff0dc;color:#754813;border:1px solid #dabf98}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.controls>*{flex:1 1 215px}
+.stage{border-bottom:1px solid #dfebf1;padding:12px 0}.stage:last-child{border-bottom:0}
+#i26-status{background:#eef7ff;border-left:4px solid #137cbf;min-height:76px;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;font-size:.89rem}
+th,td{text-align:left;padding:9px;border-bottom:1px solid #dce8ef;overflow-wrap:anywhere}
+</style></head><body data-lab="I26-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LAB I26 · DATOS A/B/C FICTICIOS</span>
+<h1>Importación controlada y recuperable I18–I25</h1>
+<p>Lee secuencialmente siete expedientes I18–I24 en fragmentos de hasta 128 KiB y los comprueba con el contrato I25, sin reescribir los archivos seleccionados.</p>
+<p class="warn"><strong>Protección de entrada, no certificación física.</strong> Hasta 12 MiB por archivo y 28 MiB en conjunto. No se mide ni garantiza el uso total de memoria del navegador: el análisis I25 retiene y procesa los documentos completos. Las coincidencias SHA tampoco acreditan identidad, custodia, fecha, inmutabilidad ni autoridad.</p></header>
+<section class="card"><h2>1. Selección de expedientes ficticios por etapa</h2>
+<p class="note">Se admiten posiciones vacías y JSON malformado codificado en UTF-8 válido. Se rechaza BOM UTF-8 y secuencias inválidas. Modificar un origen invalida el resultado anterior.</p>
+<div id="i26-files"></div>
+<div class="controls">
+<button type="button" id="i26-start">Importar, verificar y preservar</button>
+<button type="button" id="i26-cancel" class="warnbutton" disabled>Cancelar importación</button>
+<button type="button" id="i26-note" class="secondary" disabled>Anotar revisión, sin enviarla</button></div>
+</section>
+<section class="card"><h2>2. Resultados y presupuesto de lectura</h2>
+<table><thead><tr><th>Etapa</th><th>Estado local</th><th>Serialización</th></tr></thead>
+<tbody id="i26-matrix"><tr><td>Sin importar</td><td>No comprobado</td><td>No autenticado</td></tr></tbody></table>
+<p class="note">El indicador «máximo fragmento leído» es una medición de la operación de lectura, <strong>no un pico de memoria RAM</strong>.</p></section>
+<section class="card"><h2>3. Exportación y revalidación local</h2>
+<div class="controls"><button id="i26-export" class="secondary" disabled>Exportar sobre I25 (solo por pulsación)</button></div>
+<label for="i26-saved">Sobre I25 (.audit25) previamente guardado</label><input id="i26-saved" type="file" accept=".audit25,.json">
+<label for="i26-saved-pin">SHA aportado para contraste (sin procedencia autenticada)</label>
+<input id="i26-saved-pin" maxlength="64" spellcheck="false">
+<div class="controls"><button type="button" id="i26-check" class="secondary">Verificar copia guardada</button></div>
+</section>
+<section class="card"><h2>Estado</h2><p role="status" aria-live="polite" id="i26-status">Sin importación. Ninguna autoridad ni custodia acreditada.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i26"></script><script src="i11-evidence.js?v=i26"></script>
+<script src="i12-manifest.js?v=i26"></script><script src="i13-witnesses.js?v=i26"></script>
+<script src="i14-policy-lifecycle.js?v=i26"></script><script src="i15-recovery.js?v=i26"></script>
+<script src="i16-anchors.js?v=i26"></script><script src="i17-forensics.js?v=i26"></script>
+<script src="i18-forensic-hold.js?v=i26"></script><script src="i19-manual-review.js?v=i26"></script>
+<script src="i20-rival-reviews.js?v=i26"></script><script src="i21-provenance-doubt.js?v=i26"></script>
+<script src="i22-uncertainty-matrix.js?v=i26"></script><script src="i23-external-evidence-gate.js?v=i26"></script>
+<script src="i24-manual-crosscheck.js?v=i26"></script><script src="i25-retention-audit.js?v=i26"></script>
+<script src="i26-bounded-import.js?v=i26"></script><script src="i26-ui.js?v=i26"></script>
+</body></html>

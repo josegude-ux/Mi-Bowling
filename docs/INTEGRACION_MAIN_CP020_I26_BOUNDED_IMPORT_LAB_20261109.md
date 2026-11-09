@@ -1,0 +1,54 @@
+# MI BOWLING · LAB I26 · Endurecimiento de importación móvil y recuperación segura
+
+**Orden:** BOWLING-INTEGRACION-CP020-I26-20261109  
+**Fecha:** 09/11/2026  
+**Base comprobada:** PR [#47](https://github.com/josegude-ux/Mi-Bowling/pull/47) OPEN/DRAFT/UNMERGED, checkpoint `BOWLING-I25-CP-001`, HEAD documental `42850b3898437b598ee8ad016d31bab292fdd04c`, SHA funcional I25 `5a01128557ad9ab1572c6d8d8fdb71093d00fd24`. CI documentales [push 42711624931](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42711624931) y [PR 42711635590](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42711635590), ambas `completed SUCCESS 2/2` sobre ese HEAD.  
+**Duplicidad:** búsqueda de ramas I26 y de todas las PR (abiertas/cerradas) realizada antes de crear: no existían I26. Nueva rama LAB `feature/integracion-main-auth-i26-lab-20261109` desde el HEAD documental I25 exacto.  
+**`main`:** `a52d712e0e9138e53a8979a904c7d33c93905c7e` al comenzar; estado posterior a fusiones previas #41 visual y #43 PWA; otras PR #42, #44 y #45 ya aparecen CLOSED/MERGED por flujos externos. I26 no fusiona nada y preserva PR #46 y #47 en borrador.
+
+## Alcance implementado
+
+I25 consolida siete documentos I18–I24 con texto importado completo, hashes UTF-8 y serializaciones JSON. I26 **no modifica ese contrato ni los verificadores previos**: crea una capa de entrada móvil dedicada a impedir cargas fuera de presupuesto antes de leer, gestionar lecturas parciales y cancelaciones, conservar resultados solo cuando todo el análisis terminó correctamente y evitar mensajes falsos sobre el uso de RAM.
+
+- `lab/i26-bounded-import.js`: lectura de siete posiciones I18–I24 en secuencia, aceptando ausencia `null`. Valida primero interfaces de archivo y tamaños enteros, **12 MiB máximo por archivo** y **28 MiB de entrada total**, antes de invocar `slice`, `arrayBuffer`, JSON o verificadores. Importa con `Blob.slice` por fragmentos de **128 KiB por defecto** (máximo configurable 256 KiB), `TextDecoder('utf-8',{fatal:true,ignoreBOM:true})` con `stream:true` y rechazo de BOM, secuencias truncadas o inválidas, lectura más corta/larga de lo solicitado o cambio de tamaño detectado.
+- El importador comprueba cancelación antes y después de cada lectura asíncrona, y al terminar. Devuelve los textos originales aceptados y un diagnóstico de **bytes de entrada, número de fragmentos y máximo de bytes leídos en un fragmento**, sin inventar tiempos, uso real de memoria o credenciales externas.
+- `analyze` exige siete SHA opcionales con formato estricto *antes de leer archivos*; pasa textos al `I25.prepare` y al `I25.verify` preexistentes, conserva el sobre I25 verificable y vuelve a exigir `operationalApproval:false`, `externalCustodyProven:false`, `noWrites:true`. Rechaza cualquier cancelación antes del retorno: no se devuelve expediente de éxito incompleto.
+- `lab/integracion-main-auth-i26.html`, `lab/i26-ui.js`: pantalla LAB aislada y adaptable a móvil; siete seleccionadores de archivo y SHA opcional, progreso en bytes de entrada, cancelación directa, invalidación de resultados anteriores ante cambio de origen o SHA, error sin estados operativos antiguos, tabla de clasificación I25, exportación `.audit25` solo por pulsación, y verificación local de copias hasta 44 MiB mediante lectura de fragmentos con UTF-8 estricto. CSP `connect-src 'none'`, sin red exterior, IndexedDB, datos reales, producción ni permisos.
+- `tests/i26-bounded-import-fixture.cjs`, `tests/i26-bounded-import-contract.test.cjs`: construyen A/B/C ficticios; prueban siete etapas válidas, Unicode de varios bytes partido en fragmentos de **1 byte**, BOM, bytes UTF-8 inválidos y truncados, JSON malformado preservado como texto, ausencia de archivos, SHA autodeclarado incompatible, sustitución simultánea de textos+referencias, archivo gigante antes de leer, 12/28 MiB, short read y bytes sobrantes, `Blob` roto, opciones de fragmentos fuera de rango, cancelación antes y durante lectura, ningún retorno de confianza externa.
+- `tests/i26-bounded-import-browser.test.cjs`: WebKit Linux con móvil emulado 390×844 y Chromium escritorio bajo HTTPS localhost con red exterior bloqueada. Cubre importar/validar I25, descargar voluntariamente, revalidar, falsificar bandera de custodia y rechazarla, UTF-8 inválido, error y recuperación, cambio de SHA, archivo I19 faltante y cancelación por botón tras ralentizar exclusivamente la lectura de test. Conservación de almacenamiento previo ficticio y sin nuevas bases IndexedDB.
+- `.github/workflows/integracion-i26-lab.yml`: dos trabajos, Node CP-020/FGB, regresiones I11–I25, I26; y pruebas WebKit/Chromium offline.
+
+## Límites y garantías no demostradas
+
+1. Los **128 KiB** son el tamaño máximo predeterminado de cada lectura de entrada, **no un límite ni una medición de memoria total**. I25 crea cadenas y objetos JSON completos, y la generación de la copia exportada también exige memoria adicional. El presupuesto 12/28 MiB controla entrada, no garantiza rendimiento en un iPhone físico ni un pico RAM específico. Las pruebas de WebKit en Linux emulado no certifican Safari en iPhone.
+2. Una entrada rechazada nunca se borra ni se repara: su archivo original permanece fuera del LAB; ningún resultado obsoleto se considera vigente después de fallar o cancelar. Se conserva texto JSON malformado **cuando** su codificación UTF-8 y sus límites permiten aceptarlo.
+3. La función de progreso muestra bytes efectivamente leídos y máximo de un fragmento; no se utiliza como fuente de timestamp, custodia humana, firma o inmutabilidad.
+4. El SHA calculado desde texto importado y el SHA aportado por una supuesta fuente externa siguen siendo datos no autenticados. Un atacante puede sustituir documento y hash conjuntamente. Los nombres de archivo, alias A/B/C o declaraciones no demuestran identidad, independencia, conservación física, anterioridad ni autoridad.
+5. I26 no edita `main`, `index.html`, `sw.js`, FGB CP-020, app publicada, expedientes reales, sesiones, puntuaciones ni PR anteriores. Solo se añaden **ocho archivos I26**.
+
+## Checkpoint funcional · BOWLING-I26-CP-001
+
+**SHA funcional I26 verificado:** `c979a29975fcdd5f9a46d3c46026a66aa1d7d1cd`.  
+**CI funcional push:** [42715701382](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42715701382) — `completed SUCCESS 2/2` en ese SHA.  
+**CI funcional PR:** [42715793877](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42715793877) — `completed SUCCESS 2/2` sobre **ese mismo** SHA.  
+**PR:** [#48](https://github.com/josegude-ux/Mi-Bowling/pull/48) OPEN/DRAFT/UNMERGED, base `feature/integracion-main-auth-i25-lab-20261109`, creada exactamente sobre `BOWLING-I25-CP-001` `42850b3898437b598ee8ad016d31bab292fdd04c`.
+
+**Registros comprobados en los logs de CI funcional PR 42715793877:**
+- `PASS FGB 31 eventos` oficiales, 10 gallegos y 21 nacionales, sin duplicados y con datos intactos.
+- Regresiones I11–I25 superadas; `PASS I25 Node` con originales UTF-8, hashes de JSON reserializado, límites 12/28 MiB, documentos dañados y reemplazo conjunto aún no excluido.
+- `PASS I26 Node`: siete etapas ficticias A/B/C, codificación UTF-8 estricta y fragmentos de 1 byte con Unicode dividido, límite de 128 KiB por bloque por defecto, cancelación antes/durante carga, detección de fragmentos truncados, límites preventivos 12/28 MiB, recuperación de JSON malformado UTF-8 válido, integridad I25, sin escrituras.
+- `PASS I26 webkit` en Linux móvil emulado y `PASS I26 chromium` escritorio bajo HTTPS localhost: cancelación real de la UI, reintentos, SHA alterado, fallo cerrado de UTF-8, descarga y revalidación voluntaria, sin IndexedDB ni red exterior.
+
+**Aislamiento:** comparación GitHub exacta contra I25 `42850b3898437b598ee8ad016d31bab292fdd04c`: ocho archivos I26 `added`, 0 `modified`, 0 `removed`; ocho commits adelante, ninguno detrás antes de registrar este checkpoint. `main` se mantiene `a52d712e0e9138e53a8979a904c7d33c93905c7e`. I26 no edita producción, PWA, FGB CP-020, cuentas o datos reales y no fusiona PR anteriores.
+
+**Alcance de la protección:** se limita el tamaño **leído por fragmento**, se hace preflight del tamaño declarado del archivo, se compara tamaño de cada fragmento y se invalida el resultado tras cancelación; **no se ha medido ni probado un límite de memoria heap total**. La lectura final y el procesamiento JSON I25 pueden ocupar más memoria que la entrada. El resultado no demuestra comportamiento en Safari de un iPhone físico.
+
+**Prohibición de atribuciones:** un SHA coincidente o un archivo de A/B/C ficticio no acredita identidad, testigo humano, inmutabilidad, original anterior, conservación independiente o autoridad. Una sustitución coordinada de expediente y referencia podría mantenerse internamente coherente.
+
+**Checkpoint documental pendiente de verificación:** la presente actualización de la documentación producirá otro SHA. Exigir **dos CI adicionales** `push` y `pull_request`, cada una SUCCESS 2/2 exactamente sobre el nuevo HEAD documental. El cierre de la PR y la preparación I27 se anotarán solo en el cuerpo de #48, sin nuevo commit después del último gate.
+
+## Criterio de aceptación y checkpoint
+
+Verificar en GitHub **push y pull_request, cada uno SUCCESS 2/2 en el mismo SHA funcional I26**; evaluar logs Node y WebKit/Chromium, corregir exclusivamente los archivos I26 si procede. Registrar `BOWLING-I26-CP-001` en esta documentación con SHA funcional y CI auditadas. Ello origina un commit documental y nuevas CI; **no cerrar hasta que push y PR vuelvan a obtener SUCCESS 2/2 sobre el mismo HEAD documental definitivo**. Después registrar cierre e instrucción I27 solamente en la descripción de la PR, sin nuevo commit. PR I26 ha de seguir OPEN/DRAFT/UNMERGED, sin fusiones, publicaciones, servicios reales ni falsos custodios.
+
+**Estado de este documento al crearlo:** fase LAB implementada, pendientes pruebas y SHAs de cierre; ninguna CI se declara aprobada anticipadamente.
