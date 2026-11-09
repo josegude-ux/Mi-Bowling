@@ -186,6 +186,25 @@ async function persistentProof(base,file){
   await q.locator('#lab-i10-preview').click();
   await q.waitForFunction(()=>document.querySelector('#lab-i10-backup-status')
    ?.textContent.includes('identical'));
+  // Compare TWO authentically encrypted I10 files made on different dates:
+  // the newer one has a higher confirmed revision, but comparison is read-only.
+  const later=await q.evaluate(async({file,password,owner})=>{
+   const snapshot=await MiBowlingI10Backup.open(file,password,owner);
+   snapshot.confirmed.revision=2;
+   return MiBowlingI10Backup.seal(snapshot,password);
+  },{file,password:PASSWORD,owner});
+  await q.locator('#lab-i10-second-file').setInputFiles({
+   name:'lab-i10-newer.mbi10',mimeType:'application/json',buffer:Buffer.from(later)
+  });
+  await q.locator('#lab-i10-compare').click();
+  await q.waitForFunction(()=>document.querySelector('#lab-i10-backup-status')
+   ?.textContent.includes('second-newer'));
+  const compare=await q.evaluate(()=>MiBowlingI10BackupUI.compareDates());
+  assert.equal(compare.verdict,'second-newer');
+  assert.ok(compare.second.createdAt>=compare.first.createdAt);
+  assert.equal((await q.evaluate(()=>MiBowlingIntegrationI10.confirmed())).revision,1,
+   'comparing dated backups must not modify the confirmed score');
+  assert.equal((await q.evaluate(()=>MiBowlingIntegrationI10.pendingOperations())).length,2);
   await q.locator('#lab-i10-trace').click();
   await q.waitForFunction(()=>document.querySelector('#lab-i10-backup-status')
    ?.textContent.includes('1 restauraciones'));
