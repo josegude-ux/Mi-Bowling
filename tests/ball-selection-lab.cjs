@@ -484,7 +484,7 @@ async function crossTabRetirementStalePickerScenario(browser,engine,origin){
   assert.deepEqual(snapshot.picks.__next__,[],'B elimina Alpha del sidecar');
   await first.waitForFunction(()=>[...document.querySelectorAll('.ball-card')].some(el=>el.textContent.includes('Alpha')&&el.querySelector('.ball-session-toggle input')?.checked===false),null,{timeout:10000});
   // A puede conservar un catálogo en memoria obsoleto: no debe resucitar la marca.
-  await alpha(first).locator('.ball-session-toggle input').check();
+  await alpha(first).locator('.ball-session-toggle input').click();
   snapshot=await getData(first);
   assert.deepEqual(snapshot.picks.__next__,[],'A no puede reintroducir Alpha retirada por B');
   assert.deepEqual(await first.evaluate(()=>selectedBallsFor('__next__')),[],'Filtro operativo de A excluye Alpha retirada');
