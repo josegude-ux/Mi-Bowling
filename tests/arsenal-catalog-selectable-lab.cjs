@@ -16,7 +16,7 @@ const seed=()=>({version:2,hand:'diestro',balls:[
  ball('lab-existing','Hammer','Web Tour Edition Hybrid'),
  ball('lab-retired','DV8','Pitbull Bite',true),
  ball('lab-alias','Columbia','Bully')
-],patterns:[],sessions:[]});
+],patterns:[],sessions:[{id:'lab-historico-1',type:'entrenamiento',date:'2026-11-09',title:'Partida guardada LAB',venue:'Bolera ficticia',games:[{id:'lab-juego-1',rolls:[{frame:1,ball:1,pins:[1,2,3],ballId:'lab-existing',line:{approach:'25',arrow:'15',breakpoint:'8'},lane:1,pair:null,foul:false,createdAt:'2026-11-09T08:00:00Z'}]}]}]});
 const state=page=>page.evaluate(()=>({db:JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')),picks:JSON.parse(localStorage.getItem('mi-bowling-ball-selection-v1')||'{}')}));
 const openCatalog=async page=>{
  await page.getByRole('button',{name:'Mis bolas',exact:true}).click();
@@ -31,6 +31,7 @@ async function mainScenario(browser,engine,width,origin){
   await page.goto(origin,{waitUntil:'load'});
   await page.evaluate(data=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data));localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify({__next__:['lab-existing']}))},seed());
   await page.reload({waitUntil:'load'});
+  const prior=await state(page);
   await openCatalog(page);
   assert.equal(await page.locator('.arsenal-model').count(),10,'10 fichas reutilizadas de PR19');
   assert.equal(await page.locator('.arsenal-model').filter({hasText:'Web Tour Edition Hybrid'}).getByRole('button',{name:'Añadir a Mis bolas'}).count(),0,'No ofrecer duplicado existente');
@@ -48,7 +49,7 @@ async function mainScenario(browser,engine,width,origin){
   assert.equal(added.notes,'','Taladro sin inventar');
   assert.equal(added.kind,'Reactiva','Tipo reutiliza esquema vigente');
   assert.deepEqual(after.db.balls.slice(0,3),seed().balls,'Bolas y notas anteriores intactas');
-  assert.deepEqual(after.db.sessions,seed().sessions,'Sin cambios en partidas');
+  assert.deepEqual(after.db.sessions,prior.db.sessions,'Historial y atribución de bolas en tiros existentes intactos');
   assert.deepEqual(after.picks.__next__,['lab-existing'],'No selecciona automáticamente');
   assert.equal(await page.locator('#arsenal-catalog-search').inputValue(),'vintage phantom','Conserva búsqueda tras incorporar');
   assert.equal(await page.locator('.arsenal-model:visible').getByRole('button',{name:'Añadir a Mis bolas'}).count(),0,'Una sola incorporación idempotente');
@@ -110,8 +111,26 @@ async function staleTabScenario(browser,engine,origin){
   console.log('OK '+engine+' 390px: otro catálogo abierto no sobrescribe el vigente en una segunda pestaña');
  }finally{await ctx.close()}
 }
+async function offlineCatalogScenario(browser,origin){
+ const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'allow'});
+ const page=await ctx.newPage();
+ try{
+  await page.goto(origin,{waitUntil:'load'});
+  await page.evaluate(()=>navigator.serviceWorker.ready);
+  await page.reload({waitUntil:'load'});
+  assert.equal(await page.evaluate(()=>!!navigator.serviceWorker.controller),true,'Service Worker controla la página LAB');
+  await ctx.setOffline(true);
+  await page.reload({waitUntil:'load'});
+  await openCatalog(page);
+  assert.equal(await page.locator('.arsenal-model').count(),10,'Las 10 fichas se cargan en modo offline');
+  await page.locator('#arsenal-catalog-search').fill('Rally');
+  await page.locator('.arsenal-model:visible').getByRole('button',{name:'Añadir a Mis bolas'}).click();
+  assert.deepEqual((await state(page)).db.balls.map(x=>x.model),['Rally'],'Sin red se puede añadir un modelo al almacenamiento local');
+  console.log('OK chromium 390px: nuevo catálogo y alta de bola funcionando con PWA offline');
+ }finally{await ctx.close()}
+}
 (async()=>{
  const port=await new Promise(resolve=>server.listen(0,'127.0.0.1',()=>resolve(server.address().port))),origin='http://127.0.0.1:'+port+'/';
- try{for(const [engine,type] of [['chromium',chromium],['webkit',webkit]]){const browser=await type.launch({headless:true});try{for(const width of [390,1280])await mainScenario(browser,engine,width,origin);await staleTabScenario(browser,engine,origin)}finally{await browser.close()}}}
+ try{for(const [engine,type] of [['chromium',chromium],['webkit',webkit]]){const browser=await type.launch({headless:true});try{for(const width of [390,1280])await mainScenario(browser,engine,width,origin);await staleTabScenario(browser,engine,origin);if(engine==='chromium')await offlineCatalogScenario(browser,origin)}finally{await browser.close()}}}
  finally{await new Promise(resolve=>server.close(resolve))}
 })().catch(e=>{console.error(e);process.exitCode=1});
