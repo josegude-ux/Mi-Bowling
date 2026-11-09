@@ -1,0 +1,62 @@
+name: MI BOWLING · LAB I18 · Expediente forense y bloqueo
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i18-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i18-*'
+      - 'lab/integracion-main-auth-i18.html'
+      - 'tests/i18-*'
+      - '.github/workflows/integracion-i18-lab.yml'
+permissions:
+  contents: read
+jobs:
+  node_validation:
+    name: I18 Node · CP020 FGB and I11-I18 security contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificar sintaxis I18
+        run: |
+          node --check lab/i18-forensic-hold.js
+          node --check lab/i18-ui.js
+          node --check tests/i18-forensic-fixture.cjs
+          node --check tests/i18-forensic-contract.test.cjs
+          node --check tests/i18-forensic-browser.test.cjs
+      - name: Contratos intactos CP-020 y calendario FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones I11-I17
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+          node tests/i16-anchor-contract.test.cjs
+          node tests/i17-forensics-contract.test.cjs
+      - name: I18 · Preservación y decisión trazable sin nuevas autoridades
+        run: node tests/i18-forensic-contract.test.cjs
+  browser:
+    name: I18 · WebKit/Chromium, expediente sin almacenamiento operativo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright solo para tests
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux emulado móvil
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Descargar expediente sintético solo por petición del test
+        run: node tests/i18-forensic-browser.test.cjs
