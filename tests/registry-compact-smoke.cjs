@@ -108,7 +108,7 @@ assert(app.includes('aria-pressed="${selection.includes(p)}"'),'Estado accesible
 assert(app.includes('registry-v4-quick-caption'),'Advertencia sobre atajos automáticos');
 assert(css.includes('.registry-v4-quick.quick-large .btn'),'Respeta botones grandes');
 assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Sin migración de datos');
-assert(app.includes("const APP_VERSION='3.3.9-arsenal-f1'"),'Versión de laboratorio');
-assert(index.includes('app.js?v=339f1')&&index.includes('styles.css?v=339f1'),'Referencias coherentes');
-assert(sw.includes('mi-bowling-analitica-v3-3-9-arsenal-f1'),'Caché de LAB');
+assert(app.includes("const APP_VERSION='3.3.10-catalogo'"),'Versión de laboratorio');
+assert(index.includes('app.js?v=3310cat1')&&index.includes('styles.css?v=3310cat1'),'Referencias coherentes');
+assert(sw.includes('mi-bowling-analitica-v3-3-10-catalogo-cp035'),'Caché de LAB');
 console.log('MI BOWLING LAB: registro compacto validado (4 estados, 10 frames, controles, datos, caché).');

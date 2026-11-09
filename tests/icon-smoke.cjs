@@ -20,9 +20,9 @@ assert(manifest.icons.some(i=>i.src==='icon-512.png?v=338icon1'),'Manifest 512')
 assert(html.includes('class="brand-mark"')&&html.includes('icon-192.png?v=338icon1'),'Icono de cabecera');
 assert(app.includes('class="bowling-home-mark"')&&app.includes('icon-192.png?v=338icon1'),'Icono de inicio');
 assert(css.includes('.bowling-home-mark img'),'Escalado responsive');
-assert(sw.includes('mi-bowling-analitica-v3-3-9-arsenal-f1'),'Nueva caché para actualización');
-assert(html.includes('app.js?v=339f1')&&html.includes('styles.css?v=339f1'),'Rutas de recursos actualizadas');
-assert(sw.includes('./app.js?v=339f1')&&sw.includes('./styles.css?v=339f1'),'Precarga de la versión F1');
-assert(app.includes("const APP_VERSION='3.3.9-arsenal-f1'"),'Versión visible de F1');
+assert(sw.includes('mi-bowling-analitica-v3-3-10-catalogo-cp035'),'Nueva caché para actualización');
+assert(html.includes('app.js?v=3310cat1')&&html.includes('styles.css?v=3310cat1'),'Rutas de recursos actualizadas');
+assert(sw.includes('./app.js?v=3310cat1')&&sw.includes('./styles.css?v=3310cat1'),'Precarga de la versión F1');
+assert(app.includes("const APP_VERSION='3.3.10-catalogo'"),'Versión visible de F1');
 assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Sin modificación de datos');
 console.log('PASS iconos 180/192/512, iPhone, manifest, cabeceras, caché y datos');
