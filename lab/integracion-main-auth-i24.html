@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I24 · Procedimiento de contraste independiente</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#183950;background:#f2f7fc;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:1040px;margin:auto}
+header,.card{background:#fff;border:1px solid #d5e4ed;border-radius:15px;padding:20px;margin:0 0 16px;box-shadow:0 4px 18px #173e600b}
+.kicker{color:#116eb1;font-weight:750;letter-spacing:.05em;font-size:.81rem}
+h1{font-size:clamp(1.4rem,4vw,2rem);margin:8px 0}h2{font-size:1.1rem;margin:0 0 12px}
+p{line-height:1.5}.warn{background:#fff0d6;border-radius:10px;padding:15px}
+.note{font-size:.91rem;color:#526e80}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input,select{min-height:44px;width:100%;border:1px solid #aec3d0;border-radius:9px;padding:9px;font:inherit}
+button{background:#106eb4;color:white;border:0;border-radius:9px;padding:12px;font:inherit;font-weight:700;min-height:44px;cursor:pointer}
+button.secondary{background:#edf5fd;border:1px solid #b5d1e9;color:#155882}
+button:disabled{opacity:.5;cursor:not-allowed}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.controls>*{flex:1 1 250px}
+.axis{padding:14px 0;border-bottom:1px solid #dce8f0}.axis:last-child{border-bottom:0}
+.axis h3{font-size:1rem;margin:0}.slot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#i24-status{background:#ebf5ff;border-left:4px solid #1576bf;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere;min-height:82px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{padding:9px;text-align:left;border-bottom:1px solid #e0ebf3;vertical-align:top}
+@media(max-width:600px){.slot-grid{grid-template-columns:1fr}}
+</style></head><body data-lab="I24-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LAB I24 · SOLO A/B/C FICTICIOS</span>
+<h1>Contraste manual de seis requisitos externos</h1>
+<p>Registra declaraciones A/B/C sobre cada requisito y detecta contradicciones sin convertirlas en evidencia autenticada. No se contacta a custodios, no se valida ninguna identidad real y ninguna declaración concede permisos.</p>
+<p class="warn"><strong>Todos los requisitos permanecen sin acreditar.</strong> Un SHA igual, una afirmación favorable o una supuesta referencia independiente NO prueban custodia física, fecha, WORM, autenticidad histórica ni autorización. A/B/C son etiquetas lógicas de archivo.</p>
+</header>
+<section class="card"><h2>1. Dossier I23 base y referencia opcional</h2>
+<label for="i24-source">Dossier I23 (.gate23)</label><input id="i24-source" type="file" accept=".gate23,.json">
+<label for="i24-source-pin">SHA anterior aportado, no autenticado (opcional)</label><input id="i24-source-pin" maxlength="64" spellcheck="false">
+<p class="note">Una huella introducida no demuestra quién la conservó ni cuándo. Este LAB no tiene conexiones externas.</p>
+</section>
+<section class="card"><h2>2. Evaluaciones de las seis dimensiones</h2>
+<p class="note">Para cada requisito, A/B/C pueden declarar coincidencia, discrepancia, desconocimiento o ausencia. Todas las respuestas son autodeclaradas; no se obtiene prueba humana o física.</p>
+<div id="i24-axes"></div>
+<div class="controls"><button id="i24-build" type="button">Comparar y preservar sin autorizar</button>
+<button id="i24-note" class="secondary" type="button" disabled>Anotar revisión externa, sin enviar</button></div>
+</section>
+<section class="card"><h2>3. Requisitos y estados no acreditados</h2>
+<table><thead><tr><th>Requisito</th><th>Evaluación local</th><th>Acreditación externa</th></tr></thead><tbody id="i24-matrix">
+<tr><td>Sin entradas</td><td>No analizado</td><td>No acreditado</td></tr></tbody></table>
+</section>
+<section class="card"><h2>4. Exportación y contraste posterior</h2>
+<div class="controls"><button id="i24-export" type="button" class="secondary" disabled>Exportar copia LAB voluntariamente</button></div>
+<label for="i24-saved">Copia I24 guardada (.review24)</label><input id="i24-saved" type="file" accept=".review24,.json">
+<label for="i24-saved-pin">SHA de copia aportado desde fuera (opcional)</label><input id="i24-saved-pin" maxlength="64" spellcheck="false">
+<div class="controls"><button id="i24-check" type="button" class="secondary">Verificar copia sin recuperar</button></div>
+<p class="note">La exportación solo se inicia al pulsar el botón. Sin IndexedDB, servicios, red exterior ni escrituras en MI BOWLING.</p>
+</section>
+<section class="card"><h2>Estado</h2><p id="i24-status" role="status" aria-live="polite">Sin expediente evaluado. Ninguna autoridad, custodia ni firma acreditadas.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i24"></script><script src="i11-evidence.js?v=i24"></script>
+<script src="i12-manifest.js?v=i24"></script><script src="i13-witnesses.js?v=i24"></script>
+<script src="i14-policy-lifecycle.js?v=i24"></script><script src="i15-recovery.js?v=i24"></script>
+<script src="i16-anchors.js?v=i24"></script><script src="i17-forensics.js?v=i24"></script>
+<script src="i18-forensic-hold.js?v=i24"></script><script src="i19-manual-review.js?v=i24"></script>
+<script src="i20-rival-reviews.js?v=i24"></script><script src="i21-provenance-doubt.js?v=i24"></script>
+<script src="i22-uncertainty-matrix.js?v=i24"></script>
+<script src="i23-external-evidence-gate.js?v=i24"></script>
+<script src="i24-manual-crosscheck.js?v=i24"></script><script src="i24-ui.js?v=i24"></script>
+</body></html>

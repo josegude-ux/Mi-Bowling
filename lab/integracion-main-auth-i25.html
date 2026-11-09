@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I25 · Consolidar y preservar I18–I24</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#14374e;background:#f3f8fc;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:1000px;margin:auto}
+header,.card{background:white;border:1px solid #d5e4ef;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 14px #113c5b0d}
+.kicker{font-size:.82rem;font-weight:800;color:#1169ad;letter-spacing:.04em}
+h1{font-size:clamp(1.42rem,4vw,2rem);margin:8px 0}
+h2{font-size:1.1rem;margin:0 0 12px}p{line-height:1.52}
+.warn{border-radius:10px;padding:15px;background:#fff0d2}
+.note{font-size:.9rem;color:#526e80}
+label{font-weight:700;display:block;margin:12px 0 6px}
+input{width:100%;min-height:44px;border:1px solid #a9bfce;border-radius:9px;padding:10px;font:inherit}
+button{font:inherit;font-weight:700;padding:12px;min-height:44px;border:0;border-radius:10px;background:#0d6eaf;color:white;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#eaf5ff;color:#165882;border:1px solid #b3d0e9}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}.actions>*{flex:1 1 240px}
+.stage{padding:14px 0;border-bottom:1px solid #dfebf2}.stage:last-child{border-bottom:0}
+#i25-status{background:#edf6fe;border-left:4px solid #1874b5;min-height:78px;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;font-size:.87rem}
+th,td{text-align:left;padding:9px;border-bottom:1px solid #dce8ef;overflow-wrap:anywhere}
+</style></head><body data-lab="I25-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LAB I25 · SOLO EXPEDIENTES FICTICIOS A/B/C</span>
+<h1>Consolidación forense I18–I24</h1>
+<p>Importa hasta siete expedientes históricos en sus etapas originales. Conserva el texto UTF-8 aportado, calcula su huella separada de la serialización JSON y detecta inconsistencias entre etapas.</p>
+<p class="warn"><strong>Integridad interna no es custodia independiente.</strong> Ningún SHA o paquete importado acredita origen, fecha, inmutabilidad, independencia humana o permisos. A/B/C son datos sintéticos. Esta pantalla no restaura ni accede a producción.</p>
+</header>
+<section class="card"><h2>1. Documentos originales por etapa</h2>
+<p class="note">Solo JSON UTF-8 sin BOM. Límite: 12 MiB por archivo y 28 MiB sumando las etapas. Se conservan textos malformados dentro del sobre si son UTF-8 válido; archivos ausentes se registran como tales. Una copia exportada no certifica conservación física externa.</p>
+<div id="i25-files"></div>
+<div class="actions"><button id="i25-build" type="button">Comprobar conservación y enlaces I18–I24</button>
+<button id="i25-note" type="button" class="secondary" disabled>Anotar revisión externa (sin enviar)</button></div>
+</section>
+<section class="card"><h2>2. Resultado por etapa</h2>
+<table><thead><tr><th>Etapa</th><th>Integridad local</th><th>Texto vs JSON</th><th>Referencia SHA aportada</th></tr></thead>
+<tbody id="i25-table"><tr><td>Sin documentos</td><td>No examinado</td><td>Sin determinar</td><td>No acreditado</td></tr></tbody></table></section>
+<section class="card"><h2>3. Exportación y revalidación</h2>
+<div class="actions"><button id="i25-download" class="secondary" type="button" disabled>Guardar copia I25 voluntariamente</button></div>
+<label for="i25-saved">Copia I25 (.audit25) almacenada previamente</label>
+<input id="i25-saved" type="file" accept=".audit25,.json">
+<label for="i25-saved-sha">SHA de la copia supuestamente retenido por separado (opcional, no autenticado)</label>
+<input id="i25-saved-sha" maxlength="64" spellcheck="false">
+<div class="actions"><button id="i25-check" type="button" class="secondary">Reverificar sin alterar originales</button></div>
+<p class="note">La descarga solo se inicia con pulsación explícita. No hay red exterior, IndexedDB, datos personales, firmas, timestamp ni restauración.</p>
+</section>
+<section class="card"><h2>Estado</h2>
+<p id="i25-status" role="status" aria-live="polite">Sin comparación. No existe certificación externa ni autorización.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i25"></script><script src="i11-evidence.js?v=i25"></script>
+<script src="i12-manifest.js?v=i25"></script><script src="i13-witnesses.js?v=i25"></script>
+<script src="i14-policy-lifecycle.js?v=i25"></script><script src="i15-recovery.js?v=i25"></script>
+<script src="i16-anchors.js?v=i25"></script><script src="i17-forensics.js?v=i25"></script>
+<script src="i18-forensic-hold.js?v=i25"></script><script src="i19-manual-review.js?v=i25"></script>
+<script src="i20-rival-reviews.js?v=i25"></script><script src="i21-provenance-doubt.js?v=i25"></script>
+<script src="i22-uncertainty-matrix.js?v=i25"></script><script src="i23-external-evidence-gate.js?v=i25"></script>
+<script src="i24-manual-crosscheck.js?v=i25"></script><script src="i25-retention-audit.js?v=i25"></script>
+<script src="i25-ui.js?v=i25"></script></body></html>

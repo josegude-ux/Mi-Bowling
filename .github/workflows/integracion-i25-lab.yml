@@ -1,0 +1,69 @@
+name: MI BOWLING · LAB I25 · Conservación y endurecimiento I18-I24
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i25-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i25-*'
+      - 'lab/integracion-main-auth-i25.html'
+      - 'tests/i25-*'
+      - '.github/workflows/integracion-i25-lab.yml'
+permissions:
+  contents: read
+jobs:
+  node_validation:
+    name: I25 Node · FGB CP020 I11-I25 retention and regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 52
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar sintaxis I25
+        run: |
+          node --check lab/i25-retention-audit.js
+          node --check lab/i25-ui.js
+          node --check tests/i25-retention-fixture.cjs
+          node --check tests/i25-retention-contract.test.cjs
+          node --check tests/i25-retention-browser.test.cjs
+      - name: CP-020 y calendario FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones I11-I24 intactas
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+          node tests/i16-anchor-contract.test.cjs
+          node tests/i17-forensics-contract.test.cjs
+          node tests/i18-forensic-contract.test.cjs
+          node tests/i19-review-contract.test.cjs
+          node tests/i20-rival-contract.test.cjs
+          node tests/i21-provenance-contract.test.cjs
+          node tests/i22-uncertainty-contract.test.cjs
+          node tests/i23-external-evidence-contract.test.cjs
+          node tests/i24-manual-crosscheck-contract.test.cjs
+      - name: I25 · siete etapas, preservación textual y límites 12/28 MiB
+        run: node tests/i25-retention-contract.test.cjs
+  browser:
+    name: I25 · WebKit Chromium · independent data import and no writes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright solo para tests
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: Instalar WebKit Linux móvil emulado
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Pruebas A/B/C en HTTPS localhost sin red externa
+        run: node tests/i25-retention-browser.test.cjs
