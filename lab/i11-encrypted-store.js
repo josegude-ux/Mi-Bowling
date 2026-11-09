@@ -334,39 +334,60 @@ async function unlock({owner,passphrase}={}){
   check(id);
   if(!root.MiBowlingI11Evidence?.verifyData)
    throw Error('I11: verificador de evidencia independiente requerido');
+  // External AES-GCM evidence is validated before inspecting live storage.
   await root.MiBowlingI11Evidence.verifyData(data,owner);
-  const existing=await auditState();
-  const comparison=await root.MiBowlingI11AuditCore.compare(
-   owner,existing.events,existing.head,data.events,data.head);
-  if(!comparison.newEvents)
-   return {status:'already-present',eventsAdded:0,count:comparison.existing};
-  const incomingRows=[];
-  for(const e of data.events.slice(comparison.existing))
-   incomingRows.push(await encrypt(e,'AUDIT'));
-  const incomingHead=await encrypt(data.head,'HEAD');
+  const captured=await rawAudit(),existingById=new Map(),existingSeq=new Set();
+  for(const row of captured.rows){
+   const e=await decrypt(row,'AUDIT'); // never overwrite corrupt bytes
+   const expected=data.events[e.seq-1];
+   if(!expected||expected.auditId!==e.auditId||
+      expected.chainHash!==e.chainHash||existingSeq.has(e.seq))
+    throw Error('I11: CONFLICTO: evidencia diverge de recibos existentes; sin escritura');
+   existingSeq.add(e.seq);existingById.set(row.id,row);
+  }
+  let existingHead=null;
+  if(captured.anchor){
+   existingHead=await decrypt(captured.anchor,'HEAD');
+   const prefix=existingHead.count?data.events[existingHead.count-1]:null;
+   if(existingHead.count>data.events.length||
+      existingHead.headHash!==(prefix?.chainHash||
+        root.MiBowlingI11AuditCore.ZERO))
+    throw Error('I11: CONFLICTO: ancla local no es prefijo de evidencia externa');
+  }
+  const missing=[];
+  for(const e of data.events){
+   const key=owner+':audit:'+e.auditId;
+   if(!existingById.has(key))missing.push(await encrypt(e,'AUDIT'));
+  }
+  const updateHead=data.head&&(!existingHead||
+   existingHead.count!==data.head.count||
+   existingHead.headHash!==data.head.headHash);
+  const newHead=updateHead?await encrypt(data.head,'HEAD'):null;
+  if(!missing.length&&!newHead)
+   return {status:'already-present',eventsAdded:0,count:data.events.length};
   check(id);
   const db=await openDB();
   try{return await new Promise((resolve,reject)=>{
    const tx=db.transaction([AUDIT,HEAD],'readwrite'),
     audit=tx.objectStore(AUDIT),heads=tx.objectStore(HEAD),
     qRows=audit.getAll(),qHead=heads.get(owner+':audit-head');
-   let actualRows,actualHead,hasRows=false,hasHead=false,planned=false;
+   let actualRows,actualHead,gotRows=false,gotHead=false,planned=false;
    function plan(){
-    if(!hasRows||!hasHead||planned)return;
+    if(!gotRows||!gotHead||planned)return;
     planned=true;
     const mine=actualRows.filter(x=>typeof x.id==='string'&&x.id.startsWith(owner+':audit:'));
     const sort=a=>a.slice().sort((x,y)=>x.id.localeCompare(y.id));
-    if(JSON.stringify(sort(mine))!==JSON.stringify(sort(existing.rawRows))||
-      JSON.stringify(actualHead??null)!==JSON.stringify(existing.rawHead??null)){
+    if(JSON.stringify(sort(mine))!==JSON.stringify(sort(captured.rows))||
+      JSON.stringify(actualHead??null)!==JSON.stringify(captured.anchor??null)){
      tx.abort();return;
     }
-    for(const row of incomingRows)audit.add(row);
-    heads.put(incomingHead);
+    for(const row of missing)audit.add(row);
+    if(newHead)heads.put(newHead);
    }
-   qRows.onsuccess=()=>{actualRows=qRows.result;hasRows=true;plan()};
-   qHead.onsuccess=()=>{actualHead=qHead.result??null;hasHead=true;plan()};
+   qRows.onsuccess=()=>{actualRows=qRows.result;gotRows=true;plan()};
+   qHead.onsuccess=()=>{actualHead=qHead.result??null;gotHead=true;plan()};
    tx.oncomplete=()=>resolve({status:'evidence-restored',
-    eventsAdded:incomingRows.length,count:data.events.length});
+    eventsAdded:missing.length,count:data.events.length});
    tx.onabort=()=>reject(Error('I11: CONFLICTO concurrente al recuperar auditoría: transacción revertida'));
   })}finally{db.close()}
  }
