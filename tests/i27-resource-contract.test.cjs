@@ -48,7 +48,7 @@ async function main(){
   /invalid monotonic clock movement/);
  await assert.rejects(P.run(empty,undefined,
   {now:(()=>{let n=0;return()=>n+=100})(),deadlineMs:50}),
-  /elapsed observation deadline exceeded/);
+  /observed elapsed deadline exceeded/);
  await assert.rejects(P.run(empty,undefined,{sampleHeap:()=>NaN}),
   /invalid heap observation/);
  await assert.rejects(P.run(empty,undefined,
