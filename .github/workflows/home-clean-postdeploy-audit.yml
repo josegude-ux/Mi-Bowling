@@ -1,0 +1,45 @@
+name: "MI BOWLING | Auditoría Inicio limpio publicado CP-002"
+on:
+  push:
+    branches: [audit/home-clean-postdeploy-20261110]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Contratos del Inicio sin cambios de datos
+        run: |
+          node --check app.js
+          node --check tests/ui-postpub-browser.cjs
+          node tests/home-clean-lab.cjs
+          node tests/ui-postpub-static.cjs
+          node tests/design-lab-smoke.cjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar Playwright aislado
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Verificar URL pública en Chromium/WebKit y PWA sin red con datos ficticios
+        run: LAB_AUDIT_MODE=deployed node tests/ui-postpub-browser.cjs
+      - name: Conservar evidencias visuales de sitio publicado
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-inicio-limpio-postdeploy-cp002
+          path: test-results/ui-postpub/
+          if-no-files-found: ignore
+          retention-days: 7
