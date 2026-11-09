@@ -319,7 +319,7 @@ async function unlock({owner,passphrase}={}){
   return {verified:true,owner,count:events.length,
    headHash:head?.headHash||root.MiBowlingI11AuditCore.ZERO,
    receipts:events.map(e=>({
-    seq:e.seq,prevHash:e.prevHash,chainHash:e.chainHash,
+    seq:e.seq,prevHash:e.prevHash,chainHash:e.chainHash,kind:e.kind,reason:e.reason,
     auditId:e.auditId,backupId:e.backupId,backupSha:e.backupSha,
     occurredAt:e.occurredAt,sourceCreatedAt:e.sourceCreatedAt,
     revision:e.revision,operationsAdded:e.operationsAdded,status:e.status
@@ -368,6 +368,50 @@ async function unlock({owner,passphrase}={}){
    tx.oncomplete=()=>resolve({status:'evidence-restored',
     eventsAdded:incomingRows.length,count:data.events.length});
    tx.onabort=()=>reject(Error('I11: CONFLICTO concurrente al recuperar auditoría: transacción revertida'));
+  })}finally{db.close()}
+ }
+ async function recordConflict(id,provenance,reason){
+  check(id);
+  if(!['stale','fork','operation','race'].includes(reason)||
+    !provenance||!UUID.test(provenance.backupId||'')||
+    !/^[a-f0-9]{64}$/.test(provenance.backupSha||'')||
+    !Number.isSafeInteger(provenance.sourceCreatedAt)||
+    !(provenance.revision===null||
+      (Number.isSafeInteger(provenance.revision)&&provenance.revision>=0)))
+   throw Error('I11: conflicto no verificable, no se registra');
+  const state=await auditState();
+  const entry=await root.MiBowlingI11AuditCore.append(owner,{
+   kind:'conflict',reason,status:'rejected',auditId:crypto.randomUUID(),
+   backupId:provenance.backupId,backupSha:provenance.backupSha,
+   occurredAt:Date.now(),sourceCreatedAt:provenance.sourceCreatedAt,
+   revision:provenance.revision,operationsAdded:0
+  },state.head?.headHash||root.MiBowlingI11AuditCore.ZERO,state.events.length+1);
+  const row=await encrypt(entry,'AUDIT');
+  const anchor=await encrypt(root.MiBowlingI11AuditCore.head(owner,[...state.events,entry]),'HEAD');
+  check(id);
+  const db=await openDB();
+  try{return await new Promise((resolve,reject)=>{
+   const tx=db.transaction([AUDIT,HEAD],'readwrite'),
+    audits=tx.objectStore(AUDIT),heads=tx.objectStore(HEAD),
+    qRows=audits.getAll(),qHead=heads.get(owner+':audit-head');
+   let actualRows,actualHead,gotRows=false,gotHead=false,planned=false;
+   function plan(){
+    if(!gotRows||!gotHead||planned)return;
+    planned=true;
+    const sorted=a=>a.slice().sort((x,y)=>x.id.localeCompare(y.id));
+    const mine=actualRows.filter(x=>
+     typeof x.id==='string'&&x.id.startsWith(owner+':audit:'));
+    if(JSON.stringify(sorted(mine))!==JSON.stringify(sorted(state.rawRows))||
+      JSON.stringify(actualHead??null)!==JSON.stringify(state.rawHead??null)){
+     tx.abort();return;
+    }
+    audits.add(row);heads.put(anchor);
+   }
+   qRows.onsuccess=()=>{actualRows=qRows.result;gotRows=true;plan()};
+   qHead.onsuccess=()=>{actualHead=qHead.result??null;gotHead=true;plan()};
+   tx.oncomplete=()=>resolve({recorded:true,seq:entry.seq,chainHash:entry.chainHash,
+    kind:'conflict',reason});
+   tx.onabort=()=>reject(Error('I11: conflicto simultáneo en cadena, no registrado'));
   })}finally{db.close()}
  }
  function simulateRestoreAbortOnce(phase='after-queue'){
@@ -537,7 +581,7 @@ async function unlock({owner,passphrase}={}){
   })}finally{db.close()}
  }
  function close(){closed=true;base=null;}
- return Object.freeze({list,readOp,append,clearOp,simulateAbortOnce,simulateQuotaOnce,audit,readConfirmed,seedConfirmed,writeConfirmed,snapshot,inspectSnapshot,restoreSnapshot,auditRestores,exportAuditEvidence,restoreAuditEvidence,simulateRestoreAbortOnce,simulateRestoreLostAckOnce,close});
+ return Object.freeze({list,readOp,append,clearOp,simulateAbortOnce,simulateQuotaOnce,audit,readConfirmed,seedConfirmed,writeConfirmed,snapshot,inspectSnapshot,restoreSnapshot,auditRestores,exportAuditEvidence,restoreAuditEvidence,recordConflict,simulateRestoreAbortOnce,simulateRestoreLostAckOnce,close});
 }
 root.MiBowlingI11EncryptedJournal=Object.freeze({unlock});
 })(window);
