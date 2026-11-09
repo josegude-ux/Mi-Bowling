@@ -101,18 +101,18 @@ async function makeFile(browser,base){
 async function openLab(page,base){await page.goto(base+PAGE);
  assert.equal(await page.locator('body').getAttribute('data-lab-isolation'),'PASS')}
 async function withJournal(page,phase,file){
- return page.evaluate(async({owner,pass,vault,phase})=>{
+ return page.evaluate(async({owner,pass,password,vault,phase})=>{
   const j=await MiBowlingI10EncryptedJournal.unlock({owner,passphrase:vault});
   try{
    if(phase==='lost')j.simulateRestoreLostAckOnce();
    else if(phase!=='normal')j.simulateRestoreAbortOnce(phase);
    try{
     const result=await MiBowlingI10Backup.restoreBackup(
-     j,owner,pass,PASSWORD,'CONFIRMAR-RESTAURACION-FICTICIA');
+     j,owner,pass,password,'CONFIRMAR-RESTAURACION-FICTICIA');
     return {ok:true,result}
    }catch(e){return {ok:false,error:e.message}}
   }finally{j.close()}
- },{owner,pass:file,vault,phase});
+ },{owner,pass:file,password:PASSWORD,vault,phase});
 }
 async function persistentProof(base,file){
  const profile=fs.mkdtempSync(path.join(tmp,'profile-'));
