@@ -19,6 +19,7 @@ async function collect(){
  return {package15,source15,externalRoot,externalLatest,reports:[a,b,c]};
 }
 async function build(){
+ last=null;
  const owner=$('i18-owner').value,id=$('i18-case').value;
  const x=await collect();
  const caseFile=await H.create(x,owner,id,$('i18-pass').value);
