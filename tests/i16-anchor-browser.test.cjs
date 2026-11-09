@@ -77,8 +77,8 @@ async function run(engine,base,label,fx){
   await page.locator('#i16-copy-C').setInputFiles(upload('slotC.copy16',fx.copies[2]));
   await page.locator('#i16-history').setInputFiles(upload('replay.anchor16',fx.older(1)));
   await page.locator('#i16-verify').click();
-  await page.waitForFunction(()=>document.querySelector('#i16-status')
-   ?.textContent.includes('I16 BLOQUEADO'),null,{timeout:35000});
+  await page.waitForFunction(()=>/I16 BLOQUEADO:.*(?:REPLAY|ROLLBACK)/
+   .test(document.querySelector('#i16-status')?.textContent||''),null,{timeout:35000});
   assert.match(await page.locator('#i16-status').textContent(),/REPLAY|ROLLBACK/);
   await page.locator('#i16-history').setInputFiles(upload('history.anchor16',fx.history));
   const broken=clone(fx.externalMark);
