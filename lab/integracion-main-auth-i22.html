@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I22 · Matriz de incertidumbre</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#18394f;background:#f4f8fc;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:960px;margin:auto}
+header,.card{background:white;border:1px solid #d5e4ed;border-radius:16px;padding:20px;margin:0 0 16px;box-shadow:0 4px 16px #17476b0d}
+.kicker{font-size:.8rem;color:#1169ad;font-weight:800;letter-spacing:.06em}
+h1{font-size:clamp(1.4rem,4vw,2rem);margin:8px 0}h2{font-size:1.1rem;margin:0 0 14px}
+p{line-height:1.55}.warn{background:#fff0d7;padding:14px;border-radius:10px}
+.note{font-size:.91rem;color:#526c80}label{display:block;font-weight:680;margin:14px 0 7px}
+input,select{width:100%;font:inherit;min-height:44px;padding:10px;border:1px solid #a6baca;border-radius:9px}
+button{font:inherit;font-weight:700;min-height:44px;padding:12px 14px;border:0;border-radius:9px;background:#0c6db6;color:white;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#eaf4fe;color:#195782;border:1px solid #bcd5ec}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:17px}.controls>*{flex:1 1 235px}
+#i22-status{white-space:pre-wrap;overflow-wrap:anywhere;min-height:80px;background:#edf7ff;padding:14px;border-left:4px solid #1c73b4}
+.slot{border-top:1px solid #d9e5ef;padding-top:14px;margin-top:14px}
+.slot:first-of-type{border-top:0;padding-top:0}
+table{border-collapse:collapse;width:100%;font-size:.89rem}
+th,td{text-align:left;padding:8px;border-bottom:1px solid #dbe6ed;vertical-align:top}
+td:first-child{font-weight:700}
+</style></head><body data-lab="I22-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LABORATORIO I22 · SOLO ARCHIVOS A/B/C FICTICIOS</span>
+<h1>Matriz de incertidumbre: ¿qué puede demostrar una huella?</h1>
+<p>Conserva tres archivos I21 en paralelo y separa la coincidencia técnica de SHA de la procedencia, la custodia independiente y la autoridad operativa. Se preservan también las copias incompatibles, dañadas o ausentes.</p>
+<p class="warn"><strong>Sin certificación de custodios reales.</strong> Las etiquetas A/B/C no representan identidades comprobadas. Una referencia atribuida a un tercero no queda autenticada por escribirla aquí. No hay sellos temporales, almacenamiento inmutable, re-root, restauración ni permisos de producción.</p></header>
+<section class="card"><h2>1. Fuente I21 base</h2>
+<label for="i22-source">Sobre I21 base (.doubt21)</label>
+<input id="i22-source" type="file" accept=".doubt21,.json">
+<label for="i22-source-digest">SHA de fuente alegado como anterior (opcional, NO autenticado)</label>
+<input id="i22-source-digest" maxlength="64" spellcheck="false" placeholder="64 caracteres hexadecimales si existe">
+<p class="note">Comparar un SHA aportado no acredita quién lo conservó, cuándo se generó ni si ha sido sustituido simultáneamente con el sobre.</p></section>
+<section class="card"><h2>2. Copias concurrentes I21</h2>
+<p class="note">La ausencia de un documento se registra sin inventar una copia. Un SHA dejado en blanco se deriva del propio archivo y se considera una referencia interna, nunca una fuente independiente.</p>
+<div class="slot"><h2>Posición A</h2>
+<label for="i22-file-A">Archivo I21 A</label><input id="i22-file-A" type="file" accept=".doubt21,.json">
+<label for="i22-sha-A">SHA declarado A (opcional)</label><input id="i22-sha-A" maxlength="64" spellcheck="false">
+<label for="i22-origin-A">Origen declarado, sin validar</label><select id="i22-origin-A">
+<option value="same-file">Del mismo archivo</option><option value="claimed-separate">Supuestamente conservado por separado</option><option value="unknown">Desconocido</option>
+</select></div>
+<div class="slot"><h2>Posición B</h2>
+<label for="i22-file-B">Archivo I21 B</label><input id="i22-file-B" type="file" accept=".doubt21,.json">
+<label for="i22-sha-B">SHA declarado B (opcional)</label><input id="i22-sha-B" maxlength="64" spellcheck="false">
+<label for="i22-origin-B">Origen declarado, sin validar</label><select id="i22-origin-B">
+<option value="same-file">Del mismo archivo</option><option value="claimed-separate">Supuestamente conservado por separado</option><option value="unknown">Desconocido</option>
+</select></div>
+<div class="slot"><h2>Posición C</h2>
+<label for="i22-file-C">Archivo I21 C</label><input id="i22-file-C" type="file" accept=".doubt21,.json">
+<label for="i22-sha-C">SHA declarado C (opcional)</label><input id="i22-sha-C" maxlength="64" spellcheck="false">
+<label for="i22-origin-C">Origen declarado, sin validar</label><select id="i22-origin-C">
+<option value="same-file">Del mismo archivo</option><option value="claimed-separate">Supuestamente conservado por separado</option><option value="unknown">Desconocido</option>
+</select></div>
+<div class="controls"><button id="i22-build" type="button">Calcular incertidumbre y preservar copias</button>
+<button id="i22-request" type="button" class="secondary" disabled>Registrar solicitud externa (no enviada)</button></div></section>
+<section class="card"><h2>3. Matriz obtenida</h2><table><thead><tr><th>Dimensión</th><th>Evaluación</th><th>Limitación</th></tr></thead><tbody id="i22-matrix">
+<tr><td>Sin evaluación</td><td>No acreditado</td><td>No se ha cargado expediente</td></tr>
+</tbody></table></section>
+<section class="card"><h2>4. Archivo local y comprobación posterior</h2>
+<div class="controls"><button id="i22-download" type="button" class="secondary" disabled>Exportar el sobre I22 por acción expresa</button></div>
+<label for="i22-saved">Sobre I22 (.uncert22) previamente conservado</label><input id="i22-saved" type="file" accept=".uncert22,.json">
+<label for="i22-saved-digest">SHA de sobre I22 supuestamente conservado por separado (opcional)</label>
+<input id="i22-saved-digest" maxlength="64" spellcheck="false">
+<div class="controls"><button id="i22-check" type="button" class="secondary">Comprobar copia I22 y SHA declarado</button></div>
+<p class="note">Descarga solo por pulsación. No se envían solicitudes, no se escribe en MI BOWLING ni se modifica ninguna base de datos.</p></section>
+<section class="card"><h2>Estado de conservación</h2><p role="status" aria-live="polite" id="i22-status">Sin evaluación; todos los permisos siguen denegados.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i22"></script>
+<script src="i11-evidence.js?v=i22"></script>
+<script src="i12-manifest.js?v=i22"></script>
+<script src="i13-witnesses.js?v=i22"></script>
+<script src="i14-policy-lifecycle.js?v=i22"></script>
+<script src="i15-recovery.js?v=i22"></script>
+<script src="i16-anchors.js?v=i22"></script>
+<script src="i17-forensics.js?v=i22"></script>
+<script src="i18-forensic-hold.js?v=i22"></script>
+<script src="i19-manual-review.js?v=i22"></script>
+<script src="i20-rival-reviews.js?v=i22"></script>
+<script src="i21-provenance-doubt.js?v=i22"></script>
+<script src="i22-uncertainty-matrix.js?v=i22"></script>
+<script src="i22-ui.js?v=i22"></script>
+</body></html>

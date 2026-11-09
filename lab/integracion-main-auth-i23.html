@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I23 · Requisitos de evidencia externa</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#173850;background:#f2f7fc;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:950px;margin:auto}
+header,.card{background:white;border:1px solid #d6e4ed;border-radius:15px;padding:20px;margin-bottom:16px;box-shadow:0 3px 16px #17466c0a}
+.kicker{color:#1369a8;font-size:.8rem;font-weight:800;letter-spacing:.05em}
+h1{font-size:clamp(1.4rem,4vw,2rem);margin:8px 0}h2{font-size:1.08rem;margin:0 0 12px}
+p{line-height:1.5}.warning{background:#fff0d1;border-radius:10px;padding:14px}
+.note{font-size:.9rem;color:#526d83}label{display:block;margin:13px 0 6px;font-weight:700}
+input,select{font:inherit;width:100%;min-height:44px;padding:9px;border:1px solid #a8becd;border-radius:8px}
+input[type=checkbox]{width:20px;min-height:20px;vertical-align:middle;margin-right:8px}
+label.check{font-weight:500}.slot{border-top:1px solid #dce8f0;padding-top:12px;margin-top:17px}
+button{font:inherit;font-weight:700;padding:12px;border:0;border-radius:10px;min-height:44px;background:#0d6cb4;color:white;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}button.secondary{background:#e8f3fc;color:#125582;border:1px solid #afcfea}
+.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.buttons>*{flex:1 1 230px}
+#i23-status{background:#eef7ff;min-height:76px;border-left:4px solid #1774b9;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:9px;border-bottom:1px solid #e0ebf1}
+</style></head><body data-lab="I23-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LAB I23 · SOLO A/B/C FICTICIOS</span>
+<h1>¿Existe evidencia de custodia realmente independiente?</h1>
+<p>Compara tres archivos I22 y sus supuestas referencias, sin certificar su procedencia. Separa la igualdad SHA, la declaración de conservación y los requisitos que solo podrían verificarse fuera de este laboratorio.</p>
+<p class="warning"><strong>No concede autoridad.</strong> A/B/C son posiciones de archivo, no custodios identificados. Un SHA que coincide, una fecha declarada o la opción «fuera de línea» no demuestran custodia, inmutabilidad, testigo, firma humana ni anterioridad. Ninguna revisión se envía.</p></header>
+<section class="card"><h2>1. Fuente base de comparación</h2>
+<label for="i23-base">Sobre I22 base (.uncert22)</label><input id="i23-base" type="file" accept=".uncert22,.json">
+<label for="i23-base-pin">SHA anterior alegado, solo para comparar (opcional)</label>
+<input id="i23-base-pin" maxlength="64" spellcheck="false">
+<p class="note">El laboratorio no puede autenticar quién generó, entregó o conservó ese hash.</p></section>
+<section class="card"><h2>2. Archivos A/B/C y referencias no autenticadas</h2>
+<p class="note">Cada archivo será preservado, incluso si su referencia no coincide. Todos los grupos, alias y declaraciones son entradas de usuario no verificadas. Si el SHA se deja vacío, se utiliza el del propio archivo: nunca es una fuente independiente.</p>
+<div class="slot"><h2>A · Referencia lógica</h2>
+<label for="i23-file-A">Archivo I22 A</label><input id="i23-file-A" type="file" accept=".uncert22,.json">
+<label for="i23-sha-A">SHA declarado A</label><input id="i23-sha-A" maxlength="64" spellcheck="false">
+<label for="i23-group-A">Grupo declarado de conservación</label><input id="i23-group-A" value="group-a" maxlength="32">
+<label for="i23-origin-A">Procedencia declarada, no autenticada</label><select id="i23-origin-A">
+<option value="claimed-offline">Supuestamente guardado fuera de línea</option><option value="self-export">Exportado del mismo archivo</option><option value="unknown">Desconocida</option></select>
+<label class="check" for="i23-before-A"><input id="i23-before-A" type="checkbox">Se afirma que existía antes (no verificado)</label>
+</div>
+<div class="slot"><h2>B · Referencia lógica</h2>
+<label for="i23-file-B">Archivo I22 B</label><input id="i23-file-B" type="file" accept=".uncert22,.json">
+<label for="i23-sha-B">SHA declarado B</label><input id="i23-sha-B" maxlength="64" spellcheck="false">
+<label for="i23-group-B">Grupo declarado de conservación</label><input id="i23-group-B" value="group-b" maxlength="32">
+<label for="i23-origin-B">Procedencia declarada, no autenticada</label><select id="i23-origin-B">
+<option value="claimed-offline">Supuestamente guardado fuera de línea</option><option value="self-export">Exportado del mismo archivo</option><option value="unknown">Desconocida</option></select>
+<label class="check" for="i23-before-B"><input id="i23-before-B" type="checkbox">Se afirma que existía antes (no verificado)</label>
+</div>
+<div class="slot"><h2>C · Referencia lógica</h2>
+<label for="i23-file-C">Archivo I22 C</label><input id="i23-file-C" type="file" accept=".uncert22,.json">
+<label for="i23-sha-C">SHA declarado C</label><input id="i23-sha-C" maxlength="64" spellcheck="false">
+<label for="i23-group-C">Grupo declarado de conservación</label><input id="i23-group-C" value="group-c" maxlength="32">
+<label for="i23-origin-C">Procedencia declarada, no autenticada</label><select id="i23-origin-C">
+<option value="claimed-offline">Supuestamente guardado fuera de línea</option><option value="self-export">Exportado del mismo archivo</option><option value="unknown">Desconocida</option></select>
+<label class="check" for="i23-before-C"><input id="i23-before-C" type="checkbox">Se afirma que existía antes (no verificado)</label>
+</div>
+<div class="buttons"><button id="i23-build" type="button">Verificar coincidencias, retener fuentes y requisitos</button>
+<button id="i23-review" class="secondary" type="button" disabled>Anotar revisión externa (sin enviar)</button></div></section>
+<section class="card"><h2>3. Requisitos de evidencia realmente independiente</h2>
+<table><thead><tr><th>Requisito</th><th>Estado</th></tr></thead><tbody id="i23-requirements">
+<tr><td>Sin documentos analizados</td><td>No comprobado</td></tr>
+</tbody></table></section>
+<section class="card"><h2>4. Exportación y verificación local</h2>
+<div class="buttons"><button id="i23-download" type="button" class="secondary" disabled>Exportar sobre LAB por decisión expresa</button></div>
+<label for="i23-saved">Sobre I23 (.gate23) previamente guardado</label><input id="i23-saved" type="file" accept=".gate23,.json">
+<label for="i23-saved-pin">SHA de sobre I23 supuestamente retenido fuera (opcional)</label><input id="i23-saved-pin" maxlength="64" spellcheck="false">
+<div class="buttons"><button id="i23-check" class="secondary" type="button">Verificar copia I23</button></div>
+<p class="note">La exportación requiere pulsación directa. No se generan firmas ni se envían solicitudes; no hay conexión externa, IndexedDB o acceso a datos operativos.</p></section>
+<section class="card"><h2>Resultado</h2><p id="i23-status" role="status" aria-live="polite">Pendiente de archivos ficticios. Ninguna garantía de custodia, tiempo, identidad ni autorización.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i23"></script>
+<script src="i11-evidence.js?v=i23"></script>
+<script src="i12-manifest.js?v=i23"></script>
+<script src="i13-witnesses.js?v=i23"></script>
+<script src="i14-policy-lifecycle.js?v=i23"></script>
+<script src="i15-recovery.js?v=i23"></script>
+<script src="i16-anchors.js?v=i23"></script>
+<script src="i17-forensics.js?v=i23"></script>
+<script src="i18-forensic-hold.js?v=i23"></script>
+<script src="i19-manual-review.js?v=i23"></script>
+<script src="i20-rival-reviews.js?v=i23"></script>
+<script src="i21-provenance-doubt.js?v=i23"></script>
+<script src="i22-uncertainty-matrix.js?v=i23"></script>
+<script src="i23-external-evidence-gate.js?v=i23"></script>
+<script src="i23-ui.js?v=i23"></script>
+</body></html>
