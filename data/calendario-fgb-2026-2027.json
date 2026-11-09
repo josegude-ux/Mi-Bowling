@@ -1,0 +1,289 @@
+{
+  "season": "2026-2027",
+  "source": "FEDERACION GALEGA DE BOLOS · CALENDARIO PROVISIONAL DE BOWLING 2026-2027",
+  "issued": "2026-07-17",
+  "status": "provisional",
+  "source_file": "CALENDARIO TEMPORADA 2026-2027_07-17-2026.pdf",
+  "classification": "verde = gallego; blanco = nacional",
+  "events": [
+    {
+      "id": "FGB-2627-01",
+      "start": "2026-09-12",
+      "end": "2026-09-13",
+      "category": "gallego",
+      "title": "CAMPEONATO GALEGO CLUBS",
+      "venue": "SANTA CRISTINA - CORUÑA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-02",
+      "start": "2026-09-19",
+      "end": "2026-09-20",
+      "category": "nacional",
+      "title": "CTO. COPA SSMM",
+      "venue": "MADRID",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-03",
+      "start": "2026-10-10",
+      "end": "2026-10-11",
+      "category": "gallego",
+      "title": "COPA PRESIDENTE GALEGA",
+      "venue": "ARENAL - VIGO",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-04",
+      "start": "2026-10-24",
+      "end": "2026-10-25",
+      "category": "nacional",
+      "title": "COPA PRESIDENTE 2026 1ª MASC",
+      "venue": "MADRID",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-05",
+      "start": "2026-10-24",
+      "end": "2026-10-25",
+      "category": "nacional",
+      "title": "COPA PRESIDENTE 2026 2ª e 3ª MASC",
+      "venue": "ZARAGOZA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-06",
+      "start": "2026-10-24",
+      "end": "2026-10-25",
+      "category": "nacional",
+      "title": "COPA PRESIDENTE 2026 SENIOR MASC",
+      "venue": "VALENCIA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-07",
+      "start": "2026-10-24",
+      "end": "2026-10-25",
+      "category": "nacional",
+      "title": "COPA PRESIDENTE 2026 FEMENINA",
+      "venue": "MADRID",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-08",
+      "start": "2026-11-14",
+      "end": "2026-11-15",
+      "category": "gallego",
+      "title": "CAMPIONATO GALEGO PARELLAS",
+      "venue": "SANTA CRISTINA - CORUÑA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-09",
+      "start": "2026-11-28",
+      "end": "2026-11-29",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA PAREJAS 2026 1ª MASC",
+      "venue": "ZARAGOZA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-10",
+      "start": "2026-11-28",
+      "end": "2026-11-29",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA PAREJAS 2026 2ª e 3ª MASC",
+      "venue": "MADRID",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-11",
+      "start": "2026-11-28",
+      "end": "2026-11-29",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA PAREJAS 2026 SENIOR MASC",
+      "venue": "MADRID",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-12",
+      "start": "2026-11-28",
+      "end": "2026-11-29",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA PAREJAS 2026 FEMENINA",
+      "venue": "VALENCIA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-13",
+      "start": "2027-01-02",
+      "end": "2027-01-03",
+      "category": "gallego",
+      "title": "1º CIRCUITO GALEGO",
+      "venue": "ARENAL - VIGO",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-14",
+      "start": "2027-01-09",
+      "end": "2027-01-10",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA SUB-25 2026",
+      "venue": "MADRID",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-15",
+      "start": "2027-01-23",
+      "end": "2027-01-24",
+      "category": "nacional",
+      "title": "XL LIGA NACIONAL 1ª JORNADA",
+      "venue": null,
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-16",
+      "start": "2027-01-30",
+      "end": "2027-01-31",
+      "category": "gallego",
+      "title": "CAMPIONATO GALEGO TRIPLETAS",
+      "venue": "SANTA CRISTINA - CORUÑA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-17",
+      "start": "2027-02-13",
+      "end": "2027-02-14",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA TRIPLETAS 2027 – MASCULINA",
+      "venue": "VALENCIA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-18",
+      "start": "2027-02-13",
+      "end": "2027-02-14",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA TRIPLETAS 2027 – SENIOR MASC",
+      "venue": "ZARAGOZA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-19",
+      "start": "2027-02-13",
+      "end": "2027-02-14",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA TRIPLETAS 2027 – FEMENINA",
+      "venue": "MADRID",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-20",
+      "start": "2027-02-27",
+      "end": "2027-02-28",
+      "category": "nacional",
+      "title": "TORNEO PRESELECCION EUROPEO – MASCULINA",
+      "venue": "MADRID",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-21",
+      "start": "2027-03-06",
+      "end": "2027-03-07",
+      "category": "gallego",
+      "title": "2º CIRCUITO GALEGO",
+      "venue": "VILLARGACIA",
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-22",
+      "start": "2027-03-13",
+      "end": "2027-03-14",
+      "category": "nacional",
+      "title": "XL LIGA NACIONAL 2ª JORNADA",
+      "venue": null,
+      "source_page": 1
+    },
+    {
+      "id": "FGB-2627-23",
+      "start": "2027-04-03",
+      "end": "2027-04-04",
+      "category": "gallego",
+      "title": "3º CIRCUITO GALEGO",
+      "venue": "VILLARGACIA",
+      "source_page": 2
+    },
+    {
+      "id": "FGB-2627-24",
+      "start": "2027-04-17",
+      "end": "2027-04-18",
+      "category": "gallego",
+      "title": "FINAL CIRCUITO GALEGO",
+      "venue": "SANTA CRISTINA - CORUÑA",
+      "source_page": 2
+    },
+    {
+      "id": "FGB-2627-25",
+      "start": "2027-05-01",
+      "end": "2027-05-02",
+      "category": "gallego",
+      "title": "CAMPIONATO GALEGO INDIVIDUAL",
+      "venue": "ARENAL - VIGO",
+      "source_page": 2
+    },
+    {
+      "id": "FGB-2627-26",
+      "start": "2027-05-15",
+      "end": "2027-05-16",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA INDIVIDUAL 2027 – MASCULINA",
+      "venue": "MADRI",
+      "source_page": 2
+    },
+    {
+      "id": "FGB-2627-27",
+      "start": "2027-05-15",
+      "end": "2027-05-16",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA INDIVIDUAL 2027 – SENIOR MASC",
+      "venue": "TORREVIEJA",
+      "source_page": 2
+    },
+    {
+      "id": "FGB-2627-28",
+      "start": "2027-05-15",
+      "end": "2027-05-16",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA INDIVIDUAL 2027 – FEMENINA",
+      "venue": "CORUÑA",
+      "source_page": 2
+    },
+    {
+      "id": "FGB-2627-29",
+      "start": "2027-05-23",
+      "end": "2027-05-23",
+      "category": "gallego",
+      "title": "MASTER GALEGO",
+      "venue": "VILLAGARCIA",
+      "source_page": 2
+    },
+    {
+      "id": "FGB-2627-30",
+      "start": "2027-05-29",
+      "end": "2027-05-30",
+      "category": "nacional",
+      "title": "XL LIGA NACIONAL 3ª JORNADA",
+      "venue": null,
+      "source_page": 2
+    },
+    {
+      "id": "FGB-2627-31",
+      "start": "2027-06-05",
+      "end": "2027-06-06",
+      "category": "nacional",
+      "title": "CTO. ESPAÑA SELECCIONES",
+      "venue": "MADRID",
+      "source_page": 2
+    }
+  ]
+}

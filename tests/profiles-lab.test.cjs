@@ -10,7 +10,8 @@ const originals=new Map([
  ['mi-bowling-liga-v1',JSON.stringify({matches:[{id:'old-liga',players:[]}]})],
  ['mi-bowling-liga-acta-v32',JSON.stringify({matches:[{id:'old-acta',players:[]}]})],
  ['mi-bowling-liga-rosters-v33',JSON.stringify({own:['Nombre original']})],
- ['mi-bowling-quick-layout','compact']
+ ['mi-bowling-quick-layout','compact'],
+ ['mi-bowling-ball-selection-v1',JSON.stringify({__next__:['old-ball']})]
 ]);
 class Store{
  constructor(map){this.map=map}
@@ -30,7 +31,7 @@ function environment(){
  const document={body:{classList:{add(){},remove(){},toggle(){}},appendChild(node){this.lastScript=node}},
   createElement(t){return {tagName:t,src:''}},querySelector(){return null},
   getElementById(id){return ['app','bottom-nav','restore-file','profile-gate','player-current','player-switch'].includes(id)||id.startsWith('player-')?el(id):null}};
- const ctx={document,localStorage:storage,sessionStorage:session,crypto:webcrypto,TextEncoder,console,
+ const ctx={document,localStorage:storage,sessionStorage:session,crypto:webcrypto,TextEncoder,console,addEventListener(){},
    location:{protocol:'file:',reload(){}},navigator:{},alert(msg){throw Error(String(msg))},
    confirm(){return false},setTimeout(){},clearTimeout(){},scrollTo(){}};
  ctx.window=ctx;vm.createContext(ctx);
@@ -58,6 +59,8 @@ function active(id,withApp){
  assert.equal(vm.runInContext('db.sessions.length',ctx),0);
  assert.equal(vm.runInContext('db.balls.length',ctx),0);
  assert.equal(vm.runInContext('db.hand',ctx),'diestro');
+ vm.runInContext("db.balls.push({id:'selected-ball',brand:'Bola',model:'Selección'});toggleSelectedBall('selected-ball',true)",ctx);
+ assert.ok(storage.getItem(ctx.MiBowlingProfiles.storageKey('mi-bowling-ball-selection-v1')));
  // Un juego completo de doce strikes de A, 300 puntos.
  vm.runInContext("db.balls.push({id:'ba',brand:'Bola A',model:'Prueba'});db.sessions.push({id:'sa',type:'entrenamiento',date:'2026-11-08',games:[{id:'ga',includeStats:true,rolls:Array.from({length:12},(_,i)=>({frame:Math.min(i+1,10),ball:i>9?i-8:1,pins:[1,2,3,4,5,6,7,8,9,10],ballId:'ba'}))}]});db.hand='zurdo';save()",ctx);
  const dbA=storage.getItem(ctx.MiBowlingProfiles.storageKey(BASE));
@@ -69,6 +72,7 @@ function active(id,withApp){
  assert.equal(vm.runInContext('db.sessions.length',ctx),0);
  assert.equal(vm.runInContext('db.balls.length',ctx),0);
  assert.equal(vm.runInContext('db.hand',ctx),'diestro');
+ assert.equal(storage.getItem(ctx.MiBowlingProfiles.storageKey('mi-bowling-ball-selection-v1')),null);
  assert.equal(vm.runInContext("aggregate('entrenamiento').games.length",ctx),0);
  assert.equal(vm.runInContext("aggregate('oficial').games.length",ctx),0);
  assert.equal(storage.getItem(ctx.MiBowlingProfiles.storageKey(BASE)),null);

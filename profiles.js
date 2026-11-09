@@ -13,7 +13,8 @@
     'mi-bowling-liga-v1',
     'mi-bowling-liga-acta-v32',
     'mi-bowling-liga-rosters-v33',
-    'mi-bowling-quick-layout'
+    'mi-bowling-quick-layout',
+    'mi-bowling-ball-selection-v1'
   ];
   const PIN_ITERATIONS = 160000;
   let catalog = null;
@@ -21,6 +22,7 @@
   let pendingId = null;
   let booted = false;
   const doc = root.document;
+  const APP_SRC = doc?.currentScript?.dataset.appSrc || 'app.js?v=3310cat1';
 
   function safe(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({
@@ -259,7 +261,7 @@
     const button = doc.getElementById('player-switch');
     if (button) { button.hidden = false; button.setAttribute('aria-label', 'Cambiar jugador, actual: ' + player.name); }
     const script = doc.createElement('script');
-    script.src = 'app.js?v=338lab-profiles1';
+    script.src = APP_SRC;
     script.onerror = () => {
       doc.getElementById('app').textContent = 'No ha sido posible abrir MI BOWLING LAB. Recarga la página.';
     };

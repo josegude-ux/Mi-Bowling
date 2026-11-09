@@ -342,3 +342,187 @@ body.registry-screen .app-main{padding-bottom:calc(26px + env(safe-area-inset-bo
 .registry-v4-mini-legend i{display:inline-block;flex:none;width:7px;height:7px;background:#cf1839;border-radius:50%}
 @media(max-width:580px){.registry-v4 .registry-v4-mini-dot.missed{width:4.5px;height:4.5px}}
 @media(max-width:350px){.registry-v4 .registry-v4-mini-dot.missed{width:4px;height:4px}}
+
+/* LAB: negro = permanecen tras 1ª o derribados en la 2ª; rojo = restantes tras la 2ª. */
+.registry-v4 .registry-v4-mini-dot.standing{background:#111827;width:5px;height:5px}
+.registry-v4 .registry-v4-mini-dot.missed{background:#cf1839;width:5.5px;height:5.5px}
+.registry-v4-mini-legend{flex-wrap:wrap;column-gap:12px;row-gap:5px;white-space:normal}
+.registry-v4-mini-legend span{display:inline-flex;align-items:center;gap:5px}
+.registry-v4-mini-legend .registry-v4-legend-black{background:#111827}
+.registry-v4-mini-legend .registry-v4-legend-red{background:#cf1839}
+@media(max-width:580px){.registry-v4 .registry-v4-mini-dot.standing{width:4.5px;height:4.5px}}
+@media(max-width:350px){.registry-v4 .registry-v4-mini-dot.standing{width:4px;height:4px}}
+/* Icono oficial MI BOWLING: encabezado y menú inicio, sin alterar diseño funcional. */
+.brand-mark,.bowling-home-mark{overflow:hidden;isolation:isolate}
+.brand-mark img,.bowling-home-mark img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+
+
+/* MI BOWLING · Portada VISURA elegida · 3 fotografías estáticas, sin 3D interactivo. */
+body.home-screen{background:linear-gradient(160deg,#f4f9ff 0%,#e9f5fe 64%,#f4f9ff 100%)}
+body.home-screen .app-main{max-width:1440px}
+.bowling-home-intro{background:radial-gradient(ellipse at 95% 52%,#c8e4fb8c 0%,transparent 48%);padding-block:24px 27px}
+.bowling-home-kicker{letter-spacing:2px;color:#0965aa;font-size:12px}
+.bowling-home-intro h1{color:#092a55;font-weight:900;letter-spacing:-1px}
+.bowling-home-header{border-color:#d8eafa;border-bottom-color:#b3d9ee;box-shadow:0 10px 24px #104a9022}
+.bowling-home-menu{grid-template-columns:1fr;gap:16px;max-width:1120px;margin-inline:auto}
+.bowling-home-module{min-height:224px;border-radius:24px;padding:22px 24px;background-repeat:no-repeat;background-size:cover,auto 110%;background-position:center,right center;border:1px solid #ffffff80;box-shadow:0 9px 23px #153e6724}
+.bowling-home-module-red{background-color:#9b0920;background-image:linear-gradient(105deg,#9d0826 0%,#9d0927f7 32%,#a5142fb4 55%,#9b093000 86%),url('./home-registro.jpg')}
+.bowling-home-module-blue{background-color:#063d77;background-image:linear-gradient(105deg,#093c77 0%,#073f7df0 32%,#0a6da9a3 56%,#065c9300 88%),url('./home-partidas.jpg')}
+.bowling-home-module-gold{background-color:#9b6305;background-image:linear-gradient(105deg,#a36b00 0%,#ae7600f0 32%,#c48607ae 56%,#89610b00 88%),url('./home-estadisticas-limpio.jpg')}
+.bowling-home-module-content{min-height:176px;max-width:68%}
+.bowling-home-module-icon{font-size:25px;min-width:32px;filter:drop-shadow(0 2px 3px #0018)}
+.bowling-home-module strong{font-size:clamp(22px,2.5vw,30px);line-height:1.12;text-wrap:balance;text-shadow:0 1px 3px #0003}
+.bowling-home-module-desc{font-size:clamp(13px,1.4vw,16px);line-height:1.4;max-width:400px}
+.bowling-home-module-arrow{border-width:2.5px;background:#ffffff0b;width:46px;height:46px}
+.bowling-home-module:hover{transform:translateY(-1px)}
+.bowling-home-tools,.bowling-home-stats{max-width:1120px;margin-left:auto;margin-right:auto}
+.bottom-nav{background:#f5fafff2;border-top:1px solid #cfebf8;box-shadow:0 -6px 23px #0a42791a}
+.bottom-nav button{position:relative;font-size:clamp(8px,1.6vw,11px);font-weight:740;min-width:0;white-space:nowrap;color:#506b92}
+.bottom-nav button.active{color:#006b9f}
+.bottom-nav button.active::after{content:"";position:absolute;bottom:4px;left:20%;right:20%;height:3px;border-radius:5px;background:#11b5d0}
+.bottom-nav button.fab .nav-icon{background:linear-gradient(150deg,#11b3e5,#0960b3);box-shadow:0 8px 19px #087db94a;border-color:#fff}
+.bottom-nav button.fab.active::after{display:none}
+.nav-icon svg{vertical-align:middle;max-width:100%}
+@media(max-width:760px){
+ .bowling-home-menu{grid-template-columns:1fr;gap:13px}
+ .bowling-home-module{min-height:203px;padding:19px 20px 17px;border-radius:22px}
+ .bowling-home-module-content{min-height:166px;max-width:76%}
+ .bowling-home-module strong{font-size:clamp(21px,4.7vw,27px)}
+ .bowling-home-module-desc{font-size:13px;max-width:245px;margin-top:8px}
+ .bowling-home-intro{padding:22px 8px 24px}
+ .bottom-nav button{padding:10px 0 13px}
+}
+@media(max-width:370px){
+ .bowling-home-module{min-height:206px;padding:17px 16px}
+ .bowling-home-module-content{min-height:170px;max-width:80%}
+ .bowling-home-module strong{font-size:20px}
+ .bowling-home-module-desc{font-size:12px}
+ .bottom-nav button{font-size:8.4px}
+ .nav-icon{font-size:20px}
+}
+/* Calendario de partidas de solo lectura: usa sesiones existentes sin migración. */
+.calendar-panel,.calendar-agenda{max-width:780px;margin:0 auto 16px;background:#fff;border:1px solid #d6e6f6;border-radius:21px;padding:clamp(12px,2.6vw,23px);box-shadow:0 6px 22px #143b6710}
+.calendar-monthbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.calendar-monthbar h2{margin:0;font-size:clamp(18px,3vw,24px);color:#0b315c;letter-spacing:-.3px}
+.calendar-chevron{border:1px solid #b9d5eb;border-radius:13px;width:44px;height:44px;flex:none;background:#f5fbff;font-size:29px;line-height:1;color:#0e639e}
+.calendar-summary{color:#6c8097;font-size:12px;margin:12px 0 16px}
+.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.calendar-weekdays span{text-align:center;color:#557792;font-weight:750;font-size:12px;padding-bottom:8px}
+.calendar-pad{display:block}
+.calendar-day{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;min-height:44px;border-radius:12px;border:1px solid #e3edf5;background:#f7fbfe;color:#19456e;font-weight:750;font-size:15px;gap:4px;padding:5px 0}
+.calendar-day i{width:6px;height:6px;background:#10a8c4;border-radius:50%;display:block}
+.calendar-day.today{box-shadow:inset 0 0 0 1px #61c1d9}
+.calendar-day.selected{background:linear-gradient(140deg,#0e7fcb,#064c9e);color:#fff;border-color:#0b67b2;box-shadow:0 3px 9px #0a6fac33}
+.calendar-day.selected i{background:#fff}
+.calendar-day:focus-visible{outline:3px solid #53b6e2;outline-offset:2px}
+.calendar-agenda h2{font-size:18px;margin:0 0 14px;color:#0b315c}
+.calendar-empty{font-size:13px;color:#6e8090;margin:0}
+.calendar-session{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#f4f9fe;border:1px solid #e2edf6;padding:14px;border-radius:14px;margin-top:10px}
+.calendar-session div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.calendar-session strong{font-size:14px;color:#0d3d66}
+.calendar-session small{font-size:12px;color:#688296;line-height:1.4}
+.calendar-session button{flex:none;min-height:44px}
+.calendar-actions{max-width:780px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px}
+.calendar-actions .btn{min-height:44px}
+@media(max-width:370px){.calendar-weekdays,.calendar-grid{gap:3px}.calendar-day{font-size:13px;min-height:44px}.calendar-session{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.bottom-nav button.fab .nav-icon,.calendar-chevron{transition:none}}
+
+/* BOWLING · CP-019: iconografía 3D estática, fotografía limpia y herramientas consistentes */
+.bowling-home-module-icon{display:inline-grid;place-items:center;width:66px;height:66px;margin-bottom:7px;filter:none}
+.bowling-home-module-icon img{display:block;width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 4px 5px #07172c55);pointer-events:none}
+.bowling-home-module-gold{background-position:center,right center;background-size:cover,auto 115%}
+.bowling-home-tools>h2{border-left:4px solid #14b2e0;padding-left:12px;font-size:clamp(18px,2.5vw,23px);color:#0d3059}
+.bowling-home-tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.bowling-home-tool-grid button.bowling-home-tool-card{display:flex;align-items:center;gap:12px;min-height:96px;padding:13px 15px;border-radius:19px;border:1px solid #cce5f9;background:linear-gradient(145deg,#fff 10%,#eef7fe 100%);box-shadow:0 6px 16px #1b56921f;color:#12395e;transition:transform .16s ease,box-shadow .16s ease}
+.bowling-home-tool-grid button.bowling-home-tool-card:hover{transform:translateY(-2px);box-shadow:0 9px 19px #16477927}
+.bowling-home-tool-grid .bowling-home-tool-icon{flex:0 0 55px;display:grid;place-items:center;width:55px;height:55px;border-radius:15px;background:linear-gradient(155deg,#fff,#c5e6ff);border:1px solid #d5ebfc;box-shadow:inset 0 2px 3px #fff,0 3px 7px #0c498432;font-size:34px;line-height:1;filter:drop-shadow(0 2px 2px #0b386526)}
+.bowling-home-tool-grid .bowling-home-tool-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+.bowling-home-tool-copy strong{font-size:clamp(13px,1.6vw,16px);line-height:1.2;color:#0b315c;font-weight:850}
+.bowling-home-tool-copy small{font-size:11px;line-height:1.35;color:#64809b}
+.bowling-home-tool-grid button .bowling-home-tool-arrow{flex:0 0 32px;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid #bedaf1;color:#1768a6;background:#fff;font-size:23px}
+.bowling-home-tool-grid button.bowling-home-tool-card:focus-visible{outline:3px solid #157dc8;outline-offset:2px}
+@media(max-width:760px){
+ .bowling-home-module-icon{width:55px;height:55px;margin-bottom:6px}
+ .bowling-home-module-icon img{width:54px;height:54px}
+ .bowling-home-tool-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .bowling-home-tool-grid button.bowling-home-tool-card{min-height:90px;padding:11px;gap:8px}
+ .bowling-home-tool-grid .bowling-home-tool-icon{flex-basis:43px;width:43px;height:43px;font-size:29px}
+ .bowling-home-tool-copy strong{font-size:13px}
+ .bowling-home-tool-copy small{font-size:10px}
+ .bowling-home-tool-grid button .bowling-home-tool-arrow{flex-basis:25px;width:25px;height:25px;font-size:19px}
+ .bowling-home-tool-grid button.bowling-home-tool-card:last-child:nth-child(odd){grid-column:1/-1}
+}
+@media(max-width:370px){
+ .bowling-home-tool-grid{grid-template-columns:1fr}
+ .bowling-home-tool-grid button.bowling-home-tool-card:last-child:nth-child(odd){grid-column:auto}
+ .bowling-home-tool-grid button.bowling-home-tool-card{min-height:72px;padding:10px 14px}
+}
+@media(prefers-reduced-motion:reduce){.bowling-home-tool-grid button.bowling-home-tool-card{transition:none}}
+
+/* CP-020 · Calendario oficial FGB provisional; datos personales separados y sin escrituras. */
+.calendar-filters{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0 14px}
+.calendar-filter{min-height:44px;padding:8px 12px;border:1px solid #c9dcf1;border-radius:999px;background:#f8fbff;color:#194e78;font-weight:750;font-size:12px;flex:1 0 auto}
+.calendar-filter.active{background:#0b5d9f;color:#fff;border-color:#0b5d9f;box-shadow:0 3px 9px #0d6fb82a}
+.calendar-filter:focus-visible{outline:3px solid #19acd2;outline-offset:2px}
+.calendar-competition-summary{margin:-10px 0 8px;color:#687e95;font-size:12px}
+.calendar-legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:13px;font-size:12px;color:#526e88}
+.calendar-legend span{display:inline-flex;gap:5px;align-items:center}
+.calendar-legend i,.calendar-markers i{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none}
+.calendar-dot-gallego{background:#43a95c!important}
+.calendar-dot-nacional{background:#2177d4!important}
+.calendar-dot-personal{background:#15a9b6!important}
+.calendar-markers{display:flex;gap:2px;justify-content:center;align-items:center;min-height:7px}
+.calendar-day .calendar-markers i{width:6px;height:6px}
+.calendar-day.selected .calendar-markers i{box-shadow:0 0 0 1px #fff}
+.calendar-official{display:flex;align-items:center;gap:12px;justify-content:space-between;border-radius:13px;padding:12px 14px;margin-top:10px;background:#f8fafc;border-left:4px solid #2177d4;border-top:1px solid #e8f0f8;border-right:1px solid #e8f0f8;border-bottom:1px solid #e8f0f8}
+.calendar-official-gallego{background:#eff9f0;border-left-color:#43a95c}
+.calendar-official-nacional{background:#eff6fe;border-left-color:#2177d4}
+.calendar-official>div{min-width:0;display:flex;flex-direction:column;gap:5px}
+.calendar-official strong{font-size:14px;line-height:1.28;color:#123a60}
+.calendar-official small{font-size:12px;line-height:1.5;color:#667c90}
+.calendar-category{font-size:11px;letter-spacing:.2px;color:#2d9054;font-weight:800}
+.calendar-official-nacional .calendar-category{color:#236bb9}
+.calendar-provisional{flex:none;padding:5px 8px;border:1px solid #cddfee;border-radius:9px;background:#fff;color:#647d94;font-size:10px;font-weight:740}
+.calendar-source{max-width:780px;margin:10px auto 13px;color:#667e97;font-size:12px;line-height:1.45}
+@media(max-width:370px){
+ .calendar-filter{font-size:11px;padding:7px 9px}
+ .calendar-official{flex-wrap:wrap;gap:8px}
+ .calendar-provisional{margin-left:auto}
+ .calendar-day .calendar-markers i{width:5px;height:5px}
+}
+
+
+/* CATÁLOGO Y ARSENAL F1 · control local por sesión, sin alterar fichas */
+.ball-session-toggle{display:flex;align-items:center;gap:12px;margin:12px 0;padding:12px 14px;border:1px solid #b7d9e7;border-radius:12px;background:#f0f9fd;color:#174766;font-size:14px;font-weight:700;line-height:1.4;cursor:pointer;min-height:48px}
+.ball-session-toggle input{width:21px;height:21px;flex:0 0 21px;accent-color:#0871b7;cursor:pointer}
+.ball-session-toggle:focus-within{outline:3px solid #267cca;outline-offset:2px}
+.ball-pick-toolbar{margin-bottom:14px}
+.ball-pick-toolbar strong{display:block;margin-bottom:6px}
+@media(max-width:420px){.ball-session-toggle{font-size:13px;padding:11px 12px}}
+
+
+/* CATÁLOGO Y ARSENAL R1 LAB · aislado, responsive, sin modificar fichas. */
+.arsenal-nav .actions,.arsenal-nav-actions{display:flex;gap:8px;flex-wrap:wrap}
+.arsenal-model-list{display:grid;gap:9px;margin-top:12px}
+.arsenal-model{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:13px 0;border-bottom:1px solid var(--line)}
+.arsenal-model:last-child{border-bottom:0}
+.arsenal-model .hint{margin:4px 0}
+.arsenal-facts{margin:16px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.arsenal-facts>div{padding:10px 12px;background:#f2f8fb;border-radius:10px;min-width:0}
+.arsenal-facts dt{font-size:12px;color:#49647b;margin-bottom:4px}
+.arsenal-facts dd{font-weight:700;margin:0;overflow-wrap:anywhere}
+.arsenal-choices{display:grid;gap:8px;margin:14px 0}
+.arsenal-choice{display:flex;gap:12px;align-items:center;min-height:48px;padding:12px;border:1px solid #bfdae7;border-radius:12px;background:#f6fafc;cursor:pointer}
+.arsenal-choice input{width:20px;height:20px;flex:0 0 20px;accent-color:#0979a3}
+.arsenal-recommend{padding:14px;background:#f0f7fb;border-radius:12px}
+.arsenal-recommend h3{font-size:14px;margin:12px 0 4px}
+.arsenal-recommend h3:first-child{margin-top:0}
+.arsenal-recommend p{margin:0 0 8px}
+.arsenal-lineup{padding:10px 0;border-top:1px solid var(--line)}
+.arsenal-lineup p{margin:4px 0;overflow-wrap:anywhere}
+@media(max-width:480px){.arsenal-facts{grid-template-columns:1fr}.arsenal-nav .btn,.arsenal-nav-actions .btn{flex:1 1 45%;font-size:13px}.arsenal-model{align-items:flex-start}}
+
+.arsenal-model .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#arsenal-catalog-search{font-size:16px}
+#arsenal-catalog-noresults[hidden]{display:none}
+@media(max-width:480px){.arsenal-model .actions{width:100%}.arsenal-model .actions .btn{flex:1 1 auto}}
