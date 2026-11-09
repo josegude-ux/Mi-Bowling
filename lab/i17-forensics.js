@@ -46,8 +46,7 @@ async function inspect(history,source15,owner,externalRoot,slot,copy){
   const expect=K.checkpoint(owner,history.seriesId,i+1,st.nonce,prev,
     i15PinDigest,verified.policyDigest,
     source15.externalLatestPin.newManifestDigest,
-    source15.externalLatestPin.newManifestDigest===source15.externalLatestPin.newManifestDigest?
-    st.auditCount:-1);
+    st.auditCount);
   // Audit count is independently recovered from I15 verified evidence by caller.
   if(!same(st,expect))throw Error('I17: BIFURCACIÓN o secuencia manipulada');
   if(seenNonce.has(st.nonce))throw Error('I17: nonce repetido');
