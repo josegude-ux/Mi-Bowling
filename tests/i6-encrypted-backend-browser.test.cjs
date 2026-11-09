@@ -165,7 +165,8 @@ async function caseBrowser(browser,base,device,label){
     phase:mergedStatus.phase,blocked:mergedStatus.blocked,
     revision:mergedStatus.revision,error:mergedStatus.error,
     serverRevision:(await confirmed(tab2)).revision,
-    pending:mergedStatus.pending
+    pending:mergedStatus.pending,
+    shape:await tab2.evaluate(()=>MiBowlingIntegrationI6.inspectMergeShape())
    }));
   await waitSaved(tab2,4);
   assert.ok((await confirmed(tab2)).payload.sessions.some(s=>s.id===label+'-TAB-ONE'));
