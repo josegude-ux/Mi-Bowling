@@ -13,7 +13,7 @@ permissions:
   contents: read
 jobs:
   node_validation:
-    name: I18 Node · CP020 FGB and I11-I18 security contracts
+    name: I18 · CI integral secuencial · CP020/FGB I11-I18 WebKit Chromium
     runs-on: ubuntu-24.04
     timeout-minutes: 28
     steps:
@@ -43,20 +43,11 @@ jobs:
           node tests/i17-forensics-contract.test.cjs
       - name: I18 · Preservación y decisión trazable sin nuevas autoridades
         run: node tests/i18-forensic-contract.test.cjs
-  browser:
-    name: I18 · WebKit/Chromium, expediente sin almacenamiento operativo
-    runs-on: ubuntu-24.04
-    timeout-minutes: 32
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Playwright solo para tests
+      - name: Instalar Playwright sin instalar dependencias en la aplicacion
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
-      - name: WebKit Linux emulado móvil
+      - name: Instalar WebKit Linux emulado
         run: ./node_modules/.bin/playwright install --with-deps webkit
-      - name: Descargar expediente sintético solo por petición del test
+      - name: Navegadores WebKit y Chromium, exportacion LAB y perdida de confianza
         run: node tests/i18-forensic-browser.test.cjs
