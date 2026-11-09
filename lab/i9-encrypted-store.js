@@ -259,7 +259,8 @@ async function unlock({owner,passphrase}={}){
    let all=null,confirmed=null;
    requests[0].onsuccess=()=>{all=requests[0].result};
    requests[1].onsuccess=()=>{confirmed=requests[1].result??null};
-   tx.oncomplete=()=>resolve({rows:(all||[]).filter(x=>x.owner===owner),
+   tx.oncomplete=()=>resolve({rows:(all||[]).filter(x=>
+     typeof x.id==='string'&&x.id.startsWith(owner+':')),
      confirmed});
    tx.onabort=()=>reject(Error('I9: instantánea de respaldo abortada'));
   })}finally{db.close()}
@@ -297,9 +298,12 @@ async function unlock({owner,passphrase}={}){
    // corrupted target must NEVER be "repaired" by replacing its ciphertext.
    await decrypt(captured.confirmed,'CONFIRMED');
   }
-  const currentRows=new Map();
+  const currentRows=new Map(),knownOpIds=new Map();
   for(const row of captured.rows){
-   await decrypt(row,'WAL'); // no silently discarded corrupt operations
+   const existingOp=await decrypt(row,'WAL'); // reject corrupt or foreign metadata
+   if(knownOpIds.has(existingOp.opId))
+    throw Error('I9: diario destino contiene IDs de operación duplicados');
+   knownOpIds.set(existingOp.opId,row);
    currentRows.set(row.id,row);
   }
   const confirmedData=snapshotData.confirmed;
@@ -312,7 +316,9 @@ async function unlock({owner,passphrase}={}){
   }
   const newOps=[];
   for(const entry of snapshotData.operations){
-   const key=opKey(entry),existing=currentRows.get(key);
+   const key=opKey(entry),existing=currentRows.get(key),sameOp=knownOpIds.get(entry.opId);
+   if(sameOp&&sameOp.id!==key)
+    throw Error('I9: operación duplicada de otra pestaña; conflicto sin escritura');
    if(existing){
     if(existing.digest!==entry.checksum)throw Error('I9: operación con mismo ID y distinto SHA; conflicto');
    }else newOps.push(await encrypt(entry,'WAL'));
@@ -331,7 +337,8 @@ async function unlock({owner,passphrase}={}){
    const plan=()=>{
     if(!doneOps||!doneConf||prepared)return;
     prepared=true;
-    const actualMine=actualOps.filter(x=>x.owner===owner);
+    const actualMine=actualOps.filter(x=>
+      typeof x.id==='string'&&x.id.startsWith(owner+':'));
     const before=captured.rows.slice().sort((a,b)=>a.id.localeCompare(b.id));
     const after=actualMine.slice().sort((a,b)=>a.id.localeCompare(b.id));
     if(JSON.stringify(before)!==JSON.stringify(after)||
