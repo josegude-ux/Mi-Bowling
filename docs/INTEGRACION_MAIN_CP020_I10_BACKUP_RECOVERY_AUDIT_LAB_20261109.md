@@ -17,17 +17,48 @@
 
 ## Criterios de aceptación (verificar con CI)
 
-- [ ] Seis activos CP-020 originales del LAB verificados y calendario FGB 2026-2027 conservado: 31 eventos, diez gallegos y veintiuno nacionales.
-- [ ] Versiones incompatibles y cabeceras/cifrado adulterados rechazados sin escribir, identidad A/B/C vinculada al archivo.
-- [ ] Comparación no destructiva de copias en fechas distintas: revisión mayor/menor, bifurcación al mismo nivel y diferencias en WAL.
-- [ ] Aborto IDB antes/después de encolar: cero confirmados, cero WAL, cero auditorías; backend no declara éxito ficticio.
-- [ ] Perdida de acuse tras commit lógico: exactamente una auditoría, confirmó y N WAL; retry detectado como already-present.
-- [ ] Reinicio de proceso Chromium con perfil desechable: se conserva el cifrado confirmado, las operaciones y los recibos; WAL conciliados y archivo obsoleto rechazado.
-- [ ] WebKit iPhone/tablet emulados, Chromium escritorio, cuentas ficticias A/B/C, sin servicios externos ni datos reales.
-- [ ] Nueva PR draft; main y PR existentes sin modificaciones; checkpoint SHA y CI verificados.
+- [x] Seis activos CP-020 originales del LAB verificados y calendario FGB 2026-2027 conservado: 31 eventos, diez gallegos y veintiuno nacionales.
+- [x] Versiones incompatibles y cabeceras/cifrado adulterados rechazados sin escribir, identidad A/B/C vinculada al archivo.
+- [x] Comparación no destructiva de copias en fechas distintas: revisión mayor/menor, bifurcación al mismo nivel y diferencias en WAL.
+- [x] Aborto IDB antes/después de encolar: cero confirmados, cero WAL, cero auditorías; backend no declara éxito ficticio.
+- [x] Perdida de acuse tras commit lógico: exactamente una auditoría, confirmó y N WAL; retry detectado como already-present.
+- [x] Reinicio de proceso Chromium con perfil desechable: se conserva el cifrado confirmado, las operaciones y los recibos; WAL conciliados y archivo obsoleto rechazado.
+- [x] WebKit iPhone/tablet emulados, Chromium escritorio, cuentas ficticias A/B/C, sin servicios externos ni datos reales.
+- [x] Nueva PR draft; main y PR existentes sin modificaciones; checkpoint SHA y CI verificados.
 
 ## Limitaciones reales
 
 El backend simulado es IndexedDB del **mismo origen LAB**, sin servicio remoto ni sincronización multi-dispositivo. El fallo IDB se fuerza dentro de una transacción real antes de su oncomplete, pero no emula una pérdida eléctrica ni garantiza durabilidad física ante un fallo abrupto del sistema. La prueba de reinicio cierra y relanza Chromium con perfil persistente temporal, no provoca una caída brutal. No Safari físico, ni cuota real, ni pérdida de frase/archivo. La fecha procede del cliente, aunque va autenticada: no sirve para resolver conflictos por sí misma. El recibo cifrado confirma el commit lógico del navegador en la prueba, no es un libro mayor externo inmutable.
 
 **No usar con partidas auténticas, no fusionar ni publicar ni conectar servicios reales.**
+
+
+## I10 · CHECKPOINT FUNCIONAL VERIFICADO · 9 NOV 2026
+
+**Código I10 funcional probado:** 38f2e1d40657bd5a6e4ed2767e68edb51033e0ff.
+**CI GitHub Actions (push del código):** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42588221036 — **SUCCESS · 2 de 2 jobs**.
+**PR LAB nueva:** https://github.com/josegude-ux/Mi-Bowling/pull/30 — borrador, base PR #28; no fusionada.
+**Rama:** feature/integracion-main-auth-i10-lab-20261109.
+
+Evidencia real de las ejecuciones de contratos y navegadores:
+
+- Motor de la rama LAB CP-020 con seis activos verificados por hash; FGB 2026-2027 31 eventos oficiales: **10 gallegos y 21 nacionales**. Tests CP-020, I9/I8 y propietario A/B/C en Node aprobados.
+- Node: AES-GCM del formato cifrado I10 versión 2, contraseña incorrecta y adulteración rechazadas; versiones I9 antiguas sin migración y futuras desconocidas rechazadas; comparación autenticada de dos copias de fechas distintas identifica mayor revisión, bifurcación y diferencias de WAL, conservando fecha solo como información.
+- WebKit Linux simulando iPhone A y tablet B, Chromium escritorio C: carga del motor CP-020 verificado sin localStorage real, servicios externos, PWA ni datos auténticos.
+- WebKit: exportación cifrada de revisión confirmada 1 y dos WAL independientes; no aparece puntuación en texto plano en el archivo. Contraseña/UUID B no abre archivo de A.
+- Chromium: restauración de vault nuevo con frase local diferente, segunda importación idempotente, rechazo de confirmado divergente a igual revisión, operación replay y respaldo obsoleto. Dos pestañas que importan la misma copia dejan un confirmado y exactamente dos WAL.
+- Chromium: prueba de aborto IndexedDB **antes de encolar** y **después de encolar** operaciones, siempre antes del commit: no queda confirmado, WAL ni recibo cifrado parcial.
+- Chromium: acuse de restauración perdido **después** del commit; al volver a abrir el proceso con un perfil persistente de LAB se encuentran el confirmado, dos WAL y **un recibo de auditoría cifrado**. Repetir importación es already-present y no crea otro recibo.
+- Chromium: la previsualización comparativa contra vault es read-only; el botón para comparar dos archivos de fechas diferentes se ejercita con archivo cifrado adicional, identifica second-newer y verifica que **no cambia** revisión ni dos operaciones pendientes.
+- Chromium: el botón de auditoría presenta el recibo tras reinicio; la recuperación seleccionada y fusión conservadora de dos WAL produce revisión confirmada 3. El archivo anterior se clasifica stale y se rechaza sin revertir puntuaciones. B y C permanecen aislados.
+
+### Correcciones en el proceso de validación
+
+1. Se ajustó el texto de aceptación de la previsualización I10 respecto de I9.
+2. El test inicial sobre perfil virgen intentó inspeccionar stores sin haberlos inicializado con el módulo real; se corrigió la inicialización del test sin debilitar la aplicación.
+3. Se conectó exclusivamente el segundo input de archivos cifrados al guard LAB, manteniendo bloqueado cualquier otro upload.
+4. Se pasó la contraseña ficticia explícitamente al contexto de Playwright, sin guardarla ni exponerla a servicios.
+
+**Límites sin resolver:** no se prueba Safari en un iPhone físico, cuota de almacenamiento real, corte eléctrico, servicios remotos, sincronización entre dispositivos ni recuperación si se pierde el archivo o la frase. Los abortos se inyectan sobre una transacción IndexedDB real y el reinicio se verifica cerrando y volviendo a abrir Chromium con perfil temporal, no matando la energía. El recibo cifrado pertenece al mismo origen y no es una auditoría externa inmutable.
+
+**Decisión técnica:** I10 aceptada SOLO COMO BASE LAB CON DATOS FICTICIOS. Sin autorización para fusionar, publicar o utilizar puntuaciones reales; main y PR antiguas no forman parte de la intervención.
