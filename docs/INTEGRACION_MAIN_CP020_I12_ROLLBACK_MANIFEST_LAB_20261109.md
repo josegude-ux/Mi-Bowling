@@ -40,6 +40,17 @@
 
 `.github/workflows/integracion-i12-lab.yml`: dos jobs CI, Node contratos/CP-020/FGB e interfaz WebKit + Chromium. Las evidencias CI finales, SHA de código probado y SHA documental se registrarán solamente tras consulta real a GitHub Actions.
 
+## Checkpoint verificable · BOWLING-I12-CP-001
+
+**Código funcional exacto validado:** `05afeffd1ebe3ea66bdf8e37ea8606fa506a4b88`.  
+**GitHub Actions CI código:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42607656230 — **SUCCESS 2/2** (contratos Node CP-020/FGB/criptografía A/B/C y navegador WebKit/Chromium).  
+**CI anterior:** https://github.com/josegude-ux/Mi-Bowling/actions/runs/42607608931 — **SUCCESS 2/2**.  
+**Diff revisado respecto a I11:** 7 archivos **solo nuevos**, +638 líneas, 0 eliminadas; ninguna edición en código CP-020, calendario, app publicada o PWA.  
+**Base comprobada:** 72f6428e88a784c5254f081498ae34aee2b9c1bf; I12 ahead 9 commits antes de este cierre documental, behind 0.  
+**Main comprobado:** 7fbb3fb32d889c3213626e5f73c49b0885ef9911, sin modificaciones.
+
+El checkpoint documental se añade sin cambiar código funcional; validar CI nuevamente contra su SHA exacto antes de declararlo definitivamente aprobado. Las pruebas de WebKit son emulación Linux; Safari de iPhone físico continúa pendiente. La firma P-256 ha sido verificada únicamente con claves de test efímeras, no con una autoridad independiente auténtica.
+
 ## Continuidad
 
 Sin fusión, sin publicación, sin cambios a `main`, producción, calendario CP-020, app PWA ni PR previas. La PR I12 permanece independiente de I11 y de todas las anteriores. **Solo datos ficticios A/B/C.**
