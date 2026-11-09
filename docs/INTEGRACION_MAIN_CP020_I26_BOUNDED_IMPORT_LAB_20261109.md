@@ -26,6 +26,27 @@ I25 consolida siete documentos I18–I24 con texto importado completo, hashes UT
 4. El SHA calculado desde texto importado y el SHA aportado por una supuesta fuente externa siguen siendo datos no autenticados. Un atacante puede sustituir documento y hash conjuntamente. Los nombres de archivo, alias A/B/C o declaraciones no demuestran identidad, independencia, conservación física, anterioridad ni autoridad.
 5. I26 no edita `main`, `index.html`, `sw.js`, FGB CP-020, app publicada, expedientes reales, sesiones, puntuaciones ni PR anteriores. Solo se añaden **ocho archivos I26**.
 
+## Checkpoint funcional · BOWLING-I26-CP-001
+
+**SHA funcional I26 verificado:** `c979a29975fcdd5f9a46d3c46026a66aa1d7d1cd`.  
+**CI funcional push:** [42715701382](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42715701382) — `completed SUCCESS 2/2` en ese SHA.  
+**CI funcional PR:** [42715793877](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42715793877) — `completed SUCCESS 2/2` sobre **ese mismo** SHA.  
+**PR:** [#48](https://github.com/josegude-ux/Mi-Bowling/pull/48) OPEN/DRAFT/UNMERGED, base `feature/integracion-main-auth-i25-lab-20261109`, creada exactamente sobre `BOWLING-I25-CP-001` `42850b3898437b598ee8ad016d31bab292fdd04c`.
+
+**Registros comprobados en los logs de CI funcional PR 42715793877:**
+- `PASS FGB 31 eventos` oficiales, 10 gallegos y 21 nacionales, sin duplicados y con datos intactos.
+- Regresiones I11–I25 superadas; `PASS I25 Node` con originales UTF-8, hashes de JSON reserializado, límites 12/28 MiB, documentos dañados y reemplazo conjunto aún no excluido.
+- `PASS I26 Node`: siete etapas ficticias A/B/C, codificación UTF-8 estricta y fragmentos de 1 byte con Unicode dividido, límite de 128 KiB por bloque por defecto, cancelación antes/durante carga, detección de fragmentos truncados, límites preventivos 12/28 MiB, recuperación de JSON malformado UTF-8 válido, integridad I25, sin escrituras.
+- `PASS I26 webkit` en Linux móvil emulado y `PASS I26 chromium` escritorio bajo HTTPS localhost: cancelación real de la UI, reintentos, SHA alterado, fallo cerrado de UTF-8, descarga y revalidación voluntaria, sin IndexedDB ni red exterior.
+
+**Aislamiento:** comparación GitHub exacta contra I25 `42850b3898437b598ee8ad016d31bab292fdd04c`: ocho archivos I26 `added`, 0 `modified`, 0 `removed`; ocho commits adelante, ninguno detrás antes de registrar este checkpoint. `main` se mantiene `a52d712e0e9138e53a8979a904c7d33c93905c7e`. I26 no edita producción, PWA, FGB CP-020, cuentas o datos reales y no fusiona PR anteriores.
+
+**Alcance de la protección:** se limita el tamaño **leído por fragmento**, se hace preflight del tamaño declarado del archivo, se compara tamaño de cada fragmento y se invalida el resultado tras cancelación; **no se ha medido ni probado un límite de memoria heap total**. La lectura final y el procesamiento JSON I25 pueden ocupar más memoria que la entrada. El resultado no demuestra comportamiento en Safari de un iPhone físico.
+
+**Prohibición de atribuciones:** un SHA coincidente o un archivo de A/B/C ficticio no acredita identidad, testigo humano, inmutabilidad, original anterior, conservación independiente o autoridad. Una sustitución coordinada de expediente y referencia podría mantenerse internamente coherente.
+
+**Checkpoint documental pendiente de verificación:** la presente actualización de la documentación producirá otro SHA. Exigir **dos CI adicionales** `push` y `pull_request`, cada una SUCCESS 2/2 exactamente sobre el nuevo HEAD documental. El cierre de la PR y la preparación I27 se anotarán solo en el cuerpo de #48, sin nuevo commit después del último gate.
+
 ## Criterio de aceptación y checkpoint
 
 Verificar en GitHub **push y pull_request, cada uno SUCCESS 2/2 en el mismo SHA funcional I26**; evaluar logs Node y WebKit/Chromium, corregir exclusivamente los archivos I26 si procede. Registrar `BOWLING-I26-CP-001` en esta documentación con SHA funcional y CI auditadas. Ello origina un commit documental y nuevas CI; **no cerrar hasta que push y PR vuelvan a obtener SUCCESS 2/2 sobre el mismo HEAD documental definitivo**. Después registrar cierre e instrucción I27 solamente en la descripción de la PR, sin nuevo commit. PR I26 ha de seguir OPEN/DRAFT/UNMERGED, sin fusiones, publicaciones, servicios reales ni falsos custodios.
