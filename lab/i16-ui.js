@@ -56,6 +56,7 @@ async function compare(){
 for(const [id,fn] of [['i16-verify',verify],['i16-compare',compare]]){
  $(id).addEventListener('click',async()=>{
   if(busy)return;busy=true;
+  status('I16: comprobación en curso...');
   $('i16-verify').disabled=true;$('i16-compare').disabled=true;
   try{await fn()}catch(err){status('I16 BLOQUEADO: '+err.message)}
   finally{busy=false;$('i16-verify').disabled=false;$('i16-compare').disabled=false}
