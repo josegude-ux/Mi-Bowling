@@ -158,7 +158,7 @@ function setStatus(text,type='info'){
 function prohibitUploads(){
  dom.addEventListener('change',event=>{
   if(event.target?.matches?.('input[type="file"]')&&
-     event.target.id!=='lab-i10-backup-file'){
+     !['lab-i10-backup-file','lab-i10-second-file'].includes(event.target.id)){
    event.preventDefault();event.stopImmediatePropagation();
    event.target.value='';
    setStatus('Adjuntar archivos reales no está permitido en este LAB.','warning');
