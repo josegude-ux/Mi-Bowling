@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I21 · Procedencia no acreditada</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#153550;background:#f4f8fc;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:910px;margin:auto}
+header,.card{background:#fff;border:1px solid #d7e5ee;border-radius:16px;padding:20px;margin:0 0 16px;box-shadow:0 4px 16px #16476c0b}
+.kicker{font-size:.82rem;letter-spacing:.05em;color:#0d65a7;font-weight:700}
+h1{font-size:clamp(1.35rem,4vw,2rem);margin:8px 0}h2{font-size:1.1rem;margin:0 0 12px}
+p{line-height:1.55}.warning{padding:14px;border-radius:9px;background:#fff0d5}
+.note{font-size:.9rem;color:#506c82}label{display:block;font-weight:650;margin:14px 0 7px}
+input{font:inherit;width:100%;min-height:44px;padding:9px;border:1px solid #a2b7c9;border-radius:9px}
+button{font:inherit;font-weight:700;min-height:44px;background:#096bb6;color:white;border:0;border-radius:10px;padding:12px;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}button.secondary{color:#165586;background:#eaf3fc;border:1px solid #b5d4ee}
+.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.buttons>*{flex:1 1 240px}
+#i21-status{background:#edf6fe;border-left:4px solid #1074bf;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere;min-height:70px}
+</style></head><body data-lab="I21-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LAB I21 · SOLO A/B/C FICTICIOS</span>
+<h1>¿Pueden haber cambiado el documento y su huella juntos?</h1>
+<p>Compara hasta tres paquetes I20 con hashes que se atribuyen a ellos. Una huella calculada a partir del propio paquete es coherente, pero no prueba que ese paquete existiera antes de un incidente.</p>
+<p class="warning"><strong>Sin aprobación ni recuperación.</strong> A/B/C son posiciones lógicas; no se comprueba identidad humana, independencia de custodios, fecha, inmutabilidad ni autenticidad de referencias que alguien aporte. Una solicitud de revisión externa es solo una anotación local que no se envía.</p>
+</header>
+<section class="card"><h2>1. Referencia anterior opcional</h2>
+<label for="i21-prior">SHA-256 previo supuestamente conservado fuera de estos paquetes (opcional)</label>
+<input id="i21-prior" maxlength="64" spellcheck="false" placeholder="No se crea ni autentica aquí">
+<p class="note">Una coincidencia con este valor no demuestra quién lo conservó ni cuándo. Si documento y referencia fueron sustituidos juntos, la sustitución puede quedar indetectable.</p></section>
+<section class="card"><h2>2. Paquetes I20 y huellas declaradas por posición</h2>
+<p class="note">Dejar la huella en blanco hace que se copie el SHA del propio paquete como declaración <strong>no verificada</strong>; no equivale a una segunda fuente. Los archivos ausentes se conservan como posiciones perdidas.</p>
+<label for="i21-file-A">A · Paquete I20 (.hold20)</label><input id="i21-file-A" type="file" accept=".hold20,.json">
+<label for="i21-claim-A">A · SHA declarado, no autenticado</label><input id="i21-claim-A" maxlength="64" spellcheck="false">
+<label for="i21-file-B">B · Paquete I20 (.hold20)</label><input id="i21-file-B" type="file" accept=".hold20,.json">
+<label for="i21-claim-B">B · SHA declarado, no autenticado</label><input id="i21-claim-B" maxlength="64" spellcheck="false">
+<label for="i21-file-C">C · Paquete I20 (.hold20)</label><input id="i21-file-C" type="file" accept=".hold20,.json">
+<label for="i21-claim-C">C · SHA declarado, no autenticado</label><input id="i21-claim-C" maxlength="64" spellcheck="false">
+<div class="buttons">
+<button id="i21-build" type="button">Examinar sustitución y conservar las tres posiciones</button>
+<button id="i21-request" type="button" class="secondary" disabled>Registrar revisión externa pendiente, sin enviar</button></div>
+</section>
+<section class="card"><h2>3. Exportación local y contraste del sobre</h2>
+<div class="buttons"><button id="i21-download" type="button" class="secondary" disabled>Exportar copia local a petición expresa</button></div>
+<label for="i21-saved">Sobre I21 (.doubt21) guardado anteriormente</label><input id="i21-saved" type="file" accept=".doubt21,.json">
+<label for="i21-saved-sha">SHA-256 del sobre I21 retenido fuera del archivo (opcional)</label><input id="i21-saved-sha" maxlength="64" spellcheck="false">
+<div class="buttons"><button id="i21-check" type="button" class="secondary">Verificar sobre I21</button></div>
+<p class="note">Solo el botón de exportación descarga un archivo; no se realizan envíos, operaciones en cuentas reales, peticiones remotas ni escrituras en MI BOWLING.</p>
+</section>
+<section class="card"><h2>Resultado del bloqueo</h2><p id="i21-status" role="status" aria-live="polite">Sin archivos examinados. La evaluación no concede autoridad.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i21"></script>
+<script src="i11-evidence.js?v=i21"></script>
+<script src="i12-manifest.js?v=i21"></script>
+<script src="i13-witnesses.js?v=i21"></script>
+<script src="i14-policy-lifecycle.js?v=i21"></script>
+<script src="i15-recovery.js?v=i21"></script>
+<script src="i16-anchors.js?v=i21"></script>
+<script src="i17-forensics.js?v=i21"></script>
+<script src="i18-forensic-hold.js?v=i21"></script>
+<script src="i19-manual-review.js?v=i21"></script>
+<script src="i20-rival-reviews.js?v=i21"></script>
+<script src="i21-provenance-doubt.js?v=i21"></script>
+<script src="i21-ui.js?v=i21"></script>
+</body></html>

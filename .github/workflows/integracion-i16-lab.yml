@@ -1,0 +1,60 @@
+name: MI BOWLING · LAB I16 · Referencias redundantes y anti-replay condicionado
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i16-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i16-*'
+      - 'lab/integracion-main-auth-i16.html'
+      - 'tests/i16-*'
+      - '.github/workflows/integracion-i16-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I16 · CP-020/FGB, I11-I15, copias, replay y firmas
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis I16
+        run: |
+          node --check lab/i16-anchors.js
+          node --check lab/i16-ui.js
+          node --check tests/i16-anchor-fixture.cjs
+          node --check tests/i16-anchor-contract.test.cjs
+          node --check tests/i16-anchor-browser.test.cjs
+      - name: Contratos protegidos CP-020 y calendario FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones I11-I15
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+      - name: I16 · referencias de 2/3, pérdidas y replay
+        run: node tests/i16-anchor-contract.test.cjs
+  browser:
+    name: I16 · WebKit/Chromium sin servicios ni escrituras
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright de ensayo
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux para perfil móvil emulado
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Verificar referencias A/B/C mediante HTTPS loopback
+        run: node tests/i16-anchor-browser.test.cjs
