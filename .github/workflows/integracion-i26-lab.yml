@@ -1,0 +1,70 @@
+name: MI BOWLING · LAB I26 · Importación móvil y memoria sin falsa autoridad
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i26-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i26-*'
+      - 'lab/integracion-main-auth-i26.html'
+      - 'tests/i26-*'
+      - '.github/workflows/integracion-i26-lab.yml'
+permissions:
+  contents: read
+jobs:
+  node_validation:
+    name: I26 Node · CP020 FGB I11-I26 strict chunked import
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis de contratos I26
+        run: |
+          node --check lab/i26-bounded-import.js
+          node --check lab/i26-ui.js
+          node --check tests/i26-bounded-import-fixture.cjs
+          node --check tests/i26-bounded-import-contract.test.cjs
+          node --check tests/i26-bounded-import-browser.test.cjs
+      - name: CP-020 y calendario oficial FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones LAB I11-I25 sin alterar
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+          node tests/i16-anchor-contract.test.cjs
+          node tests/i17-forensics-contract.test.cjs
+          node tests/i18-forensic-contract.test.cjs
+          node tests/i19-review-contract.test.cjs
+          node tests/i20-rival-contract.test.cjs
+          node tests/i21-provenance-contract.test.cjs
+          node tests/i22-uncertainty-contract.test.cjs
+          node tests/i23-external-evidence-contract.test.cjs
+          node tests/i24-manual-crosscheck-contract.test.cjs
+          node tests/i25-retention-contract.test.cjs
+      - name: I26 · Lectura secuencial, cancelación, 12/28 MiB, SHA y recuperación
+        run: node tests/i26-bounded-import-contract.test.cjs
+  browser:
+    name: I26 · WebKit Chromium · recoverable bounded mobile import
+    runs-on: ubuntu-24.04
+    timeout-minutes: 46
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright exclusivamente LAB
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux móvil emulado
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Archivos A/B/C ficticios por HTTPS localhost sin red externa
+        run: node tests/i26-bounded-import-browser.test.cjs
