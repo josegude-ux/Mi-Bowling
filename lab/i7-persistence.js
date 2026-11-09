@@ -50,8 +50,12 @@ function safeUnion(base,local,remote){
  const R=new Map(remote.sessions.map(s=>[s.id,s]));
  if([...B].some(([id,s])=>!eq(L.get(id),s)||!eq(R.get(id),s)))return null;
  const added=local.sessions.filter(s=>!B.has(s.id));
- if(added.some(s=>R.has(s.id)))return null;
- return {...clone(remote),sessions:[...clone(remote.sessions),...clone(added)]};
+ // A second operation in the SAME tab can contain an earlier, already
+ // confirmed new session. Reusing its ID is safe ONLY if bytes are identical.
+ // Divergent changes to that ID (or any preexisting session) still fail closed.
+ if(added.some(s=>R.has(s.id)&&!eq(R.get(s.id),s)))return null;
+ const uniqueAdds=added.filter(s=>!R.has(s.id));
+ return {...clone(remote),sessions:[...clone(remote.sessions),...clone(uniqueAdds)]};
 }
 function create({repository,journal,owner,tabId=root.crypto?.randomUUID?.(),
   onStatus=()=>{}}={}){
