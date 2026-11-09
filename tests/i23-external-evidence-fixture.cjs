@@ -36,7 +36,8 @@ async function fixture(owner=A){
  });
  return {...previous,G,U,base,rival,replaced,record,
   matching:[record('A'),record('B'),record('C')],
-  competing:[record('A',base),record('B',rival),record('C',replaced)],
+  competing:[record('A',base),record('B',rival),null],
+  crossed:[record('A',base),record('B',replaced),null],
   correlated:[record('A'),record('B',base,{group:'group-a',alias:'A'}),null]
  };
 }
