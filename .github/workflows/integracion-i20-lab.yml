@@ -1,0 +1,64 @@
+name: MI BOWLING · LAB I20 · Disputas entre revisiones no autorizativas
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i20-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i20-*'
+      - 'lab/integracion-main-auth-i20.html'
+      - 'tests/i20-*'
+      - '.github/workflows/integracion-i20-lab.yml'
+permissions:
+  contents: read
+jobs:
+  node_validation:
+    name: I20 Node · CP020 FGB I11-I20 rival review preservation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 34
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificar sintaxis I20
+        run: |
+          node --check lab/i20-rival-reviews.js
+          node --check lab/i20-ui.js
+          node --check tests/i20-rival-fixture.cjs
+          node --check tests/i20-rival-contract.test.cjs
+          node --check tests/i20-rival-browser.test.cjs
+      - name: Regresiones CP-020 y calendario FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones I11-I19
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+          node tests/i16-anchor-contract.test.cjs
+          node tests/i17-forensics-contract.test.cjs
+          node tests/i18-forensic-contract.test.cjs
+          node tests/i19-review-contract.test.cjs
+      - name: I20 · discrepancias preservadas y petición externa sin aprobación
+        run: node tests/i20-rival-contract.test.cjs
+  browser:
+    name: I20 · WebKit Chromium · rivales sin servicios ni escrituras
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright solo para LAB
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux emulado móvil
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Revisiones A/B/C ficticias y exportación voluntaria local
+        run: node tests/i20-rival-browser.test.cjs
