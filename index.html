@@ -12,15 +12,32 @@
   <link rel="icon" href="icon-192.png?v=338icon1" type="image/png">
   <link rel="apple-touch-icon" href="icon-180.png?v=338icon1">
   <link rel="stylesheet" href="styles.css?v=3310cat1">
-  <title>Mi Bowling · Analítica</title>
+  <link rel="stylesheet" href="design-lab.css?v=20261109-lab1">
+  <title>MI BOWLING · Jugar, analizar y mejorar · LAB</title>
 </head>
 <body>
  <header class="topbar">
    <div class="topbar-inner">
      <button class="brand" type="button" onclick="go('inicio')" aria-label="Ir al inicio"><span class="brand-mark" aria-hidden="true"><img src="./icon-192.png?v=338icon1" alt="" width="35" height="35"></span>Mi <b>Bowling</b><span class="brand-sub">ANALÍTICA</span></button>
-     <div class="header-actions"><span class="offline-label"><i></i> En tu dispositivo</span><button type="button" class="icon-button" onclick="go('ajustes')" aria-label="Ajustes" title="Ajustes">⚙</button></div>
+     <span class="design-lab-motto">Tu juego · Tus datos · Tu evolución</span>
+     <div class="header-actions"><span class="offline-label"><i></i> En tu dispositivo</span><button type="button" class="design-lab-header-theme" data-design-theme="compact" aria-label="Activar modo oscuro" aria-pressed="false">☾</button><button type="button" class="icon-button" onclick="go('ajustes')" aria-label="Ajustes" title="Ajustes">⚙</button></div>
    </div>
  </header>
+ <aside class="design-lab-sidebar" aria-label="Navegación de escritorio de MI BOWLING">
+   <div class="design-lab-side-brand">🎳 MI BOWLING<small>Tu espacio de juego</small></div>
+   <nav class="design-lab-side-nav" aria-label="Secciones principales">
+     <button type="button" data-design-target="inicio" onclick="go('inicio')"><span class="side-icon" aria-hidden="true">⌂</span> Inicio</button>
+     <button type="button" data-design-target="nueva" onclick="go('nueva')"><span class="side-icon" aria-hidden="true">🎳</span> Jugar</button>
+     <button type="button" data-design-target="bolas" onclick="go('bolas')"><span class="side-icon" aria-hidden="true">◉</span> Mis bolas</button>
+     <button type="button" data-design-target="estadisticas" onclick="go('estadisticas')"><span class="side-icon" aria-hidden="true">▥</span> Análisis</button>
+     <button type="button" data-design-target="patrones" onclick="go('patrones')"><span class="side-icon" aria-hidden="true">♧</span> Patrones</button>
+     <button type="button" data-design-target="historial" onclick="go('historial')"><span class="side-icon" aria-hidden="true">◷</span> Historial</button>
+     <button type="button" data-design-target="calendario" onclick="go('calendario')"><span class="side-icon" aria-hidden="true">▦</span> Calendario</button>
+     <button type="button" data-design-target="ajustes" onclick="go('ajustes')"><span class="side-icon" aria-hidden="true">⚙</span> Ajustes</button>
+     <button type="button" class="side-theme" data-design-theme="expanded" aria-label="Activar modo oscuro" aria-pressed="false">☾ Modo oscuro</button>
+   </nav>
+   <p class="design-lab-side-foot">Laboratorio de diseño · Funcionalidad existente preservada</p>
+ </aside>
  <main id="app" class="app-main" role="main"></main>
  <nav id="bottom-nav" class="bottom-nav" aria-label="Navegación"></nav>
  <input id="restore-file" type="file" accept=".json,application/json" hidden>
@@ -28,5 +45,6 @@
  <script src="arsenal-insights.js?v=arsenal-catalog-cp035"></script>
  <script src="arsenal-view-lab.js?v=arsenal-catalog-cp035"></script>
  <script src="app.js?v=3310cat1"></script>
+ <script src="design-lab.js?v=20261109-lab1"></script>
 </body>
 </html>
