@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · I12 · Manifiesto de auditoría LAB</title>
+<style>
+:root{color-scheme:light;font:16px system-ui,sans-serif;background:#f3f8fc;color:#173451}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:800px;margin:auto}
+header,.card{border:1px solid #d5e4f0;border-radius:16px;background:white;padding:20px;margin-bottom:16px;box-shadow:0 3px 15px #15416a0c}
+h1{margin:6px 0;font-size:clamp(1.4rem,4vw,2rem)}h2{font-size:1.08rem;margin:2px 0 14px}
+.kicker{color:#0864b7;font-weight:700;font-size:.84rem;letter-spacing:.06em}
+label{display:block;font-weight:650;margin:14px 0 6px}input,select,textarea{font:inherit;width:100%;border:1px solid #9bb5cd;border-radius:9px;padding:10px;min-height:44px}
+textarea{min-height:76px;resize:vertical}button{min-height:44px;border:0;border-radius:10px;padding:11px 14px;background:#0869ba;color:white;font-weight:700;cursor:pointer}
+button.secondary{background:#e9f3ff;color:#12548a;border:1px solid #b3d1ef}
+.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.buttons>*{flex:1 1 220px}
+#i12-status{white-space:pre-wrap;overflow-wrap:anywhere;border-left:4px solid #1975c8;padding:14px;background:#edf6ff;min-height:58px}
+small,p{line-height:1.5}.note{color:#506880}.warning{background:#fff5df;padding:12px;border-radius:10px}
+</style></head>
+<body data-lab="I12-OFFLINE-READONLY">
+<main>
+<header><span class="kicker">MI BOWLING · LABORATORIO I12</span>
+<h1>Manifiesto independiente de evidencias</h1>
+<p>Comparación de exportaciones cifradas I11 y detección condicionada de rollback. Solo identidades ficticias A/B/C, sin partidas, almacenamiento, cuentas, servicios ni publicación.</p>
+<p class="warning"><strong>Importante:</strong> el PIN y las exportaciones deben conservarse fuera del navegador y separados del origen. Una firma o SHA no demuestran inmutabilidad física ni fecha real.</p></header>
+<section class="card" aria-labelledby="i12-inputs-heading">
+<h2 id="i12-inputs-heading">1. Seleccionar evidencias independientes</h2>
+<label for="i12-owner">Jugador ficticio (identidad aislada)</label>
+<select id="i12-owner"><option value="11111111-1111-4111-8111-111111111111">Jugador A</option>
+<option value="22222222-2222-4222-8222-222222222222">Jugador B</option>
+<option value="33333333-3333-4333-8333-333333333333">Jugador C</option></select>
+<label for="i12-files">Exportaciones anteriores I11 (.mae11), en orden de más antigua a reciente</label>
+<input id="i12-files" type="file" accept=".mae11,.json" multiple>
+<label for="i12-pass">Frase ficticia compartida por las exportaciones seleccionadas</label>
+<input id="i12-pass" type="password" minlength="12" maxlength="256" autocomplete="off" placeholder="Nunca uses una contraseña real">
+<div class="buttons"><button id="i12-build">Crear y descargar manifiesto + PIN independiente</button></div>
+</section>
+<section class="card" aria-labelledby="i12-verify-heading">
+<h2 id="i12-verify-heading">2. Comprobar pérdidas, alteraciones y versiones antiguas</h2>
+<label for="i12-manifest-file">Manifiesto I12 previamente generado (.mami12)</label>
+<input id="i12-manifest-file" type="file" accept=".mami12,.json">
+<label for="i12-pin-file">PIN externo guardado por separado (.pin12)</label>
+<input id="i12-pin-file" type="file" accept=".pin12,.json">
+<label for="i12-current-file">Evidencia I11 actual a contrastar (opcional, sin escribir)</label>
+<input id="i12-current-file" type="file" accept=".mae11,.json">
+<div class="buttons"><button class="secondary" id="i12-verify">Verificar manifiesto y archivos</button>
+<button class="secondary" id="i12-compare">Detectar rollback de evidencia actual</button></div>
+<p class="note">Sin PIN independiente, solo se demuestra coherencia interna, no ausencia de rollback. Las exportaciones faltantes o antiguas se rechazan; jamás se restauran puntuaciones.</p></section>
+<section class="card" aria-labelledby="i12-sign-heading">
+<h2 id="i12-sign-heading">3. Verificación experimental de firma externa</h2>
+<label for="i12-signature-file">Firma detached base64 ECDSA P-256 (opcional)</label>
+<input id="i12-signature-file" type="file" accept=".sig,.txt">
+<label for="i12-key-file">Clave pública JWK independiente (sin clave privada)</label>
+<input id="i12-key-file" type="file" accept=".jwk,.json">
+<div class="buttons"><button class="secondary" id="i12-signature">Verificar firma externa, no emitirla</button></div>
+<p class="note">La clave privada nunca se genera ni almacena aquí. Verificar una firma no prueba el momento de creación, la custodia ni que no exista otra versión más reciente.</p></section>
+<section class="card"><h2>Resultado de la validación</h2>
+<p id="i12-status" role="status" aria-live="polite">Sin escrituras: selecciona los archivos ficticios para crear o verificar el manifiesto.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i12"></script>
+<script src="i11-evidence.js?v=i12"></script>
+<script src="i12-manifest.js?v=i12"></script>
+<script src="i12-ui.js?v=i12"></script>
+</body></html>
