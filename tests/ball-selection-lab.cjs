@@ -457,6 +457,44 @@ async function crossTabRestoreClearsSelectionsScenario(browser,engine,origin){
  }finally{await context.close()}
 }
 
+// CP-033: una pestaña con catálogo obsoleto no puede reactivar por un check
+// la selección temporal de una bola retirada desde otra pestaña.
+async function crossTabRetirementStalePickerScenario(browser,engine,origin){
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+ const first=await context.newPage(),second=await context.newPage(),errors=[];
+ first.on('pageerror',e=>errors.push('A: '+e.message));
+ second.on('pageerror',e=>errors.push('B: '+e.message));
+ try{
+  await first.goto(origin,{waitUntil:'load'});
+  await first.evaluate(data=>{
+   localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data));
+   localStorage.removeItem('mi-bowling-ball-selection-v1');
+  },fixture);
+  await second.goto(origin,{waitUntil:'load'});
+  await first.reload({waitUntil:'load'});
+  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  const alpha=page=>page.locator('.ball-card').filter({hasText:'Alpha'});
+  await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').check();
+  await second.waitForFunction(()=>[...document.querySelectorAll('.ball-card')].some(el=>el.textContent.includes('Alpha')&&el.querySelector('.ball-session-toggle input')?.checked),null,{timeout:10000});
+  assert.deepEqual((await getData(second)).picks.__next__,['lab-a'],'Alpha marcada antes de retirarla');
+  await alpha(second).getByRole('button',{name:'Retirar'}).click();
+  let snapshot=await getData(second);
+  assert.equal(snapshot.db.balls.find(b=>b.id==='lab-a').retired,true,'B confirma retirada de Alpha');
+  assert.deepEqual(snapshot.picks.__next__,[],'B elimina Alpha del sidecar');
+  await first.waitForFunction(()=>[...document.querySelectorAll('.ball-card')].some(el=>el.textContent.includes('Alpha')&&el.querySelector('.ball-session-toggle input')?.checked===false),null,{timeout:10000});
+  // A puede conservar un catálogo en memoria obsoleto: no debe resucitar la marca.
+  await alpha(first).locator('.ball-session-toggle input').check();
+  snapshot=await getData(first);
+  assert.deepEqual(snapshot.picks.__next__,[],'A no puede reintroducir Alpha retirada por B');
+  assert.deepEqual(await first.evaluate(()=>selectedBallsFor('__next__')),[],'Filtro operativo de A excluye Alpha retirada');
+  assert.equal((await getData(second)).db.balls.find(b=>b.id==='lab-a').retired,true,'La retirada se conserva en almacenamiento');
+  assert.deepEqual(snapshot.db.sessions,fixture.sessions,'No cambia ninguna sesión sintética');
+  assert.deepEqual(errors,[],'Sin errores JS tras retirada cruzada');
+  console.log('OK '+engine+' 390px: selector obsoleto no resucita bola retirada desde otra pestaña');
+ }finally{await context.close()}
+}
+
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
@@ -604,7 +642,7 @@ async function run(browser,engine,width,origin){
  try{
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
    const browser=await type.launch({headless:true});
-   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin);await concurrentRollDeselectionScenario(browser,name,origin);await rewindUndoWithDeselectedBallScenario(browser,name,origin);await crossTabRestoreClearsSelectionsScenario(browser,name,origin)}
+   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin);await concurrentRollDeselectionScenario(browser,name,origin);await rewindUndoWithDeselectedBallScenario(browser,name,origin);await crossTabRestoreClearsSelectionsScenario(browser,name,origin);await crossTabRetirementStalePickerScenario(browser,name,origin)}
    finally{await browser.close()}
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
