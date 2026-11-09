@@ -29,6 +29,28 @@ El resultado `hold-internal-consistency-only` de I25 no implica custodia humana 
 
 Una presión de memoria fuera de las muestras no se detecta necesariamente: `maxObservedHeapBytes` solo puede aplicarse si existe un muestreador de heap proporcionado. No se introducen métricas ficticias en WebKit ni se finge autenticidad de resultados de laboratorio.
 
+## Checkpoint funcional verificado · BOWLING-I27-CP-001
+
+**SHA funcional I27:** `e4223a55a963bd08bb2f485f6e7fa345b9b03150`.  
+**Push funcional:** [42721586613](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42721586613) — **completed SUCCESS 2/2** sobre ese SHA exacto.  
+**PR funcional:** [42721597932](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42721597932) — **completed SUCCESS 2/2** sobre el mismo SHA.  
+**PR I27:** [#50](https://github.com/josegude-ux/Mi-Bowling/pull/50), OPEN/DRAFT/UNMERGED, rama `feature/integracion-main-auth-i27-lab-20261110`, base `feature/integracion-main-auth-i26-lab-20261109`.  
+**Diff respecto a I26** `531c6283c75f5f09ea9880d666aecec8d8553d8a`: ocho archivos exclusivamente `added`, cero `modified` o `removed`, 10 commits ahead/0 behind antes de este checkpoint documental.
+
+**Resultados directamente comprobados en logs CI PR funcional 42721597932:**
+- **PASS FGB CP-020 31 eventos** (10 gallegos, 21 nacionales, datos intactos); regresiones I11–I26 aprobadas.
+- **PASS I27 Node**: perfiles restringido/estándar 4/8 y 12/28 MiB; una sola invocación a I26/I25; reloj monotónico determinista y observaciones reales `heapUsed` del runner, presión muestreada y cancelación fail-closed, sin afirmar pico RAM o prueba en iPhone físico.
+- **PASS I27 webkit** Linux móvil emulado y **PASS I27 chromium** escritorio: cambio de perfil, ausencia de cifra falsa de RAM, preflight de tamaño, UTF-8 inválido, fallo y reintento, cancelación y exportación voluntaria; sin IndexedDB ni red exterior.
+- Ejemplo estrictamente observacional del runner Node de **push**: 6.449.260 bytes de entrada, 200 fragmentos, 1.215,929 ms medidos y muestras `heapUsed` de 32.539.752 a 50.701.088 bytes. En **PR** con el mismo fixture: 6.449.260 bytes, 200 fragmentos, 2.227,378 ms y muestras `heapUsed` de 32.871.512 a 50.708.336 bytes. **No hay garantía de repetibilidad entre runs, mejora porcentual, pico RAM real ni equivalencia con Safari/iPhone**. Las muestras responden al estado particular del runner y al GC, no a una medida externa certificada.
+
+**Ciclo programar → probar → corregir → reprobar:** una primera CI Node sobre `5417157cc3c07e32bfa664c539ac80873a2b97aa` falló por la aserción de texto `/elapsed observation deadline exceeded/` frente al error real de rechazo `I27: observed elapsed deadline exceeded`. El código rechazaba correctamente el límite de duración. Se corrigió **solo el test I27** en commit `e4223a55a963bd08bb2f485f6e7fa345b9b03150`, sin cambiar el motor de perfil ni I26/I25. Las ejecuciones anteriores fallidas `42720938584` y `42721036977` permanecen en GitHub como evidencia histórica y no se presentan como aprobadas; las definitivas son `42721586613` y `42721597932`.
+
+**Operaciones ajenas y preservación:** `main` al inicio era `a52d712e0e9138e53a8979a904c7d33c93905c7e`. Durante I27, **otro flujo fusionó PR #49** (cambios de portada/arsenal/Liga), y `main` pasó a `985014b43bbff7a39ec5f585a33cc5fac8650f8b`. También la PR **#48 de I26** pasó a CLOSED/MERGED por otro flujo, preservándose su SHA de rama. **I27 no hizo ninguna fusión, publicación, despliegue ni cambio en `main`, FGB CP-020, PWA, producción o PR ajenas**. Las CI I27 prueban su rama aislada, **no la integración con el nuevo `main`**.
+
+**Límites permanentes:** lectura por fragmentos y `heapUsed` observado no demuestran un máximo de RAM de navegador; reloj monotónico no es sello temporal; resultados internos I18–I26 y SHA A/B/C no prueban custodia externa, identidad humana, inmutabilidad, anterioridad, firma ni autoridad. Una sustitución coordinada de archivo y referencia puede seguir siendo internamente coherente.
+
+**Pendiente gate documental:** este commit de checkpoint crea un nuevo HEAD. Deben verificarse **nuevas CI push y pull_request SUCCESS 2/2 sobre ese mismo HEAD documental** antes de declarar cierre. Cierre y continuidad I28 irán **únicamente en el cuerpo de PR #50**, evitando un commit posterior a las CI.
+
 ## Condiciones de aceptación y cierre
 
 Revisar el diff contra SHA documental I26: exclusivamente archivos I27 añadidos; no editar código/CI previos, FGB CP-020, producción ni PWA. Ejecutar CI funcional `push` y `pull_request` en el mismo SHA y exigir **2 de 2 SUCCESS** en ambos. Corregir I27 si algún test falla; conservar logs reales de los intentos anteriores. Registrar después `BOWLING-I27-CP-001` en este documento con SHA funcional/CI y limitaciones. El nuevo HEAD documental debe superar otras CI completas `push` y PR `SUCCESS 2/2` en el **mismo SHA definitivo**. Solo entonces registrar cierre y continuidad I28 en el cuerpo de la nueva PR (no un commit nuevo). Sin fusionar, publicar ni atribuir custodia real.
