@@ -205,8 +205,11 @@ async function chromiumCas(browser,base){
   await open(b,base,'A');await waitFor(b,'ready','A');
   await Promise.all([mutate(a,'I7-CHROME-A'),mutate(b,'I7-CHROME-B')]);
   const result=await Promise.all([drain(a),drain(b)]);
-  assert.ok(result.some(x=>x.phase==='saved'));
-  assert.ok(result.some(x=>x.blocked));
+  // The winning tab can correctly switch to 'recovery' rather than 'saved'
+  // when it sees the other tab's still-durable WAL. Verify the actual CAS
+  // revision and remaining ciphertext, not a misleading tab-local label.
+  assert.ok(result.some(x=>x.revision===2),'one real CAS must advance revision');
+  assert.ok(result.some(x=>x.blocked),'the losing WAL must require reconciliation');
   const actual=await confirmed(a);assert.equal(actual.revision,2);
   assert.equal((await rawPending(a)).length,1);
   await a.close();await b.close();
