@@ -50,23 +50,17 @@ async function regular(browser,engine,width,height,url){
    css:[...document.styleSheets].some(s=>s.href?.includes('design-lab.css')),
    heading:document.querySelector('.design-lab-side-foot')?.textContent}));
   assert(meta.nav&&meta.css,'Rediseño publicado y CSS cargado');
-  if(mode==='local'){
-   assert(!meta.title.includes('LAB')&&!meta.heading.includes('Laboratorio'),
-    'Etiquetas LAB eliminadas de la interfaz visible de candidata');
-  }else{
-   console.log('DETECTADO EN PUBLICACIÓN: etiqueta LAB='+meta.title.includes('LAB')+
-     ', pie Laboratorio='+meta.heading.includes('Laboratorio'));
-  }
+  assert(!meta.title.includes('LAB')&&!meta.heading.includes('Laboratorio'),
+   'Postdeploy: el título y pie publicados no tienen textos LAB');
   await page.evaluate(data=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data)),fixture);
   await page.reload({waitUntil:'load',timeout:35000});
   assert.equal(await page.locator('.bowling-home-module').count(),3,'Inicio sin regresiones');
-  if(mode==='local')assert.equal(await page.locator('.bowling-home-tools').count(),0,'Inicio LAB sin enlaces duplicados');
+  assert.equal(await page.locator('.bowling-home-tools').count(),0,'Inicio postdeploy sin bloque duplicado Más herramientas');
   if(width===1280){
    const tops=await page.locator('.bowling-home-module').evaluateAll(nodes=>
     nodes.map(n=>Math.round(n.getBoundingClientRect().top)));
-   if(mode==='local')assert(tops.every(v=>Math.abs(v-tops[0])<=2),
-    'Las tres tarjetas quedan alineadas en escritorio LAB: '+tops.join(','));
-   else console.log('DIAGNÓSTICO PUBLICADO: tres tarjetas en Y='+tops.join(','));
+   assert(tops.every(v=>Math.abs(v-tops[0])<=2),
+    'Postdeploy: tres tarjetas alineadas en escritorio: '+tops.join(','));
   }
   assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--teal').trim()),
    '#086fd4','Tema azul activo');
