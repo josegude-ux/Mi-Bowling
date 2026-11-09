@@ -495,6 +495,68 @@ async function crossTabRetirementStalePickerScenario(browser,engine,origin){
  }finally{await context.close()}
 }
 
+// CP-034: restaurar un catálogo distinto mientras otra pestaña sigue mostrando
+// el anterior no debe resucitar identificadores ni borrar selecciones nuevas.
+async function crossTabRestoreReplacesCatalogScenario(browser,engine,origin){
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+ const first=await context.newPage(),second=await context.newPage(),errors=[];
+ first.on('pageerror',e=>errors.push('A: '+e.message));
+ second.on('pageerror',e=>errors.push('B: '+e.message));
+ second.on('dialog',dialog=>dialog.accept());
+ try{
+  const restored=JSON.parse(JSON.stringify(fixture));
+  restored.balls=[{...restored.balls[0],id:'lab-d',model:'Delta',notes:'Taladro ficticio nuevo',retired:false}];
+  restored.sessions=[{...restored.sessions[0],id:'lab-restaurada-delta',title:'Partida restaurada con Delta',
+   currentBallId:'lab-d',games:restored.sessions[0].games.map(g=>({...g,id:'lab-juego-restaurado',
+    rolls:g.rolls.map(r=>({...r,ballId:'lab-d'}))}))}];
+  await first.goto(origin,{waitUntil:'load'});
+  await first.evaluate(db=>{
+   localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));
+   localStorage.removeItem('mi-bowling-ball-selection-v1');
+  },fixture);
+  await second.goto(origin,{waitUntil:'load'});
+  await first.reload({waitUntil:'load'});
+  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  const alpha=first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input');
+  await alpha.check();
+  assert.deepEqual((await getData(first)).picks.__next__,['lab-a'],'A marca Alpha del catálogo antiguo');
+  await second.locator('#restore-file').setInputFiles({
+   name:'catalogo-diferente-lab.json',mimeType:'application/json',
+   buffer:Buffer.from(JSON.stringify(restored))
+  });
+  await second.waitForFunction(()=>JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')||'{}').balls?.[0]?.id==='lab-d');
+  let current=await getData(second);
+  assert.deepEqual(current.picks,{},'Restauración elimina selecciones del catálogo anterior');
+  assert.deepEqual(current.db.balls,restored.balls,'El nuevo catálogo contiene solo Delta');
+  assert.equal(current.db.sessions[0].games[0].rolls[0].ballId,'lab-d','Historial Delta restaurado');
+  await first.waitForFunction(()=>{
+   const card=[...document.querySelectorAll('.ball-card')].find(el=>el.textContent.includes('Alpha'));
+   return card?.querySelector('.ball-session-toggle input')?.checked===false;
+  });
+  assert.equal(await first.locator('.ball-card').filter({hasText:'Alpha'}).count(),1,
+   'A conserva la vista obsoleta y no recarga el catálogo por sí sola');
+  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await second.locator('.ball-card').filter({hasText:'Delta'}).locator('.ball-session-toggle input').check();
+  let afterDelta=await getData(second);
+  assert.deepEqual(afterDelta.picks.__next__,['lab-d'],'B marca Delta en el nuevo catálogo');
+  // A aún ofrece Alpha visualmente; el clic no debe devolver Alpha ni borrar Delta.
+  await alpha.click();
+  current=await getData(first);
+  assert.deepEqual(current.picks.__next__,['lab-d'],
+   'El clic en Alpha obsoleta no resucita Alpha ni borra Delta válida');
+  assert.deepEqual(current.db,afterDelta.db,'Catálogo e historial restaurados no cambian al hacer clic en A');
+  assert.equal(await second.locator('.ball-card').filter({hasText:'Delta'}).locator('.ball-session-toggle input').isChecked(),true,
+   'B conserva Delta marcada');
+  await first.reload({waitUntil:'load'});
+  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  assert.equal(await first.locator('.ball-card').filter({hasText:'Alpha'}).count(),0,'Tras recarga A ya no muestra Alpha');
+  assert.equal(await first.locator('.ball-card').filter({hasText:'Delta'}).locator('.ball-session-toggle input').isChecked(),true,
+   'Tras recarga A muestra la única bola válida seleccionada');
+  assert.deepEqual(errors,[],'Sin errores JS en restauración de catálogo con dos pestañas');
+  console.log('OK '+engine+' 390px: restaurar otro catálogo entre pestañas rechaza IDs antiguos y conserva Delta');
+ }finally{await context.close()}
+}
+
 async function run(browser,engine,width,origin){
  const context=await browser.newContext({viewport:{width,height:width<500?844:850},isMobile:width<500,hasTouch:width<500,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
@@ -642,7 +704,7 @@ async function run(browser,engine,width,origin){
  try{
   for(const [name,type] of [['chromium',chromium],['webkit',webkit]]){
    const browser=await type.launch({headless:true});
-   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin);await concurrentRollDeselectionScenario(browser,name,origin);await rewindUndoWithDeselectedBallScenario(browser,name,origin);await crossTabRestoreClearsSelectionsScenario(browser,name,origin);await crossTabRetirementStalePickerScenario(browser,name,origin)}
+   try{for(const size of [390,1280])await run(browser,name,size,origin);await officialScenario(browser,name,origin);await deletionAndMalformedSelectionScenario(browser,name,origin);await independentSessionsScenario(browser,name,origin);await parallelTabsSelectionScenario(browser,name,origin);await concurrentRollDeselectionScenario(browser,name,origin);await rewindUndoWithDeselectedBallScenario(browser,name,origin);await crossTabRestoreClearsSelectionsScenario(browser,name,origin);await crossTabRetirementStalePickerScenario(browser,name,origin);await crossTabRestoreReplacesCatalogScenario(browser,name,origin)}
    finally{await browser.close()}
   }
  }finally{await new Promise(resolve=>server.close(resolve))}
