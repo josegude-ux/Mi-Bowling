@@ -1,0 +1,78 @@
+name: MI BOWLING · LAB I11 · Cadena cifrada y evidencia independiente
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i11-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i11-*'
+      - 'lab/integracion-main-auth-i11*'
+      - 'tests/integracion-i11-*'
+      - 'tests/i11-*'
+      - '.github/workflows/integracion-i11-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I11 · CP-020, FGB, cadena SHA-256 y cifrado independiente
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificar activos publicados y FGB de LAB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Comprobar sintaxis I11
+        run: |
+          node --check lab/i11-audit-core.js
+          node --check lab/i11-encrypted-store.js
+          node --check lab/i11-evidence.js
+          node --check lab/i11-backup.js
+          node --check lab/i11-persistence.js
+          node --check lab/i11-guard.js
+          node --check lab/i11-backup-ui.js
+          node --check lab/i11-evidence-ui.js
+          node --check lab/integracion-main-auth-i11.js
+          node --check tests/i11-audit-contract.test.cjs
+          node --check tests/integracion-i11-browser.test.cjs
+          node --check tests/i11-resilience-browser.test.cjs
+          node --check tests/i11-evidence-browser.test.cjs
+      - name: Validar cadena, testigo externo y regresiones
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i10-backup-contract.test.cjs
+          node tests/i9-backup-contract.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
+  browser:
+    name: I11 · WebKit/Chromium, recibos, reinicio y auditoría
+    runs-on: ubuntu-24.04
+    timeout-minutes: 29
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright de prueba
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: Instalar WebKit Linux emulado
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Motor CP-020 y cuentas ficticias con cadena I11
+        run: node tests/integracion-i11-browser.test.cjs
+      - name: Rollback IDB, auditoría cifrada, ACK perdido y reinicio Chromium
+        run: node tests/i11-resilience-browser.test.cjs
+      - name: Múltiples restauraciones, cadena cifrada, supresión, prueba externa y recuperación
+        run: node tests/i11-evidence-browser.test.cjs
+      - name: Evidencia visual sintética aislada
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-i11-audit-lab
+          path: tests/artifacts-integracion-i11/*.png
+          retention-days: 14
+          if-no-files-found: warn
