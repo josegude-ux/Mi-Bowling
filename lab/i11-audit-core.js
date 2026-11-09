@@ -13,7 +13,7 @@ const validRev=r=>r===null||(Number.isSafeInteger(r)&&r>=0);
 const validDate=t=>Number.isSafeInteger(t)&&t>0;
 const fields=['version','kind','owner','auditId','backupId','backupSha',
  'occurredAt','sourceCreatedAt','revision','operationsAdded','status',
- 'seq','prevHash'];
+ 'seq','prevHash','reason'];
 function canonical(e){
  if(!e||typeof e!=='object'||Array.isArray(e))throw Error('I11: recibo inválido');
  return Object.fromEntries(fields.map(k=>[k,e[k]]));
@@ -25,18 +25,21 @@ function fieldsExactly(e){
 }
 function shape(e,owner){
  if(!UUID.test(owner||'')||!fieldsExactly(e)||
-   e.version!==2||e.kind!=='restore'||e.owner!==owner||
+   e.version!==2||!['restore','conflict'].includes(e.kind)||e.owner!==owner||
    !UUID.test(e.auditId||'')||!UUID.test(e.backupId||'')||
    !SHA.test(e.backupSha||'')||!SHA.test(e.prevHash||'')||
    !SHA.test(e.chainHash||'')||!validDate(e.occurredAt)||
    !validDate(e.sourceCreatedAt)||!validRev(e.revision)||
    !Number.isSafeInteger(e.operationsAdded)||e.operationsAdded<0||
-   !Number.isSafeInteger(e.seq)||e.seq<1||e.status!=='restored')
+   !Number.isSafeInteger(e.seq)||e.seq<1||
+   (e.kind==='restore'?(e.status!=='restored'||e.reason!=='none'):
+     (e.status!=='rejected'||!['stale','fork','operation','race'].includes(e.reason)||
+      e.operationsAdded!==0)))
   throw Error('I11: recibo alterado o de otra identidad');
 }
 async function append(owner,payload,previous=ZERO,seq=1){
- const entry=canonical({...payload,owner,kind:'restore',version:2,
-   seq,prevHash:previous});
+ const entry=canonical({...payload,owner,kind:payload.kind||'restore',version:2,
+   reason:payload.reason||'none',seq,prevHash:previous});
  const core={...entry};
  const e={...core,chainHash:await hash(core)};
  shape(e,owner);
