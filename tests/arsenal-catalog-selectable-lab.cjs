@@ -32,6 +32,7 @@ async function mainScenario(browser,engine,width,origin){
   await page.evaluate(data=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data));localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify({__next__:['lab-existing']}))},seed());
   await page.reload({waitUntil:'load'});
   const prior=await state(page);
+  const historicalBefore=await page.evaluate(()=>JSON.parse(JSON.stringify(db.sessions)));
   await openCatalog(page);
   assert.equal(await page.locator('.arsenal-model').count(),10,'10 fichas reutilizadas de PR19');
   assert.equal(await page.locator('.arsenal-model').filter({hasText:'Web Tour Edition Hybrid'}).getByRole('button',{name:'Añadir a Mis bolas'}).count(),0,'No ofrecer duplicado existente');
@@ -49,7 +50,7 @@ async function mainScenario(browser,engine,width,origin){
   assert.equal(added.notes,'','Taladro sin inventar');
   assert.equal(added.kind,'Reactiva','Tipo reutiliza esquema vigente');
   assert.deepEqual(after.db.balls.slice(0,3),seed().balls,'Bolas y notas anteriores intactas');
-  assert.deepEqual(after.db.sessions,prior.db.sessions,'Historial y atribución de bolas en tiros existentes intactos');
+  assert.deepEqual(after.db.sessions,historicalBefore,'Historial normalizado y atribución de bolas en tiros existentes intactos');
   assert.deepEqual(after.picks.__next__,['lab-existing'],'No selecciona automáticamente');
   assert.equal(await page.locator('#arsenal-catalog-search').inputValue(),'vintage phantom','Conserva búsqueda tras incorporar');
   assert.equal(await page.locator('.arsenal-model:visible').getByRole('button',{name:'Añadir a Mis bolas'}).count(),0,'Una sola incorporación idempotente');
