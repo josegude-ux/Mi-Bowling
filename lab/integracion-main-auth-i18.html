@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I18 · Expediente forense</title>
+<style>
+:root{color-scheme:light;font:16px system-ui,sans-serif;color:#173451;background:#f3f8fc}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:900px;margin:auto}
+header,.card{padding:20px;margin-bottom:16px;border:1px solid #d5e4f0;border-radius:16px;background:white;box-shadow:0 3px 15px #15416a0c}
+.kicker{color:#0864b7;font-size:.84rem;font-weight:700;letter-spacing:.05em}
+h1{font-size:clamp(1.4rem,4vw,2rem);margin:8px 0}h2{font-size:1.08rem;margin:0 0 12px}
+p{line-height:1.55}.warning{background:#fff4dc;border-radius:10px;padding:14px}
+.note{color:#506880;font-size:.93rem}label{display:block;font-weight:650;margin:14px 0 7px}
+input,select{width:100%;font:inherit;min-height:44px;padding:10px;border:1px solid #99b5ce;border-radius:9px}
+button{background:#0869ba;color:white;border:0;border-radius:9px;font:inherit;font-weight:700;cursor:pointer;padding:11px 14px;min-height:44px}
+button:disabled{opacity:.6;cursor:wait}button.secondary{background:#e9f3ff;color:#135487;border:1px solid #b3d1ef}
+.buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.buttons>*{flex:1 1 240px}
+#i18-status{background:#edf6ff;border-left:4px solid #1975c8;padding:14px;min-height:62px;white-space:pre-wrap;overflow-wrap:anywhere}
+</style></head><body data-lab="I18-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LABORATORIO I18</span>
+<h1>Preservar el conflicto y registrar un bloqueo</h1>
+<p>Prepara un expediente forense portátil con los documentos A/B/C ficticios, sus huellas SHA-256 y una trazabilidad de decisiones. Nunca restaura cuentas ni crea nuevas anclas de confianza.</p>
+<p class="warning"><strong>Escalada manual exclusivamente:</strong> incluso si las firmas son coherentes, el expediente queda sin autorización operativa. No prueba el momento de preservación, control de custodios ni inmutabilidad. Guarda su huella fuera del paquete si necesitas contrastarla después.</p></header>
+<section class="card"><h2>1. Identidad y caso exclusivamente ficticios</h2>
+<label for="i18-owner">Jugador ficticio</label><select id="i18-owner">
+<option value="11111111-1111-4111-8111-111111111111">A</option>
+<option value="22222222-2222-4222-8222-222222222222">B</option>
+<option value="33333333-3333-4333-8333-333333333333">C</option></select>
+<label for="i18-case">Identificador de caso de laboratorio (UUID)</label>
+<input id="i18-case" value="00000018-1818-4818-8181-000000000018" spellcheck="false">
+<label for="i18-pass">Frase ficticia para verificar I11 (nunca se guarda en el expediente)</label>
+<input id="i18-pass" type="password" minlength="12" maxlength="256" autocomplete="off" placeholder="No introduzcas contraseñas reales">
+</section>
+<section class="card"><h2>2. Evidencia original, sin reescribir</h2>
+<label for="i18-package15">Paquete I15 (.mr15), opcional si se perdió</label>
+<input id="i18-package15" type="file" accept=".mr15,.json">
+<label for="i18-source15">Referencias I15 (.refs15), opcional si se perdió</label>
+<input id="i18-source15" type="file" accept=".refs15,.json">
+<label for="i18-root">Génesis I16 (.gen16), opcional si se perdió</label>
+<input id="i18-root" type="file" accept=".gen16,.json">
+<label for="i18-latest">Última marca I16 (.mark16), opcional si se perdió</label>
+<input id="i18-latest" type="file" accept=".mark16,.json">
+<label for="i18-report-A">Informe ficticio A (.claim17), opcional</label>
+<input id="i18-report-A" type="file" accept=".claim17,.json">
+<label for="i18-report-B">Informe ficticio B (.claim17), opcional</label>
+<input id="i18-report-B" type="file" accept=".claim17,.json">
+<label for="i18-report-C">Informe ficticio C (.claim17), opcional</label>
+<input id="i18-report-C" type="file" accept=".claim17,.json">
+<div class="buttons"><button id="i18-build" type="button">Diagnosticar y preparar expediente bloqueado</button>
+<button id="i18-download" type="button" class="secondary" disabled>Exportar copia local del expediente</button></div>
+<p class="note">La exportación es voluntaria y solo guarda el archivo en tu dispositivo. Ningún dato pasa a la aplicación MI BOWLING ni a un servidor. En las pruebas, solo se usan identidades y archivos inventados.</p></section>
+<section class="card"><h2>3. Revisión posterior opcional (sin otorgar autoridad)</h2>
+<label for="i18-saved">Expediente I18 previamente guardado (.hold18)</label>
+<input id="i18-saved" type="file" accept=".hold18,.json">
+<label for="i18-trusted-digest">SHA-256 externo del expediente (opcional, 64 caracteres; conservado fuera)</label>
+<input id="i18-trusted-digest" spellcheck="false" maxlength="64" placeholder="No se crea automáticamente un PIN confiable">
+<div class="buttons"><button id="i18-check" type="button" class="secondary">Verificar integridad y referencia externa</button></div></section>
+<section class="card"><h2>4. Resultado y escalada</h2><p id="i18-status" role="status" aria-live="polite">Sin evidencias evaluadas. Los resultados no autorizan acciones sobre cuentas reales.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i18"></script>
+<script src="i11-evidence.js?v=i18"></script>
+<script src="i12-manifest.js?v=i18"></script>
+<script src="i13-witnesses.js?v=i18"></script>
+<script src="i14-policy-lifecycle.js?v=i18"></script>
+<script src="i15-recovery.js?v=i18"></script>
+<script src="i16-anchors.js?v=i18"></script>
+<script src="i17-forensics.js?v=i18"></script>
+<script src="i18-forensic-hold.js?v=i18"></script>
+<script src="i18-ui.js?v=i18"></script>
+</body></html>
