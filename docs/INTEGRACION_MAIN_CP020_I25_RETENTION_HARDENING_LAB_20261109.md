@@ -33,6 +33,24 @@ Los módulos I18–I24 almacenan expedientes y afirmaciones escaladas de A/B/C, 
 - Los controles de tamaño protegen frente a cargas excesivas, pero limitan qué documentos caben en el sobre. Los rechazados no se destruyen ni reparan; deben conservarse fuera de esta herramienta.
 - Una prueba WebKit en Linux con móvil emulado y una prueba Chromium escritorio **no certifican** Safari en un iPhone físico. I25 no toca `main`, `index.html`, `sw.js`, producción, PWA, FGB CP-020, datos reales ni permisos de cuenta.
 
+## Checkpoint funcional verificado · BOWLING-I25-CP-001
+
+**Código funcional I25:** `5a01128557ad9ab1572c6d8d8fdb71093d00fd24` (commit de los ocho archivos I25 antes de este checkpoint documental).  
+**CI funcional push:** [42710969968](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42710969968) — `completed / SUCCESS / 2 de 2 trabajos`, sobre ese SHA.  
+**CI funcional PR:** [42711081043](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42711081043) — `completed / SUCCESS / 2 de 2 trabajos`, sobre el **mismo** SHA.  
+**PR I25:** [#47](https://github.com/josegude-ux/Mi-Bowling/pull/47), OPEN/DRAFT/UNMERGED, base `feature/integracion-main-auth-i24-lab-20261109`.
+
+**Logs y condiciones verificables:**
+- CP-020/FGB: `PASS FGB 31 eventos` (10 gallegos y 21 nacionales; filtros, fechas, sin duplicados, datos intactos); regresiones de contratos anteriores I11–I24 `PASS`.
+- `PASS I25 Node`: siete etapas I18–I24 de datos A/B/C ficticios; hash del texto UTF-8 diferente del de JSON reserializado cuando corresponde; originales con JSON malformado o ausentes conservados, seis enlaces cruzados examinados, candidatos completos válidos pero discordantes en cuarentena; SHA declarados incompatibles; límites de **12 MiB por archivo y 28 MiB agregados**, BOM/Unicode incompatibles rechazados; sustitución coherente de documentos+SHA **no** excluida; falsificaciones de custodia, tiempo, firmas implícitas y autorizaciones rechazadas; concurrentes sin escrituras.
+- `PASS I25 webkit` en Linux móvil emulado y `PASS I25 chromium` escritorio en HTTPS localhost: importaciones, exportaciones bajo pulsación, originales ausentes/dañados, SHA reserializado, divergencia, permisos falsos; sin IndexedDB ni peticiones a red externa.
+- Comparación con I24 documental `59790ee7954a2addd56f060062f60fc4ecfebc3e`: **ocho archivos I25 todos `added`, ninguno `modified` ni `removed`**, nueve commits delante y cero detrás antes de este commit documental.
+- `main` observado en `a52d712e0e9138e53a8979a904c7d33c93905c7e`, preservando PWA/producción y las fusiones anteriores #41–#45, sin intervención de I25. PR #46 sigue OPEN/DRAFT/UNMERGED. PR #47 sin fusión/publicación.
+
+**Interpretación que NO se acredita:** validez de estructura interna y SHA de texto importado son verificaciones locales; ni un paquete correcto ni siete etapas consistentes prueban identidad de custodios humanos, custodia externa independiente, fecha, inmutabilidad/WORM, original preincidente o firma/autorización operativa. Los SHA/pines aportados por el mismo canal siguen `untrusted`; una sustitución conjunta consistente puede superar los chequeos. El archivo I25 solo conserva cadenas UTF-8 admitidas, no los archivos físicamente custodiados antes de su importación.
+
+**Cierre documental pendiente:** este checkpoint crea un HEAD distinto del funcional. Se requieren **nuevas** CI `push` y `pull_request` con ambos trabajos SUCCESS 2/2 sobre **el mismo HEAD documental exacto**. Tras verificarlas, anotar el cierre definitivo y preparación I26 en el **cuerpo de PR #47** sin generar commits posteriores. No dar por finalizada esa fase antes de comprobar GitHub Actions.
+
 ## Criterios de cierre y continuidad
 
 Comprobar primero el SHA funcional de los ocho archivos añadidos y ambas CI `push` y `pull_request` **2/2 sobre ese SHA exacto**. Si falla algo, corregir exclusivamente I25 y repetir, sin falsear que se probó en dispositivo real. Después registrar `BOWLING-I25-CP-001` en este documento, originando SHA documental distinto. **Repetir ambas CI completas sobre el HEAD documental exacto** antes de dar el checkpoint por finalizado. El cierre definitivo, sus SHA y la orden I26 se añadirán **al cuerpo de la PR**, sin otro commit tras la última CI. No fusionar ni publicar.
