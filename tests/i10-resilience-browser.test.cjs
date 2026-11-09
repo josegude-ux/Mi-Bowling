@@ -93,8 +93,8 @@ async function makeFile(browser,base){
   assert.equal(drained.volatileCount,0);
   const out=await p.evaluate(pass=>MiBowlingIntegrationI10.exportBackup(pass),PASSWORD);
   assert.ok(!out.includes('I10-PENDING-FIRST'));
-  assert.equal((await p.evaluate(()=>MiBowlingIntegrationI10.inspectBackup(
-   JSON.stringify({format:'bad'}),PASSWORD).catch(e=>e.message))).includes('cabecera'),true);
+  assert.equal((await p.evaluate(pass=>MiBowlingIntegrationI10.inspectBackup(
+   JSON.stringify({format:'bad'}),pass).catch(e=>e.message),PASSWORD)).includes('cabecera'),true);
   return out;
  }finally{await ctx.close()}
 }
