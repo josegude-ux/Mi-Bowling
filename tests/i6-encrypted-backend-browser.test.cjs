@@ -57,8 +57,15 @@ async function waitOpen(p,who){
  },user[who],{timeout:20000});
 }
 async function modify(p,label){
- // Uses UNMODIFIED CP-020 db & save, not direct calls to the WAL.
- await p.evaluate(name=>Function('db.sessions.push({id:"'+name+'",type:"entrenamiento",date:"2026-11-09",games:[{id:"game-'+name+'",rolls:[],includeStats:true}]});save()')(),label);
+ // Synthetic scores use the EXACT migration normalizer of the live CP-020 engine.
+ // Under-specified raw fixtures would be rewritten after reload, legitimately
+ // blocking a strict merge because they modify existing sessions' JSON shapes.
+ await p.evaluate(name=>{
+  const raw={id:name,type:'entrenamiento',date:'2026-11-09',
+   games:[{id:'game-'+name,rolls:[],includeStats:true}]};
+  Function('return db')().sessions.push(Function('return migrate')()({sessions:[raw]}).sessions[0]);
+  Function('return save')()();
+ },label);
 }
 async function waitSaved(p,revision){
  await p.waitForFunction(expected=>{
