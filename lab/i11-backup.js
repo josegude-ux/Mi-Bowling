@@ -158,8 +158,10 @@ async function restoreBackup(journal,owner,text,password,confirmation){
   const msg=String(error?.message||error);
   const reason=/OBSOLETO/.test(msg)?'stale':
    /operación duplicada|mismo ID|otra pestaña/.test(msg)?'operation':
-   /CONFLICTO de confirmado|revisión|conflicto sin escritura/.test(msg)?'fork':
-   /concurrente|simultáneo/.test(msg)?'race':null;
+   /CONFLICTO de confirmado|revisión|conflicto sin escritura/.test(msg)?'fork':null;
+  // An aborted transaction (including test fault injection) is NOT an
+  // authenticated rejected conflict: do not create any audit event after an
+  // uncommitted restore. Otherwise the all-or-nothing invariant is false.
   if(reason&&typeof journal.recordConflict==='function'){
    try{await journal.recordConflict(owner,source,reason)}
    catch(auditError){
