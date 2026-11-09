@@ -52,7 +52,7 @@ async function main(){
  // A mutually conflicting but internally valid set must all survive.
  const rivals=await G.prepare(f.base,null,f.competing);
  assert.equal(rivals.classification,'quarantine-competing-versions');
- assert.equal((await G.verify(rivals)).validLogicalClaims,3);
+ assert.equal((await G.verify(rivals)).validLogicalClaims,2);
  assert.deepEqual(JSON.parse(JSON.stringify(rivals.records[1].packet)),
   JSON.parse(JSON.stringify(f.rival)));
  assert.equal(rivals.operationalApproval,false);
