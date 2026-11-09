@@ -26,9 +26,8 @@ function safePayload(x){
  while(stack.length){
   const v=stack.pop();if(++n>50000)throw Error('I18: evidencia excesiva');
   if(v&&typeof v==='object'){
-   if(Object.getPrototypeOf(v)!==Object.prototype&&
-      Object.getPrototypeOf(v)!==null&&!Array.isArray(v))
-    throw Error('I18: prototipo de evidencia no autorizado');
+   if(Object.prototype.toString.call(v)!=='[object Object]'&&!Array.isArray(v))
+    throw Error('I18: estructura de evidencia no serializable');
    for(const [k,val] of Object.entries(v)){
     if(/(?:private.?key|secret|password|passphrase|credential|access.?token|api.?key|seed|mnemonic)/i.test(k))
      throw Error('I18: evidencia contiene campo de secreto: rechazo seguro');
