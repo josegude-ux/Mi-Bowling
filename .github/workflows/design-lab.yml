@@ -1,0 +1,70 @@
+name: "MI BOWLING | Diseño unificado LAB R1"
+on:
+  push:
+    branches:
+      - feature/redesign-blanco-azul-lab-20261109
+    paths:
+      - index.html
+      - styles.css
+      - app.js
+      - sw.js
+      - design-lab.css
+      - design-lab.js
+      - tests/design-lab-smoke.cjs
+      - tests/design-lab-browser.cjs
+      - .github/workflows/design-lab.yml
+      - docs/MI_BOWLING_DISENO_UNIFICADO_LAB_20261109.md
+  pull_request:
+    branches: [main]
+    paths:
+      - index.html
+      - sw.js
+      - design-lab.css
+      - design-lab.js
+      - tests/design-lab-smoke.cjs
+      - tests/design-lab-browser.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: mi-bowling-design-lab-r1
+  cancel-in-progress: true
+jobs:
+  static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Análisis sintáctico sin tocar el motor
+        run: |
+          node --check app.js
+          node --check design-lab.js
+          node --check tests/design-lab-smoke.cjs
+          node --check tests/design-lab-browser.cjs
+      - name: Contrato visual y separación de datos
+        run: node tests/design-lab-smoke.cjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preparar motores Chromium y WebKit aislados
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Probar escritorio, tablet y móvil con datos ficticios
+        run: node tests/design-lab-browser.cjs
+      - name: Conservar capturas de LAB
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-design-lab-r1
+          path: test-results/diseno-*.png
+          if-no-files-found: ignore
+          retention-days: 7
