@@ -1,0 +1,61 @@
+name: MI BOWLING · LAB I17 · Pérdida y disputas de referencias
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i17-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i17-*'
+      - 'lab/integracion-main-auth-i17.html'
+      - 'tests/i17-*'
+      - '.github/workflows/integracion-i17-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I17 · CP-020/FGB, regresiones I11-I16 y disputas de custodios
+    runs-on: ubuntu-24.04
+    timeout-minutes: 26
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis I17
+        run: |
+          node --check lab/i17-forensics.js
+          node --check lab/i17-ui.js
+          node --check tests/i17-forensics-fixture.cjs
+          node --check tests/i17-forensics-contract.test.cjs
+          node --check tests/i17-forensics-browser.test.cjs
+      - name: Contratos CP-020 y calendario FGB protegidos
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresión de evidencia I11-I16
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+          node tests/i16-anchor-contract.test.cjs
+      - name: I17 · Pérdidas totales, bifurcaciones firmadas, conflicto y bloqueo
+        run: node tests/i17-forensics-contract.test.cjs
+  browser:
+    name: I17 · WebKit/Chromium offline con pérdida de anclas
+    runs-on: ubuntu-24.04
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright solo para laboratorio
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit emulado Linux
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: A/B/C ficticios, conflictos, anclas ausentes y solo lectura
+        run: node tests/i17-forensics-browser.test.cjs

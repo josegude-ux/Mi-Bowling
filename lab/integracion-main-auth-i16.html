@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I16 · Testigos externos redundantes</title>
+<style>
+:root{color-scheme:light;font:16px system-ui,sans-serif;background:#f3f8fc;color:#173451}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:840px;margin:auto}
+header,.card{padding:20px;margin-bottom:16px;border:1px solid #d5e4f0;border-radius:16px;background:white;box-shadow:0 3px 15px #15416a0c}
+.kicker{color:#0864b7;font-weight:700;font-size:.82rem;letter-spacing:.06em}
+h1{font-size:clamp(1.4rem,4vw,2rem);margin:8px 0}h2{font-size:1.07rem;margin:0 0 12px}
+p{line-height:1.55}.warning{background:#fff4dc;padding:13px;border-radius:10px}.note{color:#506880;font-size:.92rem}
+label{display:block;font-weight:650;margin:14px 0 7px}input,select{width:100%;font:inherit;padding:10px;border:1px solid #9bb5ce;border-radius:9px;min-height:44px}
+button{font:inherit;font-weight:700;padding:11px 14px;border-radius:9px;border:0;background:#0869ba;color:white;cursor:pointer;min-height:44px}
+button:disabled{opacity:.6}.secondary{background:#e9f3ff;color:#12548a;border:1px solid #b3d1ef}
+.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.buttons>*{flex:1 1 230px}
+#i16-status{min-height:58px;white-space:pre-wrap;overflow-wrap:anywhere;border-left:4px solid #1975c8;background:#edf6ff;padding:14px}
+</style></head><body data-lab="I16-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LABORATORIO I16</span>
+<h1>Revisar testigos y referencias redundantes</h1>
+<p>Comprueba un historial firmado de I16 frente a su evidencia I15 y tres copias externas rotuladas. Puede faltar o estar dañada una de ellas; nunca afirma independencia real solo por usar nombres diferentes.</p>
+<p class="warning"><strong>Frescura condicionada:</strong> para detectar un replay debe conservarse una marca externa de versión más reciente, separada del paquete. Si desaparece esa referencia o un atacante sustituye todas las copias, el programa no puede asegurar que la historia sea la última. Este LAB no emite firmas ni modifica cuentas o partidas.</p>
+</header>
+<section class="card"><h2>1. Historia y referencias anteriores</h2>
+<label for="i16-owner">Jugador ficticio</label><select id="i16-owner">
+<option value="11111111-1111-4111-8111-111111111111">A</option>
+<option value="22222222-2222-4222-8222-222222222222">B</option>
+<option value="33333333-3333-4333-8333-333333333333">C</option></select>
+<label for="i16-history">Historial firmado I16 (.anchor16)</label>
+<input id="i16-history" type="file" accept=".anchor16,.json">
+<label for="i16-package15">Paquete I15 cifrado del mismo jugador (.mr15)</label>
+<input id="i16-package15" type="file" accept=".mr15,.json">
+<label for="i16-source15">Referencias I15 en JSON (solo facilidad de LAB, no acredita custodia independiente)</label>
+<input id="i16-source15" type="file" accept=".refs15,.json">
+<label for="i16-password">Frase ficticia exclusivamente para abrir las evidencias I11</label>
+<input id="i16-password" type="password" minlength="12" maxlength="256" autocomplete="off" placeholder="No introduzcas contraseñas reales">
+</section>
+<section class="card"><h2>2. Copias y marcas externas</h2>
+<label for="i16-root">Génesis independiente I16 (.gen16)</label><input id="i16-root" type="file" accept=".gen16,.json">
+<label for="i16-watermark">Última marca externa retenida por separado (.mark16)</label><input id="i16-watermark" type="file" accept=".mark16,.json">
+<label for="i16-copy-A">Copia lógica A (.copy16, puede faltar)</label><input id="i16-copy-A" type="file" accept=".copy16,.json">
+<label for="i16-copy-B">Copia lógica B (.copy16, puede faltar)</label><input id="i16-copy-B" type="file" accept=".copy16,.json">
+<label for="i16-copy-C">Copia lógica C (.copy16, puede faltar)</label><input id="i16-copy-C" type="file" accept=".copy16,.json">
+<div class="buttons"><button id="i16-verify" type="button">Verificar quórum de copias, firmas y última marca</button></div>
+<p class="note">Mínimo dos copias correctas con identidades de ubicación diferentes. Una copia ausente o antigua es admisible si las otras dos coinciden. No hay recuperación automática ni publicación.</p>
+</section>
+<section class="card"><h2>3. Contrastar el testigo actual (solo lectura)</h2>
+<label for="i16-current">Archivo cifrado I11 actual (.mae11, opcional)</label>
+<input id="i16-current" type="file" accept=".mae11,.json">
+<div class="buttons"><button class="secondary" id="i16-compare" type="button">Comprobar rollback o bifurcación</button></div>
+</section>
+<section class="card"><h2>Resultado</h2><p id="i16-status" role="status" aria-live="polite">Selecciona la historia y las referencias ficticias A/B/C; no se guardará ningún dato.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i16"></script>
+<script src="i11-evidence.js?v=i16"></script>
+<script src="i12-manifest.js?v=i16"></script>
+<script src="i13-witnesses.js?v=i16"></script>
+<script src="i14-policy-lifecycle.js?v=i16"></script>
+<script src="i15-recovery.js?v=i16"></script>
+<script src="i16-anchors.js?v=i16"></script>
+<script src="i16-ui.js?v=i16"></script>
+</body></html>

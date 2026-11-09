@@ -1,0 +1,59 @@
+name: MI BOWLING · LAB I15 · Recuperación excepcional preautorizada
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i15-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i15-*'
+      - 'lab/integracion-main-auth-i15.html'
+      - 'tests/i15-*'
+      - '.github/workflows/integracion-i15-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I15 · CP-020/FGB, I11–I14, rescate y quórums independientes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis I15
+        run: |
+          node --check lab/i15-recovery.js
+          node --check lab/i15-ui.js
+          node --check tests/i15-recovery-fixture.cjs
+          node --check tests/i15-recovery-contract.test.cjs
+          node --check tests/i15-recovery-browser.test.cjs
+      - name: Contratos inmutados CP-020 y calendario FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresión de evidencias I11–I14
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+      - name: Autoridad de rescate precomprometida, ataques y A/B/C
+        run: node tests/i15-recovery-contract.test.cjs
+  browser:
+    name: I15 · WebKit/Chromium, ficheros externos y solo lectura
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright exclusivamente para pruebas
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux emulado
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Comprobar historia, PIN externo y recuperación ficticia en navegadores
+        run: node tests/i15-recovery-browser.test.cjs
