@@ -91,15 +91,16 @@ function output(decision,summary,details,meta={}){
   immutableStorageProven:false,noWrites:true,containsScores:false});
 }
 async function reconcile(package15,source15,owner,pass,externalRoot,externalLatest,reports){
- if(!UUID.test(owner||'')||!Array.isArray(reports)||reports.length!==3||
-  typeof pass!=='string'||pass.length<12||pass.length>256)
-  throw Error('I17: entradas A/B/C o frase ficticia incompletas');
+ if(!UUID.test(owner||'')||!Array.isArray(reports)||reports.length!==3)
+  throw Error('I17: identidad o tres posiciones A/B/C inválidas');
  if(!package15||!source15){
   return output('blocked-total-trust-loss',
    'No se puede acreditar identidad, autenticidad ni frescura sin fuentes I15 externas.',
    'No se crea raíz, PIN o quórum sustituto. Solo recuperar copias originales mediante proceso externo.');
  }
- // This checks real historical I11–I15 evidence, not just declarations in reports.
+ if(typeof pass!=='string'||pass.length<12||pass.length>256)
+  throw Error('I17: frase ficticia de I11 insuficiente');
+ // This checks historical I11–I15 evidence, not just declarations in reports.
  const previous=await R.verify(package15,source15,owner,pass);
  const examined=[],issues=[];
  for(let i=0;i<3;i++){
