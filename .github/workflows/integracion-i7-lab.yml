@@ -34,6 +34,9 @@ jobs:
           node --check lab/integracion-main-auth-i7.js
           node --check tests/integracion-i7-browser.test.cjs
           node --check tests/i7-multi-wal-browser.test.cjs
+          node --check tests/i7-multi-wal-contract.test.cjs
+      - name: Contratos propios de journal I7 antes de red simulada
+        run: node tests/i7-multi-wal-contract.test.cjs
       - name: Regresiones de contratos anteriores independientes
         run: |
           node tests/integracion-i4-journal.test.cjs
