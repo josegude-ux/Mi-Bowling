@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I13 · Verificación de testigos firmados</title>
+<style>
+:root{color-scheme:light;font:16px system-ui,sans-serif;background:#f3f8fc;color:#173451}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:820px;margin:auto}
+header,.card{border:1px solid #d5e4f0;border-radius:16px;background:white;padding:20px;margin-bottom:16px;box-shadow:0 3px 15px #15416a0c}
+h1{margin:6px 0;font-size:clamp(1.4rem,4vw,2rem)}h2{font-size:1.08rem;margin:2px 0 14px}
+.kicker{color:#0864b7;font-weight:700;font-size:.84rem;letter-spacing:.06em}
+label{display:block;font-weight:650;margin:14px 0 6px}input,select{font:inherit;width:100%;border:1px solid #9bb5cd;border-radius:9px;padding:10px;min-height:44px}
+button{min-height:44px;border:0;border-radius:10px;padding:11px 14px;background:#0869ba;color:white;font-weight:700;cursor:pointer}
+button.secondary{background:#e9f3ff;color:#12548a;border:1px solid #b3d1ef}
+.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.buttons>*{flex:1 1 220px}
+#i13-status{white-space:pre-wrap;overflow-wrap:anywhere;border-left:4px solid #1975c8;padding:14px;background:#edf6ff;min-height:58px}
+small,p{line-height:1.5}.note{color:#506880}.warning{background:#fff5df;padding:12px;border-radius:10px}
+</style></head><body data-lab="I13-OFFLINE-READONLY">
+<main>
+<header><span class="kicker">MI BOWLING · LABORATORIO I13</span>
+<h1>Testigos firmados por varias claves</h1>
+<p>Verificación externa y sin escrituras de la cadena de manifiestos I12. Solo ficticios A/B/C: no se abre la aplicación, no se leen partidas ni se crean registros en IndexedDB.</p>
+<p class="warning"><strong>No es inmutabilidad:</strong> la política de confianza y el último PIN deben haberse guardado por separado y fuera del control de quien altere los datos. Dos claves no implican dos custodios independientes ni una fecha auténtica.</p>
+</header>
+<section class="card" aria-labelledby="files-heading">
+<h2 id="files-heading">Verificar cadena firmada I13</h2>
+<label for="i13-owner">Jugador ficticio</label>
+<select id="i13-owner"><option value="11111111-1111-4111-8111-111111111111">A · Jugador ficticio</option>
+<option value="22222222-2222-4222-8222-222222222222">B · Jugador ficticio</option>
+<option value="33333333-3333-4333-8333-333333333333">C · Jugador ficticio</option></select>
+<label for="i13-package">Paquete I13 de testigos firmados y archivos cifrados (.mw13)</label>
+<input id="i13-package" type="file" accept=".mw13,.json,application/json">
+<label for="i13-policy">Política de claves públicas PINNED obtenida fuera del paquete (.trust13)</label>
+<input id="i13-policy" type="file" accept=".trust13,.json,application/json">
+<label for="i13-pin">Último PIN independiente, conservado por separado (.pin13)</label>
+<input id="i13-pin" type="file" accept=".pin13,.json,application/json">
+<label for="i13-pass">Frase ficticia de evidencias I11 (nunca se guarda en el paquete)</label>
+<input id="i13-pass" type="password" autocomplete="off" minlength="12" maxlength="256" placeholder="Usa solo una frase ficticia">
+<div class="buttons"><button id="i13-verify">Verificar firmas, continuidad y PIN externo</button></div>
+<p class="note">Las firmas deben generarse fuera de esta pantalla por custodios de prueba. I13 solo verifica; no genera claves ni solicita claves privadas.</p>
+</section>
+<section class="card" aria-labelledby="compare-heading">
+<h2 id="compare-heading">Comparar evidencia actual sin restaurarla</h2>
+<label for="i13-current">Exportación I11 actual a comparar (.mae11, solo lectura)</label>
+<input id="i13-current" type="file" accept=".mae11,.json,application/json">
+<div class="buttons"><button class="secondary" id="i13-compare">Comprobar retroceso o bifurcación</button></div>
+<p class="note">Un PIN viejo retenido junto con todos los archivos viejos no permite detectar una sustitución completa. Se necesita una referencia externa auténticamente más reciente.</p>
+</section>
+<section class="card"><h2>Resultado</h2>
+<p id="i13-status" role="status" aria-live="polite">Selecciona los documentos ficticios independientes para iniciar la verificación.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i13"></script>
+<script src="i11-evidence.js?v=i13"></script>
+<script src="i12-manifest.js?v=i13"></script>
+<script src="i13-witnesses.js?v=i13"></script>
+<script src="i13-ui.js?v=i13"></script>
+</body></html>
