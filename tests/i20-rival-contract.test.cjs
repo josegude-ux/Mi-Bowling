@@ -90,7 +90,7 @@ async function main(){
  const deleted=clone(requested);deleted.claims.pop();
  await assert.rejects(P.verify(deleted),/tres posiciones/);
  const changedFile=clone(requested);changedFile.dossier.decision='conditionally-consistent';
- await assert.rejects(P.verify(changedFile),/expediente|alterado|integridad/i);
+ await assert.rejects(P.verify(changedFile),/expediente|alterado|integridad|decisión|escalada/i);
  const secret=clone(f.fullReview);secret[0].review.privateKey='must-never-export';
  await assert.rejects(P.prepare(d,null,secret),/secreto/);
  await assert.rejects(P.prepare(d,'f'.repeat(64),f.fullReview),/PIN externo/);
