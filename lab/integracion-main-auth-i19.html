@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'unsafe-inline';connect-src 'none';img-src 'none';frame-src 'none';object-src 'none';base-uri 'none';form-action 'none'">
+<title>MI BOWLING · LAB I19 · Revisión manual del expediente</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#173751;background:#f3f8fc;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:850px;margin:auto}
+header,.card{background:white;border:1px solid #d4e3ed;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 16px #15416a0c}
+.kicker{font-size:.81rem;color:#1267ad;font-weight:750;letter-spacing:.06em}
+h1{font-size:clamp(1.35rem,4vw,2rem);margin:8px 0}h2{font-size:1.09rem;margin:0 0 12px}
+p{line-height:1.55}.warn{background:#fff1d2;border-radius:10px;padding:13px}
+.note{font-size:.9rem;color:#546d85}label{display:block;font-weight:700;margin:14px 0 7px}
+input,select{width:100%;font:inherit;min-height:44px;padding:9px;border:1px solid #a3b9cc;border-radius:9px}
+button{background:#0e6bb2;color:white;border:0;border-radius:10px;padding:12px 14px;font:inherit;font-weight:700;min-height:44px;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}.secondary{background:#e7f2fc;color:#125488;border:1px solid #b8d4eb}
+.buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}.buttons>*{flex:1 1 220px}
+#i19-status{white-space:pre-wrap;overflow-wrap:anywhere;background:#edf6ff;border-left:4px solid #0f73bd;padding:14px;min-height:75px}
+</style></head><body data-lab="I19-OFFLINE-READONLY"><main>
+<header><span class="kicker">MI BOWLING · LABORATORIO I19</span>
+<h1>Revisión humana trazable, sin desbloqueo automático</h1>
+<p>Incorpora observaciones manuales a un expediente I18 sin alterar su contenido. Cada alias A/B/C es una etiqueta ficticia: dos etiquetas no prueban dos personas independientes. Las discrepancias se mantienen retenidas.</p>
+<p class="warn"><strong>Solo escalada manual.</strong> Ninguna opción permite aprobar una restauración, eliminar evidencias, publicar cambios, generar raíces ni certificar la hora o la custodia física. El registro puede demostrar coherencia interna frente a una huella externa aportada, pero no quién la conservó.</p></header>
+<section class="card"><h2>1. Examinar expediente anterior</h2>
+<label for="i19-dossier">Expediente I18 (archivo .hold18, únicamente A/B/C ficticios)</label>
+<input id="i19-dossier" type="file" accept=".hold18,.json">
+<label for="i19-pin">SHA-256 I18 conservado externamente (opcional; no se crea aquí)</label>
+<input id="i19-pin" maxlength="64" spellcheck="false" placeholder="64 caracteres hexadecimales si existe evidencia externa">
+<div class="buttons"><button id="i19-prepare" type="button">Comprobar expediente y abrir revisión</button></div>
+<p class="note">El expediente se valida antes de anotar nada. Sin referencia SHA externa, la revisión solo contrasta integridad interna.</p></section>
+<section class="card"><h2>2. Registrar observaciones categóricas</h2>
+<label for="i19-reviewer">Alias ficticio de revisión (no prueba identidad)</label>
+<select id="i19-reviewer"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+<label for="i19-assessment">Valoración no autorizativa</label>
+<select id="i19-assessment">
+<option value="requires-independent-review">Necesita revisión independiente</option>
+<option value="disputed-evidence">Conflicto entre evidencias</option>
+<option value="missing-originals">Faltan fuentes originales</option>
+<option value="integrity-only">Integridad interna examinada</option></select>
+<label for="i19-basis">Fundamento declarado (no prueba veracidad externa)</label>
+<select id="i19-basis">
+<option value="external-provenance-unverified">Procedencia externa no acreditada</option>
+<option value="signed-branch-comparison">Comparación entre ramas firmadas</option>
+<option value="external-anchor-absent">Falta ancla externa original</option>
+<option value="i18-internal-hashes">Hashes internos I18</option></select>
+<div class="buttons"><button id="i19-record" type="button" disabled>Registrar observación del alias</button>
+<button id="i19-escalate" type="button" class="secondary" disabled>Escalar sin desbloquear</button></div>
+<p class="note">Se requieren al menos dos alias de revisión distintos para registrar una escalada pendiente. Esto no demuestra independencia humana real.</p></section>
+<section class="card"><h2>3. Exportación local y comprobación</h2>
+<div class="buttons"><button id="i19-download" type="button" class="secondary" disabled>Exportar registro I19 por decisión expresa</button></div>
+<label for="i19-saved">Registro I19 anterior (.review19), opcional</label>
+<input id="i19-saved" type="file" accept=".review19,.json">
+<div class="buttons"><button id="i19-verify" type="button" class="secondary">Comprobar registro I19 con el expediente I18</button></div>
+</section>
+<section class="card"><h2>Resultado</h2><p id="i19-status" role="status" aria-live="polite">Pendiente de expediente ficticio y revisión manual. Sin escrituras operativas.</p></section>
+</main>
+<script src="i11-audit-core.js?v=i19"></script>
+<script src="i11-evidence.js?v=i19"></script>
+<script src="i12-manifest.js?v=i19"></script>
+<script src="i13-witnesses.js?v=i19"></script>
+<script src="i14-policy-lifecycle.js?v=i19"></script>
+<script src="i15-recovery.js?v=i19"></script>
+<script src="i16-anchors.js?v=i19"></script>
+<script src="i17-forensics.js?v=i19"></script>
+<script src="i18-forensic-hold.js?v=i19"></script>
+<script src="i19-manual-review.js?v=i19"></script>
+<script src="i19-ui.js?v=i19"></script>
+</body></html>

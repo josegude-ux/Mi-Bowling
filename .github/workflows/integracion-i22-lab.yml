@@ -1,0 +1,66 @@
+name: MI BOWLING · LAB I22 · Matriz de incertidumbre y procedencia
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i22-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i22-*'
+      - 'lab/integracion-main-auth-i22.html'
+      - 'tests/i22-*'
+      - '.github/workflows/integracion-i22-lab.yml'
+permissions:
+  contents: read
+jobs:
+  node_validation:
+    name: I22 Node · FGB CP020 I11-I22 SHA versus custody
+    runs-on: ubuntu-24.04
+    timeout-minutes: 42
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis de contratos nuevos I22
+        run: |
+          node --check lab/i22-uncertainty-matrix.js
+          node --check lab/i22-ui.js
+          node --check tests/i22-uncertainty-fixture.cjs
+          node --check tests/i22-uncertainty-contract.test.cjs
+          node --check tests/i22-uncertainty-browser.test.cjs
+      - name: CP-020 y calendario oficial FGB intactos
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones I11-I21
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+          node tests/i16-anchor-contract.test.cjs
+          node tests/i17-forensics-contract.test.cjs
+          node tests/i18-forensic-contract.test.cjs
+          node tests/i19-review-contract.test.cjs
+          node tests/i20-rival-contract.test.cjs
+          node tests/i21-provenance-contract.test.cjs
+      - name: I22 · Matriz adversarial, A/B/C y ninguna confianza automática
+        run: node tests/i22-uncertainty-contract.test.cjs
+  browser:
+    name: I22 · WebKit Chromium · uncertainty matrix no-write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 38
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright solo para tests
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux móvil emulado
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: A/B/C en HTTPS privado sin servicios ni almacenamiento operativo
+        run: node tests/i22-uncertainty-browser.test.cjs
