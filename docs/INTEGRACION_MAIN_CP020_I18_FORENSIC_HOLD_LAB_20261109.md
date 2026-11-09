@@ -43,6 +43,26 @@ Las instrucciones de escalada no envían comunicaciones, no conceden credenciale
 
 No se han realizado pruebas de Safari en iPhone físico, dispositivos reales múltiples, pérdida de electricidad, backup físico ni servicio externo de sellado temporal.
 
+## Checkpoint funcional BOWLING-I18-CP-001
+
+**SHA funcional exacto aprobado:** `ee59878e9e81bc89f48741750793c9cae2103743`.  
+**CI real funcional:** [GitHub Actions push 42672681138](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42672681138), **SUCCESS 2/2 jobs**; [PR 42672802996](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42672802996), **SUCCESS 2/2 jobs**, ambas sobre el SHA funcional indicado.  
+**PR:** [#38](https://github.com/josegude-ux/Mi-Bowling/pull/38), abierta en borrador y apilada sobre PR #37, no fusionada.  
+**Comparación GitHub con I17:** ocho archivos I18 **solo añadidos** (workflow, documento, motor, UI, HTML LAB y tres tests), ningún fichero anterior cambiado o eliminado, 11 commits delante/0 detrás antes de este checkpoint documental. Base de comparación exacta `026788cb519487a681b7994c2e91b1857490d90b`.  
+**Main nuevamente corroborado:** `7fbb3fb32d889c3213626e5f73c49b0885ef9911`, sin editar.
+
+**Registros de CI funcional observados:**
+- Node: PASS FGB 31 eventos (10 gallegos y 21 nacionales), contrato CP-020 y regresiones I11–I17.
+- Node I18: PASS preservación exacta de evidencias cifradas, registro encadenado de cinco decisiones, cuarentena de bifurcaciones, pérdida total de confianza, escalada exclusivamente manual, alteraciones y secretos rechazados, discrepancia frente a SHA independiente aportado, revalidación, A/B/C y concurrencia de solo lectura.
+- WebKit móvil emulado: PASS descarga explícita de expediente, comprobación frente a SHA externo suministrado, rechazo de copia manipulada, preservación de rama firmada, pérdida total y ausencia de IndexedDB/red externa.
+- Chromium escritorio: PASS sobre los mismos controles LAB y sin claves privadas en navegador.
+
+**Historial de CI sin ocultar fallos:** las primeras ejecuciones I18 [42672070041](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42672070041) y [42672212413](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42672212413) terminaron con conclusión `failure` porque GitHub Actions no llegó a programar el trabajo Node (solo se registró el trabajo de navegador, que sí pasó). Se cambió explícitamente el identificador del job de contratos Node y se repitieron ambas ejecuciones funcionales para demostrar **dos jobs ejecutados y aprobados**, sin atribuir éxito a las anteriores.
+
+**Advertencia de interpretación:** los SHA solo identifican bytes de documentos recibidos y relaciones dentro del expediente. No acreditan autoría externa, tiempo real, custodia independiente ni almacenamiento inmutable; ninguna copia es promovida a raíz auténtica cuando falta el PIN externo. Un atacante con control de todos los documentos y de la referencia externa podría sustituir el expediente.
+
+**CI de HEAD documental:** al actualizar este checkpoint se origina un commit documental distinto. Solo debe declararse definitivo cuando GitHub registre la CI de ambos jobs sobre ese SHA exacto.
+
 ## CI y continuidad
 
 `.github/workflows/integracion-i18-lab.yml`: dos jobs (Node CP-020/FGB e I11–I18; navegador WebKit Linux móvil emulado y Chromium escritorio, HTTPS loopback privado). **No modificar ni fusionar** PR anteriores, `main`, producción, plataforma publicada, calendario FGB CP-020 ni servicios.
