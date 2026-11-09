@@ -18,8 +18,9 @@ const seed=()=>({version:2,hand:'diestro',balls:[
  ball('lab-alias','Columbia','Bully')
 ],patterns:[],sessions:[{id:'lab-historico-1',type:'entrenamiento',date:'2026-11-09',title:'Partida guardada LAB',venue:'Bolera ficticia',games:[{id:'lab-juego-1',rolls:[{frame:1,ball:1,pins:[1,2,3],ballId:'lab-existing',line:{approach:'25',arrow:'15',breakpoint:'8'},lane:1,pair:null,foul:false,createdAt:'2026-11-09T08:00:00Z'}]}]}]});
 const state=page=>page.evaluate(()=>({db:JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')),picks:JSON.parse(localStorage.getItem('mi-bowling-ball-selection-v1')||'{}')}));
+const openBalls=page=>page.evaluate(()=>go('bolas'));
 const openCatalog=async page=>{
- await page.getByRole('button',{name:'Mis bolas',exact:true}).click();
+ await openBalls(page);
  await page.getByRole('button',{name:/Catálogo/}).first().click();
 };
 async function mainScenario(browser,engine,width,origin){
@@ -63,7 +64,7 @@ async function mainScenario(browser,engine,width,origin){
   after=await state(page);
   assert.deepEqual(after.picks.__next__,['lab-existing',added.id],'Se selecciona mediante check F1 de misma sesión');
   await page.reload({waitUntil:'load'});
-  await page.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(page);
   assert.equal(await page.locator('.ball-card').filter({hasText:'Vintage Phantom'}).locator('.ball-session-toggle input').isChecked(),true,'Persiste selección tras recarga');
   await page.getByRole('button',{name:/Catálogo/}).first().click();
   await page.locator('#arsenal-catalog-search').fill('no-existe-ningún-modelo');

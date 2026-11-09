@@ -60,16 +60,19 @@ async function runView(browser,engine,width,height,origin){
   await page.locator('.registry-v4-score').waitFor();
   assert.equal(await page.locator('#bottom-nav').isVisible(),false,'Registro sin navegación fija superpuesta');
   await page.evaluate(()=>go('inicio'));
-  assert(await page.locator('#bottom-nav').isVisible(),'Navegación conservada fuera del registro');
+  assert.equal(await page.locator('#bottom-nav').isVisible(),width<1120,'Navegación correcta fuera del registro');
   assert.equal(await page.locator('.bowling-home-module').count(),3,'Tres tarjetas visuales de inicio');
   assert.equal(await page.locator('.bowling-home-module-icon img').count(),3,'Tres iconos SVG 3D');
-  assert.equal(await page.locator('.bowling-home-tool-card').count(),3,'Tres tarjetas de herramientas homogéneas');
-  assert.equal(await page.locator('.bowling-home-tool-card .bowling-home-tool-copy small').count(),3,'Subtítulos de herramientas');
+  assert.equal(await page.locator('.bowling-home-tool-card').count(),0,'Inicio sin herramientas duplicadas');
   assert(await page.locator('.bowling-home-module-gold').evaluate(el=>getComputedStyle(el).backgroundImage.includes('home-estadisticas-limpio.jpg')),'Imagen de estadísticas sin cifras ficticias');
   await page.waitForFunction(()=>Array.from(document.querySelectorAll('.bowling-home-module-icon img')).every(img=>img.complete&&img.naturalWidth>0),null,{timeout:10000});
   assert((await page.locator('.bowling-home-module-icon img').evaluateAll(img=>img.every(x=>x.complete&&x.naturalWidth>0))),'Iconos cargados correctamente');
 
-  assert.equal(await page.getByRole('button',{name:'Mis bolas',exact:true}).count(),1,'Mis bolas sigue accesible en herramientas');
+  await page.evaluate(()=>go('estadisticas'));
+  assert.equal(await page.getByRole('button',{name:'Ver mis bolas'}).count(),1,'Mis bolas sigue accesible desde Análisis');
+  await page.getByRole('button',{name:'Ver mis bolas'}).click();
+  assert(await page.getByRole('heading',{name:/Mis bolas/}).isVisible(),'Acceso al arsenal desde Análisis');
+  await page.evaluate(()=>go('inicio'));
   await page.getByRole('button',{name:'Calendario',exact:true}).click();
   await page.evaluate(()=>{calendarMonth='2026-11';calendarSelected='2026-11-08';render()});
   await page.locator('.calendar-panel').waitFor();
@@ -99,7 +102,8 @@ async function runView(browser,engine,width,height,origin){
   assert.equal(await page.evaluate(()=>activeId),'LAB-SESION','Acceso a partida existente sin duplicar');
   assert(await page.getByRole('heading',{name:'Partida ficticia de laboratorio'}).isVisible(),'Detalle desde calendario');
   await page.evaluate(()=>go('inicio'));
-  await page.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await page.evaluate(()=>go('estadisticas'));
+  await page.getByRole('button',{name:'Ver mis bolas'}).click();
   assert(await page.getByRole('heading',{name:/Mis bolas/}).isVisible(),'El catálogo de bolas continúa accesible');
   await page.evaluate(()=>go('inicio'));
   if(width===390)await page.screenshot({path:path.join(results,engine+'-inicio-390-visura.png'),fullPage:true});
@@ -230,7 +234,7 @@ async function runOffline(browser,origin){
   await page.waitForTimeout(350);
   assert.equal(navigations.length,1,'No debe recargar al tomar el control por primera vez');
   const cacheNames=await page.evaluate(()=>caches.keys());
-  assert(cacheNames.some(x=>x.includes('v3-3-10-catalogo-cp035')),'Caché versionada disponible');
+  assert(cacheNames.some(x=>x.includes('v3-3-10-ui-cp036')),'Caché versionada disponible');
   await page.evaluate(db=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));},fixture);
   await context.setOffline(true);
   await page.reload({waitUntil:'load'});

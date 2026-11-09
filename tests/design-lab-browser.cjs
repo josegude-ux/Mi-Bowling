@@ -57,7 +57,8 @@ async function test(browser,engine,width,height,url){
   }else{
    assert.equal(await page.locator('.design-lab-sidebar').isVisible(),false,'Sin barra lateral en pantallas pequeñas');
    assert(await page.locator('#bottom-nav').isVisible(),'Barra inferior disponible');
-   await page.locator('.bowling-home-tool-card').filter({hasText:'Mis bolas'}).click();
+   await page.evaluate(()=>go('estadisticas'));
+   await page.getByRole('button',{name:'Ver mis bolas'}).click();
   }
   await page.getByRole('heading',{name:/Mis bolas/i}).waitFor();
   assert.equal(await page.locator('.ball-card').count(),1,'Arsenal real sin inventar bolas');
