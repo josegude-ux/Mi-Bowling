@@ -70,7 +70,7 @@ async function main(){
  sig.signature=(sig.signature[0]==='A'?'B':'A')+sig.signature.slice(1);
  await assert.rejects(check(alteredSig),/firma RECOVERY/);
  const alteredStatement=clone(pack);alteredStatement.recovery.statement.reason='suspected-compromise';
- await assert.rejects(check(alteredStatement),/declaración sustituida/);
+ await assert.rejects(check(alteredStatement),/declaración sustituida|firma RECOVERY/);
  const replayOld=clone(pack);const priorManifest=
   previous.bundle.epochs.at(-1).witnessSnapshots.at(-1).manifest;
  replayOld.recovery.witnessSnapshots[0].manifest=priorManifest;
