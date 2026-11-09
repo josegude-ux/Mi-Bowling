@@ -52,7 +52,15 @@ async function run(browser,base,letter,label,config){
    return s?.opened&&s.owner===expected&&s.persistence?.phase==='ready';
   },{A:'11111111-1111-4111-8111-111111111111',
      B:'22222222-2222-4222-8222-222222222222',
-     C:'33333333-3333-4333-8333-333333333333'}[letter]);
+     C:'33333333-3333-4333-8333-333333333333'}[letter],{timeout:12000}).catch(async error=>{
+    const diag=await page.evaluate(()=>({
+      state:window.MiBowlingIntegrationI6?.getState(),
+      safety:document.querySelector('#lab-safety-status')?.textContent,
+      summary:document.querySelector('#lab-private-summary')?.textContent,
+      auth:document.querySelector('#auth-gate')?.textContent?.slice(0,600)
+    }));
+    throw Error('I6 boot failure · '+letter+' · '+JSON.stringify(diag)+' · '+error.message);
+  });
   const before=await page.evaluate(()=>window.MiBowlingIntegrationI6.getState());
   assert.equal(before.persistence.revision,letter==='B'?null:0);
   // This invokes the actual main's save() after editing its IN-MEMORY db.
