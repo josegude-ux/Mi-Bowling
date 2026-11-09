@@ -31,6 +31,21 @@ Una coincidencia de SHA solo establece igualdad criptográfica del contenido **s
 
 I22 no sustituye el procedimiento real para autenticar la identidad y la conservación independiente de evidencias. Tampoco tiene acceso a custodios verdaderos, reloj seguro, sellado externo, servicio de certificación, ni puede enviar solicitudes. Las copias A/B/C son **solamente simulaciones**. Todos los resultados conservan `operationallyApproved:false` y prohibición de re-root y publicación.
 
+## Checkpoint funcional · BOWLING-I22-CP-001
+
+**SHA funcional:** `90e94439d1b8b8aeac22989f18fa4f2126c71126`.  
+**Push I22:** [run 42687153402](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42687153402) — **completed / SUCCESS / 2 de 2 jobs** sobre el SHA funcional exacto.  
+**PR I22:** [run 42687249609](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42687249609) — creada sobre el mismo SHA; al insertar este checkpoint **Node terminado SUCCESS** y navegador **todavía in_progress en instalación WebKit**. No se declara verde esta ejecución hasta su conclusión final.  
+**PR de desarrollo:** [#44](https://github.com/josegude-ux/Mi-Bowling/pull/44), OPEN/DRAFT/UNMERGED y apilada sobre PR #42 (`feature/integracion-main-auth-i21-lab-20261109`).  
+**Comparación GitHub contra HEAD I21 `28edefd8b5f50c0b7e81ecd0ff72b144836537c4`:** 8 archivos I22 **todos añadidos**, ninguno anterior modificado o eliminado; 8 commits ahead/0 behind antes de este checkpoint documental.  
+**`main`:** `1a8fe012ca6b515dcb35161c1aa5f4fa01a689f3`, con PR #41 visual ya fusionada por otro flujo. I22 no ha modificado `main`, `sw.js`, `index.html`, FGB CP-020, PR anteriores ni producción. La PR #43 de auditoría PWA permanece OPEN/DRAFT y es independiente del trabajo I22.
+
+**Resultados comprobados directamente en los logs del primer workflow I22 [42686975976](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42686975976), SUCCESS 2/2**, y realizados también por la CI funcional `push 42687153402`: CP-020/FGB **PASS 31 eventos (10 gallegos, 21 nacionales)** y regresiones I11–I21; I22 Node **PASS** ante copias A/B/C duplicadas, fuentes I21 concurrentes, reemplazo conjunto, falsificación de procedencia/tiempo/aprobación y ausencia de custodia real; I22 WebKit móvil emulado y Chromium escritorio **PASS**, comparación SHA no equiparada a custodia, descarga local voluntaria, sin IndexedDB ni red externa.
+
+**Limitación explícita:** hashes calculados de representaciones JSON; no constituyen por sí mismos prueba de bytes crudos originales, autoría, procedencia independiente, custodia física, sello temporal, WORM ni inmutabilidad. `authority:'none'`, `operationallyApproved:false` y `externalReviewContacted:false` siguen obligatorios. A/B/C no son personas verificadas.
+
+**Validación definitiva pendiente:** el commit documental de este checkpoint origina HEAD nuevo. Se deben verificar ambas CI (`push` y `pull_request`) con 2/2 jobs en ese HEAD. Si GitHub Actions impide programar o completar trabajos, registrar el bloqueo como tal, sin inventar aprobación. Actualizar el cierre y preparación I23 exclusivamente en la descripción de la PR #44 para no crear otro commit tras las pruebas.
+
 ## CI y cierre de checkpoint
 
 El desarrollo I22 debe mantenerse apilado sobre la PR #42 y su HEAD documental I21, sin editar ni borrar archivos de I11–I21, FGB CP-020, `main`, producción o la PR #41 fusionada por otro flujo. Se requiere verificar la comparación GitHub exacta contra el padre I21, obtener CI completa **2/2 en push y PR** en el SHA funcional, registrar `BOWLING-I22-CP-001` con evidencias precisas, y finalmente validar nuevas CI sobre el HEAD documental resultante. El cierre y la preparación de I23 se anotarán **solo en la descripción de la nueva PR**, sin generar un commit posterior a las CI.
