@@ -48,7 +48,7 @@ async function verify(engine,url){
   await page.locator('#bottom-nav button[aria-label="Estadísticas"]').click();
   await page.getByRole('button',{name:/Ver mis bolas/}).click();
   assert.equal(await page.locator('.ball-card').count(),10,'No se alteran 10 bolas');
-  await page.getByRole('button',{name:'Catálogo'}).click();
+  await page.getByRole('button',{name:'⌕ Catálogo',exact:true}).click();
   assert.equal(await page.locator('.arsenal-model[data-search]').count(),31,'Total 10+21');
   assert.match(await page.locator('#arsenal-catalog-count').textContent(),/31 de 31/);
   assert.equal(await page.getByRole('link',{name:'Track'}).getAttribute('href'),'https://trackbowling.com/collections/balls','Enlace a fabricante');
