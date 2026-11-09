@@ -32,9 +32,42 @@ async function main(){
  await assert.rejects(verify(f.bundle,f.policies,f.pins13,f.rootPin,wrongLatest),
   /ROLLBACK/);
  // A formerly authorized but now RETIRED key cannot be silently reinstated.
+ // First defense: policy replacement mismatches independently pinned I13.
  const replaced=clone(f.policies);
  replaced[2]=clone(f.policies[0]);
- await assert.rejects(verify(f.bundle,replaced),/CLAVE RETIRADA|transición/);
+ await assert.rejects(verify(f.bundle,replaced),/SUSTITUCIÓN DE CLAVES/);
+ // Second defense: even if an attacker possesses enough obsolete private keys
+ // to re-sign epoch 3 AND substitutes epoch 3's own I13 and latest I14 pins,
+ // a previously retired key cannot be silently reintroduced.
+ const {webcrypto}=require('node:crypto');
+ const reinPolicies=clone(f.policies),reinBundle=clone(f.bundle),reinPins=clone(f.pins13);
+ reinPolicies[2]=clone(f.policies[0]); // K1 retired in epoch2; now attempted again
+ const last=reinBundle.epochs[2],manifest=last.witnessSnapshots.at(-1).manifest;
+ const previous=await L.statementHash(reinBundle.epochs[1].statement);
+ const dig=x=>f.I12.hashText(JSON.stringify(x));
+ const st=L.statement(A,3,'revoke',previous,
+  await dig(reinPolicies[1]),await dig(reinPolicies[2]),
+  manifest.digest,manifest.entries.at(-1).count);
+ const sign=async(role,keyId,statement)=>({
+  keyId,signature:require('./i13-witness-fixture.cjs').b64(
+   await webcrypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},
+    f.allPairs.get(keyId).privateKey,L.context(role,statement)))});
+ last.statement=st;
+ last.oldSignatures=await Promise.all(reinPolicies[1].keys.slice(0,2).map(
+  k=>sign('OLD',k.keyId,st)));
+ last.newSignatures=await Promise.all(reinPolicies[2].keys.slice(0,2).map(
+  k=>sign('NEW',k.keyId,st)));
+ const i13st=last.witnessBundle.records[0].statement;
+ last.witnessBundle.records[0].signatures=await Promise.all(
+  reinPolicies[2].keys.slice(0,2).map(async k=>({
+   keyId:k.keyId,signature:require('./i13-witness-fixture.cjs').b64(
+    await webcrypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},
+     f.allPairs.get(k.keyId).privateKey,
+     new TextEncoder().encode(f.I13.signedText(i13st))))})));
+ reinPins[2]=await f.I13.lastPin(last.witnessBundle,reinPolicies[2]);
+ const reinLatest=await L.lastPin(reinBundle,reinPolicies);
+ await assert.rejects(verify(reinBundle,reinPolicies,reinPins,
+  f.rootPin,reinLatest),/CLAVE RETIRADA/);
  const one=clone(f.bundle);one.epochs[1].oldSignatures.pop();
  await assert.rejects(verify(one),/quórum/);
  const other=clone(f.bundle);
