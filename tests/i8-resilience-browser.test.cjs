@@ -13,7 +13,7 @@ const UUID={A:'11111111-1111-4111-8111-111111111111',
  C:'33333333-3333-4333-8333-333333333333'};
 const DB='mi-bowling-i8-lab-encrypted-data-v2',URL_PATH='/lab/integracion-main-auth-i8.html';
 const secret=x=>'LAB-I8-Key-Fixture-'+x+'-Never-Use-Real-Passwords';
-let server;
+let server,baseForTests;
 async function serve(){
  const cert=path.join(tmp,'cert.pem'),key=path.join(tmp,'key.pem');
  cp.execFileSync('openssl',['req','-x509','-nodes','-days','1','-newkey','rsa:2048',
@@ -72,7 +72,7 @@ async function add(page,name){
 }
 async function drain(p){return p.evaluate(()=>MiBowlingIntegrationI8.drain())}
 async function rawRows(page,owner,store='encrypted-operations'){
- await page.goto(new URL('/__blank',page.url()).href);
+ await page.goto(baseForTests+'/__blank');
  return page.evaluate(async({who,store,DB})=>{
   const db=await new Promise((ok,no)=>{
    const q=indexedDB.open(DB,2);q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error);
@@ -84,7 +84,7 @@ async function rawRows(page,owner,store='encrypted-operations'){
  },{who:owner,store,DB});
 }
 async function changeRaw(page,owner,kind='WAL'){
- await page.goto(new URL('/__blank',page.url()).href);
+ await page.goto(baseForTests+'/__blank');
  return page.evaluate(async({owner,DB,kind})=>{
   const db=await new Promise((ok,no)=>{
    const q=indexedDB.open(DB,2);q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error);
@@ -275,7 +275,7 @@ async function persistentRestart(browserType,base){
  }finally{if(first)await first.close();fs.rmSync(profile,{recursive:true,force:true})}
 }
 async function main(){
- const base=await serve();
+ const base=await serve();baseForTests=base;
  const wk=await webkit.launch({headless:true});
  try{await fakeQuotaAndKey(wk,base)}finally{await wk.close()}
  const binary=cp.execFileSync('which',['google-chrome'],{encoding:'utf8'}).trim();
