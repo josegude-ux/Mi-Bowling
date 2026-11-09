@@ -50,7 +50,7 @@ async function main(){
  const invalidLeague=copy(snap);invalidLeague.confirmed.payload.leagueNational={matches:[]};
  await assert.rejects(B.seal(invalidLeague,password),/Liga/);
  const memory={snapshot:async id=>{assert.equal(id,owner);return copy(snap)},
-  restoreSnapshot:async(id,x)=>{assert.equal(id,owner);assert.deepEqual(copy(x),copy(snap));assert.ok(arguments.length!==0);return{status:'restored'}}};
+  restoreSnapshot:async(id,x)=>{assert.equal(id,owner);assert.deepEqual(copy(x),copy(snap));return{status:'restored'}}};
  const newFile=await B.exportBackup(memory,owner,password);
  assert.ok((await B.open(newFile,password,owner)).operations.length===1);
  await assert.rejects(B.restoreBackup(memory,owner,newFile,password,'INVALID'),/confirmación/);
@@ -79,7 +79,7 @@ async function main(){
  await assert.rejects(B.open(JSON.stringify(futureFormat),password,owner),/cabecera/);
  const oldLabel=JSON.parse(sealed);oldLabel.format='MI-BOWLING-I9-LAB-ENCRYPTED-BACKUP';
  await assert.rejects(B.open(JSON.stringify(oldLabel),password,owner),/cabecera/);
-  const applied=await B.restoreBackup(memory,owner,newFile,password,'CONFIRMAR-RESTAURACION-FICTICIA');
+ const applied=await B.restoreBackup(memory,owner,newFile,password,'CONFIRMAR-RESTAURACION-FICTICIA');
  assert.equal(applied.status,'restored');
  console.log('PASS I10 Node · AES-GCM version 2, incompatible versions refused, comparative dates, fork, duplicate operations, signature and consent');
 }
