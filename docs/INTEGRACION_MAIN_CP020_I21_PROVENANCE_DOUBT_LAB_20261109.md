@@ -35,6 +35,25 @@ I21 no añade una nueva fuente de confianza: **diagnostica la insuficiencia de p
 - No se acredita firma humana, autorización operativa, sello temporal, WORM, inmutabilidad, anti-replay absoluto ni recuperación segura de material externo perdido. Un sobre I21 y sus hashes pueden reconstruirse conjuntamente por alguien con pleno control de los archivos y sus supuestas referencias.
 - Todos los pasos son locales, con A/B/C ficticios. No se contacta a personas, no se registran tareas reales ni se modifica producción, calendario FGB, `main` o PR antiguas.
 
+## Checkpoint funcional · BOWLING-I21-CP-001
+
+**SHA funcional I21 comprobado:** `4b02afa1fd38bf4ff1594a842c0cf2c5528eba61`.  
+**CI funcional push:** [42683226970](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42683226970), `completed/SUCCESS 2/2` en ese SHA.  
+**CI funcional PR:** [42683338974](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42683338974), `completed/SUCCESS 2/2` en el mismo SHA.  
+**PR I21:** [#42](https://github.com/josegude-ux/Mi-Bowling/pull/42), OPEN/DRAFT/UNMERGED, apilada sobre la rama de PR #40.  
+**Comparación con HEAD I20 `fc9b61d83df170e53e675942ff77c8bef8463abc`:** exactamente 8 archivos nuevos I21, todos `added`; 0 modificados, 0 eliminados; 8 commits delante y 0 detrás antes de este checkpoint documental.
+
+**Verificación real de los logs de GitHub Actions:**
+- CP-020 y calendario FGB: `PASS` con **31 eventos (10 gallegos y 21 nacionales)**, sin duplicados ni cambios de datos en el entorno de esta rama; regresiones I11–I20 superadas.
+- Contratos I21 Node: `PASS`, incluso ante sustitución conjunta coherente de paquete y SHA, falsa declaración de custodia/autoridad/tiempo, diferencia con PIN aportado, candidatos rivales y datos A/B/C ficticios.
+- WebKit móvil emulado y Chromium escritorio: `PASS` con sustitución conjunta no resoluble, PIN anterior incompatible, variantes en cuarentena, aprobación falsa rechazada, exportación solo por clic y sin IndexedDB/red ajena.
+
+**Incidencia concurrente sobre `main` — NO atribuible a I21:** al comenzar I21 se verificó `main` en `7fbb3fb32d889c3213626e5f73c49b0885ef9911`. Durante el desarrollo GitHub registró la fusión externa de la **PR #41, MI BOWLING LAB visual R1**, y `main` pasó a `1a8fe012ca6b515dcb35161c1aa5f4fa01a689f3`. La comparación muestra un commit ahead con archivos nuevos de diseño y modificación de `index.html` y `sw.js`. **I21 NO realizó esa fusión ni modificó `main`, `index.html`, `sw.js` o producción**. Las CI de I21 se ejecutan en su rama LAB anterior a esa fusión; por tanto, no certifican la interacción del diseño fusionado con esta rama. La PR #41 se conserva en su estado real CLOSED/MERGED. Las PR #39, #40 e I21 #42 permanecen independientes; no revertir ni reconstruir PR #41.
+
+**Limitación:** el estado `conditionally-matching-supplied-pin` es solo coincidencia de bytes; no prueba que un pin existiera antes del incidente. `coordinatedReplacementExcluded:false` permanece falso aun con varios archivos idénticos o con el propio hash suministrado. No se genera autoridad nueva, nueva raíz, aprobación ni petición de revisión real.
+
+**HEAD documental:** el commit que incorpore el checkpoint tendrá SHA distinto del funcional. Debe volver a pasar ambas CI completas sobre ese SHA exacto. Consignar el cierre en el cuerpo de la PR #42 sin otro commit.
+
 ## Plan de aceptación y continuidad
 
 Primero ejecutar CI funcional de GitHub Actions y comprobar el SHA exacto, ambos jobs, logs Node/CP-020/FGB y WebKit/Chromium. Añadir después `BOWLING-I21-CP-001` con evidencias concretas a esta documentación, creando un solo commit documental. Confirmar de nuevo que el HEAD documental definitivo pasa `push` y `pull_request` completos. Registrar el resultado final y la orden para I22 **en el cuerpo de la PR, no mediante un commit posterior**. Mantener I21 OPEN/DRAFT/UNMERGED y no iniciar I22 sin nueva orden.
