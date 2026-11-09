@@ -1,0 +1,75 @@
+name: MI BOWLING · LAB I10 · Backup comparativo, rollback y trazabilidad
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i10-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i10-*'
+      - 'lab/integracion-main-auth-i10*'
+      - 'tests/integracion-i10-*'
+      - 'tests/i10-*'
+      - '.github/workflows/integracion-i10-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I10 · CP-020 FGB SHA y cifrado de versiones
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificación contrato CP-020 y calendario FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Sintaxis I10
+        run: |
+          node --check lab/i10-encrypted-store.js
+          node --check lab/i10-backup.js
+          node --check lab/i10-persistence.js
+          node --check lab/i10-guard.js
+          node --check lab/i10-backup-ui.js
+          node --check lab/integracion-main-auth-i10.js
+          node --check tests/i10-backup-contract.test.cjs
+          node --check tests/integracion-i10-browser.test.cjs
+          node --check tests/i10-backup-browser.test.cjs
+          node --check tests/i10-resilience-browser.test.cjs
+      - name: Contratos de versiones y regresiones I9/I8
+        run: |
+          node tests/i10-backup-contract.test.cjs
+          node tests/i9-backup-contract.test.cjs
+          node tests/i8-storage-contract.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
+  browser:
+    name: I10 · WebKit Chromium rollback, reinicio y auditoría cifrada
+    runs-on: ubuntu-24.04
+    timeout-minutes: 29
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright sin servicios externos
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux emulado para iPhone y tablet
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Motor CP-020 sin cambio y registro cifrado I10
+        run: node tests/integracion-i10-browser.test.cjs
+      - name: Respaldo WebKit y restauración Chromium con auditoría y preview
+        run: node tests/i10-backup-browser.test.cjs
+      - name: Abortos antes del commit, acuse ambiguo y reinicio íntegro
+        run: node tests/i10-resilience-browser.test.cjs
+      - name: Capturas ficticias, sin datos auténticos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-i10-lab-recovery-evidence
+          path: tests/artifacts-integracion-i10/*.png
+          retention-days: 14
+          if-no-files-found: warn
