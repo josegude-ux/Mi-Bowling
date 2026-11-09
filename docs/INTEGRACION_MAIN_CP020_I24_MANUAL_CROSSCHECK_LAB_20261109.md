@@ -30,6 +30,21 @@ La igualdad SHA en el contrato se calcula sobre una serialización JSON, no demu
 
 Ningún trámite externo puede simularse como ejecutado. Los campos nunca constituyen firma, correo enviado, aceptación legal, privilegio, recuperación, root, autenticidad de tiempo o evidencia WORM. No hay escrituras en la PWA de producción, datos de personas ni comunicaciones a terceros.
 
+## Checkpoint funcional · BOWLING-I24-CP-001
+
+**HEAD funcional I24 exacto:** `d3982ba005d50164d8c2b038478e7e06048e8e00`.  
+**CI push funcional:** [42703866278](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42703866278), **completed SUCCESS 2/2** sobre ese SHA.  
+**CI PR funcional:** [42703979929](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42703979929), **completed SUCCESS 2/2** sobre el mismo SHA.  
+**PR #46:** [I24 LAB](https://github.com/josegude-ux/Mi-Bowling/pull/46), OPEN/DRAFT/UNMERGED y apilada sobre `feature/integracion-main-auth-i23-lab-20261109`, HEAD base `2cf4abb2e99378449c4c3446b3dee6ac7fc9aa3e`. La PR #45 de I23 figura CLOSED/MERGED por otro flujo anterior al inicio de I24, sin actuación de I24 en ese merge.
+
+**Comparación GitHub exacta:** 8 archivos I24 `added`, 0 `modified`, 0 `removed`, 8 commits ahead/0 behind antes del commit de checkpoint. `main` permanece en `a52d712e0e9138e53a8979a904c7d33c93905c7e`, incluidas las anteriores fusiones externas #41 visual y #43 PWA. I24 no cambió `main`, PWA, producción, FGB CP-020 ni las PR previas.
+
+**Logs funcionales contrastados de CI push 42703866278:** FGB CP-020 **PASS 31 eventos** (10 gallegos, 21 nacionales), regresiones I11–I23 **PASS**, I24 Node **PASS** ante seis ejes A/B/C, declaraciones positivas, negativas, correlacionadas, dañadas, sustitución conjunta, falsificaciones de autoridad, tiempo y custodia; pruebas **PASS I24 WebKit** en Linux móvil emulado y **PASS I24 Chromium** en escritorio, con 0 requisitos externos acreditados, exportación voluntaria, sin IndexedDB ni red exterior. CI PR con ambos jobs **SUCCESS** en el mismo HEAD.
+
+**Condición de confianza:** 0/6 requisitos certificados por este LAB. Una afirmación `claimed-match` o `claimed-independent` solo representa texto autodeclarado. El SHA de la serialización JSON es autoconsistente, no prueba una firma humana, una fecha, custodia externa, última versión, hardware WORM, inmutabilidad ni ausencia de sustitución del dossier+SHA. `authority:'none'`, `operationalApproval:false`, `outsideReviewContacted:false` y `jointReplacementExcluded:false` son constantes.
+
+**Segundo gate obligatorio:** el commit que contiene este checkpoint produce un HEAD documental distinto. Verificar **nuevas CI push y PR 2/2 sobre ese mismo HEAD exacto**; documentar el cierre final y continuidad I25 únicamente en la descripción PR #46 sin otro commit. No declarar cierre hasta verificar ambos logs definitivos.
+
 ## Cierre de checkpoint
 
 Conservar íntegros `main`, FGB CP-020, las fusiones externas de las PR #41/#43, PWA publicada y todas las PR. La PR nueva I24 debe permanecer OPEN/DRAFT/UNMERGED sobre la rama I23; exclusivamente archivos nuevos I24. Verificar primero CI funcional de `push` y `pull_request` con **ambos trabajos SUCCESS en el mismo SHA**. Registrar en este documento el checkpoint `BOWLING-I24-CP-001` con SHA, logs y límites. Esto creará un HEAD documental distinto, que requerirá una segunda CI `push` y PR, **ambas 2/2 en el HEAD definitivo**. Añadir cierre y continuidad I25 únicamente al cuerpo de la PR para no crear commits tras el último gate.
