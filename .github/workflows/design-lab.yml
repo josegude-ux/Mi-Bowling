@@ -27,7 +27,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: mi-bowling-design-lab-r1
+  group: mi-bowling-design-lab-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   static:
