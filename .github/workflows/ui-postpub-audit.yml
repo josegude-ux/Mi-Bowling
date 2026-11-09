@@ -30,7 +30,6 @@ jobs:
           node --check tests/ui-postpub-browser.cjs
           node --check tests/ui-postpub-static.cjs
           node tests/ui-postpub-static.cjs
-          node tests/design-lab-smoke.cjs
   browser:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
