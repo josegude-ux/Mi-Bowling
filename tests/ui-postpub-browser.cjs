@@ -60,6 +60,7 @@ async function regular(browser,engine,width,height,url){
   await page.evaluate(data=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data)),fixture);
   await page.reload({waitUntil:'load',timeout:35000});
   assert.equal(await page.locator('.bowling-home-module').count(),3,'Inicio sin regresiones');
+  if(mode==='local')assert.equal(await page.locator('.bowling-home-tools').count(),0,'Inicio LAB sin enlaces duplicados');
   if(width===1280){
    const tops=await page.locator('.bowling-home-module').evaluateAll(nodes=>
     nodes.map(n=>Math.round(n.getBoundingClientRect().top)));
@@ -76,7 +77,12 @@ async function regular(browser,engine,width,height,url){
   }else{
    assert.equal(await page.locator('.design-lab-sidebar').isVisible(),false,'Sidebar oculto en móvil/tablet');
    assert(await page.locator('#bottom-nav').isVisible(),'Menú móvil/tablet');
-   await page.locator('.bowling-home-tool-card').filter({hasText:'Mis bolas'}).click();
+   const legacyLink=page.locator('.bowling-home-tool-card').filter({hasText:'Mis bolas'});
+   if(await legacyLink.count())await legacyLink.click();
+   else{
+    await page.locator('#bottom-nav button[aria-label="Estadísticas"]').click();
+    await page.getByRole('button',{name:/Ver mis bolas/}).click();
+   }
   }
   assert.equal(await page.locator('.ball-card').count(),1,'Arsenal ficticio una sola vez');
   await page.locator('.ball-session-toggle input').check();
@@ -142,7 +148,7 @@ async function offline(browser,url){
   }));
   assert(cached.css&&cached.js&&cached.html,'Recursos nuevos realmente precargados offline');
   assert(cached.keys.some(x=>x.includes('mi-bowling-')),'Caché Mi Bowling presente');
-  const expected=mode==='local'?'mi-bowling-analitica-v3-3-10-ui-cp036':'mi-bowling-lab-visual-20261109-r1';
+  const expected='mi-bowling-analitica-v3-3-10-ui-cp036';
   assert(cached.keys.includes(expected),'Versión PWA correcta '+expected+': '+cached.keys);
   await page.evaluate(data=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data)),fixture);
   await page.reload({waitUntil:'load'});
