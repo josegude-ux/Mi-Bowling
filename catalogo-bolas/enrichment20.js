@@ -10,8 +10,15 @@
     "rank": 1,
     "brand": "ABS",
     "model": "PRO-am Elite Performer Solid",
-    "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "state": "ficha-fabricante-verificada",
+    "note": "Ficha PRO-am/ABS de Elite Performer Solid de 2026. Valores de 15 lb; no confundir con Elite Performer Hybrid.",
+    "cover": "Pa 65 Solid Reactive",
+    "core": "Innovative Core",
+    "rg": "2.550 (15 lb)",
+    "diff": "0.035 (15 lb)",
+    "finish": "Power Edge",
+    "technicalSource": "https://www.absbowling.co.jp/news/elite-performer%E3%83%AA%E3%83%BC%E3%82%BA%E6%9C%80%E6%96%B0%E4%BD%9C-elite-performer-solid%E7%99%BA%E5%A3%B2%EF%BC%81/",
+    "photoPage": "https://www.absbowling.co.jp/news/elite-performer%E3%83%AA%E3%83%BC%E3%82%BA%E6%9C%80%E6%96%B0%E4%BD%9C-elite-performer-solid%E7%99%BA%E5%A3%B2%EF%BC%81/"
   },
   {
     "rank": 2,
@@ -38,8 +45,16 @@
     "rank": 5,
     "brand": "ABS",
     "model": "Nanodesu Accu-Line Tour Premium Intel III",
-    "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "state": "ficha-fabricante-verificada",
+    "note": "Modelo INTEL III, no INTEL II ni Tour Premium IX. Valor 15 lb y diferencial intermedio 0.012.",
+    "cover": "Nano-Bond 2.0 Solid (LEVEL 2.0)",
+    "core": "Modified Premium Core with Shock-Absorbing Core System IV",
+    "rg": "2.523 (15 lb)",
+    "diff": "0.040 (15 lb)",
+    "finish": "800 Abralon Diamond Compound II Polish",
+    "oil": "Medio (fabricante ABS)",
+    "technicalSource": "https://www.absbowling.co.jp/product/accu-line-tour-premium-intel3/",
+    "photoPage": "https://www.absbowling.co.jp/product/accu-line-tour-premium-intel3/"
   },
   {
     "rank": 6,
@@ -102,8 +117,16 @@
     "rank": 12,
     "brand": "Pyramid Bowling",
     "model": "Scarab",
-    "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "state": "ficha-fabricante-verificada",
+    "note": "Pyramid Scarab 2026: datos de núcleo y cubierta para el modelo exacto; RG y diff a 15 lb.",
+    "cover": "XF Gravitational ATX-XX Hybrid Reactive",
+    "core": "SG 19.5 Dual Density Asymmetric",
+    "rg": "2.499 (15 lb)",
+    "diff": "0.051 (15 lb)",
+    "finish": "2000 Grit Abralon",
+    "oil": "Medio-alto (fabricante)",
+    "technicalSource": "https://www.pyramidbowling.com/bowling-balls/PathPerformance/scarab.html",
+    "photoPage": "https://www.pyramidbowling.com/bowling-balls/PathPerformance/scarab.html"
   },
   {
     "rank": 13,
