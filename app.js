@@ -577,6 +577,7 @@ function registerBallFromCatalog(profileId){
  }
  if(db.balls.some(b=>(historic&&lib.find(b)?.id===profile.id)||
   (normalize(b.brand)===normalize(profile.brand)&&normalize(b.model)===normalize(profile.model)))){
+  if(template)alert('Coincidencia de marca y modelo en Mis bolas. No se puede confirmar si es la misma edición, peso, SKU o unidad física. No se añadirá ni modificará ninguna bola; usa el alta manual para otra unidad tras comprobarla.');
   render();return;
  }
  // Solo registrar campos identificados; los datos técnicos desconocidos no se deducen.
@@ -590,6 +591,15 @@ function registerBallFromCatalog(profileId){
  * The catalog never replaces balls/sessions or auto-selects for a game. No
  * photos, notes or technical claims from user-provided JSON are imported.
  */
+function openCatalog100Manual(refId){
+ const bridge=window.MiBowlingCatalog100Bridge;
+ if(!bridge?.current().items.some(x=>x.id===refId))
+  return alert('Referencia no disponible; no se ha modificado el arsenal.');
+ // Intentional manual path: the user supplies their own instance, weight,
+ // edition/SKU and drilling notes, without copying any template metadata.
+ arsenalPanel='list';ballEditingId='nuevo';render();
+ alert('Alta manual de otra unidad: comprueba edición y peso, e identifica la unidad y el taladro en Notas. No se ha añadido ninguna bola automáticamente.');
+}
 let catalog100ImportBusy=false;
 async function importCatalog100Selection(input){
  if(catalog100ImportBusy)return;
@@ -601,12 +611,16 @@ async function importCatalog100Selection(input){
   if(file.size<=0||file.size>bridge.SIZE_LIMIT)
    throw Error('Archivo JSON vacío o mayor de 1 MiB.');
   const selected=bridge.parseSelection(await file.text());
-  const existing=new Set(db.balls.map(x=>bridge.identity(x)));
-  const add=selected.filter(x=>!existing.has(bridge.identity(x)));
-  if(!add.length){alert('Todos esos modelos ya figuran en Mis bolas. No se han modificado datos.');return}
-  const already=selected.length-add.length;
-  if(!confirm('Archivo de selección: '+selected.length+' modelos. Se añadirán '+add.length+
-   ' y '+already+' ya existen. NO se importan fotos, peso, núcleo, RG, taladro ni estadísticas. '+
+  const variantPolicy=window.MiBowlingCatalog100VariantPolicy;
+  if(!variantPolicy)throw Error('Control de variantes no disponible; se bloquea la importación sin modificar datos.');
+  const planned=variantPolicy.plan(selected,db.balls),add=planned.add,review=planned.review;
+  const summary=review.length?' '+review.length+
+   ' coincidencia(s) de nombre pendientes de revisar por edición, peso, SKU o unidad. No se importarán automáticamente.':'';
+  if(!add.length){alert('No hay modelos nuevos para añadir.'+summary+
+   ' Usa el alta manual para otra unidad real tras comprobar su variante. Datos intactos.');return}
+  if(!confirm('Archivo local de selección (NO certifica origen o variantes): '+selected.length+
+   ' modelos. Se añadirán '+add.length+'.'+summary+
+   ' No se importan fotos, peso, núcleo, RG, taladro, ni estadísticas. '+
    'Tus sesiones y selecciones no se modificarán. ¿Confirmas?'))return;
   // A stale tab is never permitted to overwrite current persistent data.
   let raw;
