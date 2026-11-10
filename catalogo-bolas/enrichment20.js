@@ -25,7 +25,19 @@
     "brand": "Motiv",
     "model": "(Orion) Nebula",
     "state": "pendiente",
-    "note": "USBC (Orion) Nebula 2026 NO se identifica con MOTIV Nebula 2025. La ficha de MOTIV disponible corresponde a otra edición. Pendiente variante Orion."
+    "note": "Registro PBA confirma Orion Nebula como modelo 2026 independiente de MOTIV Nebula de 2025. Un comercio especializado coincide en datos técnicos, pero no se han trasladado a la ficha porque falta fuente del fabricante o distribuidor oficialmente acreditado; no usar imagen de Nebula 2025.",
+    "identityEvidence": {
+      "source": "https://www.pba.com/registered-products/motiv",
+      "authority": "Registro PBA de productos MOTIV",
+      "checkedOn": "2026-11-10",
+      "finding": "Orion Nebula, aprobación 2026-11-03; diferente de Nebula 2025"
+    },
+    "commercialEvidence": {
+      "source": "https://www.bowling.com/products/motiv-orion-nebula.htm",
+      "authority": "Comercio especializado, no licencia de distribuidor MOTIV acreditada",
+      "checkedOn": "2026-11-10",
+      "finding": "Ficha comercial de Orion Nebula 2026: cubierta Dynamic Leverage Solid Reactive, Hadron Dual-Density, RG 2.50 y diferencial 0.045 (15 lb), 3000 LSP. Pendiente confirmar técnicamente en MOTIV o distribuidor oficial"
+    }
   },
   {
     "rank": 3,
@@ -111,7 +123,19 @@
     "brand": "ABS",
     "model": "Nanodesu Mega Grasp",
     "state": "pendiente",
-    "note": "ABS NANODESU MEGA GRASP (2026) figura en el catálogo oficial de ABS: https://www.absbowling.co.jp/product-tag/nanodesu%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA/ . Comercios especializados citan Nano-Bond 6.0 Solid, Modified BIG Drum, 15 lb RG 2.501/diff 0.045; no pasar a ficha técnica verificada sin cotejo directo con documento específico ABS."
+    "note": "ABS confirma el modelo MEGA GRASP 2026 y publica reportes oficiales de octubre, pero aún falta cotejar la hoja técnica propia. Los RG/diff comerciales coinciden con GRASP anteriores; no heredar datos por coincidencia numérica. Fotografía no licenciada.",
+    "identityEvidence": {
+      "source": "https://www.absbowling.co.jp/product-tag/nanodesu%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA/",
+      "authority": "Catálogo oficial de ABS Japón (identidad y lanzamiento)",
+      "checkedOn": "2026-11-10",
+      "finding": "NANODESU MEGA GRASP 2026, listado por ABS con fecha de lanzamiento octubre 2026; no confundir con GRASP 2019, MAX o SUPER"
+    },
+    "commercialEvidence": {
+      "source": "https://www.futabaproshop.jp/c/gr23/gd4173",
+      "authority": "Comercio japonés especializado; ficha de especificaciones no validada contra página técnica exacta ABS",
+      "checkedOn": "2026-11-10",
+      "finding": "Nano-Bond 6.0 Solid, Modified BIG Drum IV, RG 2.501 / diff 0.045 (15 lb), 1000 Abralon según comercio. Coincide con otros comercios, pero NO atribuir estas cifras automáticamente al PDF oficial ni a otros modelos GRASP"
+    }
   },
   {
     "rank": 12,
