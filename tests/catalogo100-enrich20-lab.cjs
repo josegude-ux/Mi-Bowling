@@ -67,7 +67,7 @@ async function test(engine,width,url){
   await page.locator('#query').fill('(Orion) Nebula');
   assert.equal(await page.locator('.item').count(),1);
   assert.match(await page.locator('.item').textContent(),/Cubierta pendiente/);
-  assert.equal(await page.locator('.item a:has-text("Ver fotografía en fabricante")').count(),0,'Variante ambigua sin foto errónea');
+  assert.equal(await page.locator('.item a:has-text("Ver fotografía en fuente oficial")').count(),0,'Variante ambigua sin foto errónea');
   await page.locator('.item [data-edit]').click();
   assert.equal(await page.locator('#rg').inputValue(),'','Orion no hereda RG de Nebula 2025');
   assert.match(await page.locator('#manufacturerEvidence').textContent(),/MOTIV Nebula 2025/);
