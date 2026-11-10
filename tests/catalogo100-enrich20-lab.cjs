@@ -93,7 +93,7 @@ async function test(engine,width,url){
   assert(await page.locator('#identityEvidenceLink').isVisible(),'Fuente oficial ABS identidad visible');
   assert(await page.locator('#commercialEvidenceLink').isVisible(),'Fuente comercial Mega Grasp no verificada');
   assert.match(await page.locator('#manufacturerEvidence').textContent(),/2026/);
-  assert.equal(await page.locator('#searchPhoto').getAttribute('href').includes('google.com'),true,'No asociar fotografía externa comercial automáticamente');
+  assert((await page.locator('#searchPhoto').getAttribute('href')).includes('google.com'),'No asociar fotografía externa comercial automáticamente');
   await page.locator('#close').click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('mi-bowling-analitica-v2')),'NO-TOCAR');
   assert.equal(await page.evaluate(()=>localStorage.getItem('mi-bowling-plantilla-100-v1')),null,'Consultar fichas no escribe ni cambia selecciones');
