@@ -11,7 +11,7 @@ assert.equal(new Set(seed.map(x=>x.id)).size,100,'IDs únicos');
 assert(seed.every(x=>x.brand&&x.model&&/^\d{4}-\d\d-\d\d$/.test(x.approved)),'Identidad y fecha');
 assert(seed.every(x=>!x.image&&!x.core&&!x.rg&&!x.diff),'No inventar fotografías ni especificaciones');
 assert(seed.every((x,i)=>i===0||seed[i-1].approved>=x.approved),'Fechas no crecientes');
-const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)];
+const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 const js=scripts.at(-1)[1];new vm.Script(js);
 assert(js.includes("const STORAGE='mi-bowling-plantilla-100-v1'"),'Clave aislada');
 assert(!js.includes("localStorage.setItem('mi-bowling-analitica-v2'"),'Sin escribir datos reales');
