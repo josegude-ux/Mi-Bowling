@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f8fb">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>MI BOWLING · Integración segura · LAB I5</title>
+<base href="../">
+<link rel="stylesheet" href="styles.css?v=338fgb1">
+<link rel="stylesheet" href="auth-lab.css?v=a8">
+<link rel="stylesheet" href="stats-bolos.css?v=r1">
+<link rel="stylesheet" href="lab/integracion-main-auth-cp020.css?v=i2">
+</head>
+<body data-lab-isolation="PENDING">
+<div class="i2-ribbon" role="note">
+ <strong>🧪 MI BOWLING · INTEGRACIÓN LAB I5</strong>
+ <span>Recuperación cifrada tras recarga real · solo identidades y partidas ficticias</span>
+</div>
+<div id="lab-safety-status" role="alert" hidden></div>
+<section id="lab-auth-area" class="i2-auth-area" aria-label="Identificación ficticia de jugadores">
+ <div class="i2-intro">
+  <p class="i2-eyebrow">MI BOWLING · Acceso individual</p>
+  <h1>Una cuenta para cada jugador</h1>
+  <p>Este LAB reproduce el acceso por correo y contraseña, sin crear ninguna cuenta. Cada identidad dispone de puntuaciones propias y documentos privados simulados.</p>
+  <div class="i2-demo-accounts" role="group" aria-label="Cuentas ficticias">
+   <button type="button" class="i2-demo-login" data-demo-account="A">Jugador A <small>Entrenamiento con partidas</small></button>
+   <button type="button" class="i2-demo-login" data-demo-account="B">Jugador B <small>Cuenta nueva sin partidas</small></button>
+   <button type="button" class="i2-demo-login" data-demo-account="C">Jugador C <small>Historial independiente</small></button>
+  </div>
+  <label class="field" for="lab-i5-passphrase">Frase de desbloqueo de pruebas (mínimo 12 caracteres; no se guarda)</label>
+   <input id="lab-i5-passphrase" type="password" class="input" minlength="12" maxlength="256" autocomplete="off"
+    placeholder="Introduce una frase ficticia y repítela después de recargar">
+   <p class="i2-small">Usa una frase de prueba propia y la misma tras recargar. Perderla impide descifrar un pendiente. No utilices contraseñas reales.</p>
+ </div>
+ <div id="auth-gate" aria-live="polite"></div>
+</section>
+<section id="lab-app-shell" hidden aria-label="Aplicación de MI BOWLING con datos ficticios">
+ <div id="lab-toolbar" class="i2-toolbar">
+  <span id="lab-owner" class="i2-owner">Cuenta de demostración</span>
+  <div class="i2-toolbar-buttons">
+   <button type="button" id="lab-home">Portada actual</button>
+   <button type="button" id="lab-calendar">Calendario FGB</button>
+   <button type="button" id="lab-stats">Estadísticas visuales</button>
+   <button type="button" id="lab-league">Liga Nacional</button>
+   <button type="button" id="lab-save-private">Guardar partida en LAB</button>
+   <button type="button" id="lab-logout">Cerrar sesión ficticia</button>
+  </div>
+ </div>
+ <div id="lab-private-summary" class="i2-summary" role="status" aria-live="polite"></div>
+ <div class="i2-summary" role="group" aria-label="Recuperación de pendientes de prueba">
+  <button type="button" id="lab-i4-inspect">Comprobar pendiente</button>
+  <button type="button" id="lab-i4-recover">Recuperar sin sobrescribir</button>
+  <button type="button" id="lab-i4-merge">Fusionar solo sesiones nuevas sin conflicto</button>
+  <button type="button" id="lab-i4-export">Verificar copia pendiente ficticia</button>
+  <p id="lab-i4-recovery-status" role="status"></p>
+ </div>
+ <div id="lab-visual" hidden><div id="lab-pinmap"></div></div>
+ <div id="lab-live-app">
+  <header class="topbar">
+   <div class="topbar-inner">
+    <button class="brand" type="button" id="lab-brand" aria-label="Volver a la portada"><span class="brand-mark" aria-hidden="true"><img src="./icon-192.png?v=338icon1" alt="" width="35" height="35"></span>Mi <b>Bowling</b><span class="brand-sub">LAB</span></button>
+    <div class="header-actions"><span class="offline-label">Datos ficticios · RAM</span><span class="i2-verified">Cuenta verificada por doble de servidor</span></div>
+   </div>
+  </header>
+  <main id="app" class="app-main" role="main"></main>
+  <nav id="bottom-nav" class="bottom-nav" aria-label="Navegación"></nav>
+  <input id="restore-file" type="file" accept=".json,application/json" hidden disabled>
+ </div>
+ <section id="lab-archive" class="i2-archive">
+  <h2>Perfiles antiguos y PDF</h2>
+  <p>El perfil local es únicamente una fuente de recuperación. No sustituye el acceso por correo. Los PDF de muestra se verifican solo en RAM; exclusivamente el diario I5 de partidas ficticias usa IndexedDB cifrado.</p>
+  <p id="lab-archive-proof">Pendiente de verificación de copia ficticia.</p>
+ </section>
+</section>
+<script src="lab/i5-encrypted-journal.js?v=i5"></script>
+<script src="lab/i5-guard.js?v=i5"></script>
+<script src="official-calendar-2026-2027.js?v=338fgb1"></script>
+<script src="auth-private-repository.js?v=a8"></script>
+<script src="auth-lab.js?v=a8"></script>
+<script src="profiles.js?v=i1"></script>
+<script src="stats-bolos.js?v=r1"></script>
+<script src="auth-legacy-migration-lab.js?v=a6"></script>
+<script src="lab/i5-persistence.js?v=i5"></script>
+<script src="lab/i4-engine-port.js?v=i4"></script>
+<script src="lab/integracion-main-auth-i5.js?v=i5"></script>
+</body>
+</html>
