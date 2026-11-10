@@ -5,8 +5,8 @@ const root=path.resolve(__dirname,'..'),dir=path.join(root,'catalogo-bolas'),sou
 const sandbox={};vm.runInNewContext(source,sandbox);
 const records=sandbox.MiBowlingCatalog20.entries;
 assert.equal(records.length,20,'Primeras 20 referencias auditadas');
-assert.equal(records.filter(x=>x.state==='ficha-fabricante-verificada').length,9,'Nueve fichas contrastadas por fabricante o distribuidor oficial');
-assert.equal(records.filter(x=>x.state==='pendiente').length,11,'Once fichas pendientes sin datos inventados');
+assert.equal(records.filter(x=>x.state==='ficha-fabricante-verificada').length,10,'Diez fichas contrastadas por fabricante o distribuidor oficial');
+assert.equal(records.filter(x=>x.state==='pendiente').length,10,'Diez fichas pendientes sin datos inventados');
 for(const x of records)if(x.state==='ficha-fabricante-verificada'){
  assert(x.technicalSource.startsWith('https://')&&x.photoPage===x.technicalSource);
  assert(x.core&&x.rg&&x.diff&&x.cover&&x.finish);
@@ -27,7 +27,7 @@ for(const x of sources){
  assert(x.commercialEvidence?.source.startsWith('https://'),'Fuente comercial distinguida');
  for(const field of ['cover','core','rg','diff','finish','image','photoPage','technicalSource'])assert(!x[field],'No publicar especificaciones sin ficha oficial: '+field);
 }
-console.log('PASS F20 static: veinte nombres exactos, nueve fichas contrastadas, once pendientes, enlaces sin copia ni permiso implícito');
+console.log('PASS F20 static: veinte nombres exactos, diez fichas contrastadas, diez pendientes, enlaces sin copia ni permiso implícito');
 if(!process.argv.includes('--browser'))process.exit(0);
 const {chromium,webkit}=require('playwright');
 const pdfjs=path.join(root,'node_modules/pdfjs-dist/build/pdf.min.js'),worker=path.join(root,'node_modules/pdfjs-dist/build/pdf.worker.min.js');
@@ -46,7 +46,7 @@ async function test(engine,width,url){
  try{
   await page.goto(url,{waitUntil:'load',timeout:35000});
   assert.equal(await page.locator('.item').count(),100);
-  assert.equal(await page.locator('.item a:has-text("Ver fotografía en fuente oficial")').count(),9,'Nueve enlaces a páginas oficiales, ninguna fotografía reproducida');
+  assert.equal(await page.locator('.item a:has-text("Ver fotografía en fuente oficial")').count(),10,'Diez enlaces a páginas oficiales, ninguna fotografía reproducida');
   await page.evaluate(()=>localStorage.setItem('mi-bowling-analitica-v2','NO-TOCAR'));
   await page.locator('#query').fill('Purple Rhino Pro');
   assert.equal(await page.locator('.item').count(),1);
@@ -71,6 +71,16 @@ async function test(engine,width,url){
   assert.equal(await page.locator('#diff').inputValue(),'0.055 (15 lb)');
   assert.equal(await page.locator('#cover').inputValue(),'NRG Smooth Solid Reactive');
   assert.equal(await page.locator('#searchPhoto').getAttribute('href'),'https://hi-sp.co.jp/product/ion_max_veil/');
+  await page.locator('#close').click();
+  await page.locator('#query').fill('Black Widow 3.0 Ruby');
+  assert.equal(await page.locator('.item').count(),1,'Solo Ruby 2026');
+  await page.locator('.item [data-edit]').click();
+  assert.equal(await page.locator('#rg').inputValue(),'2.500 (15 lb)');
+  assert.equal(await page.locator('#diff').inputValue(),'0.058 (15 lb)');
+  assert.equal(await page.locator('#core').inputValue(),'Gas Mask Asymmetric Core');
+  assert.equal(await page.locator('#cover').inputValue(),'HK22C² Cohesion Pearl Reactive');
+  assert.equal(await page.locator('#searchPhoto').getAttribute('href'),'https://www.sunbridge-group.com/product/ball/all-balls/black-widow-3-0-ruby/','Solo enlace a distribuidor; foto no copiada');
+  assert.match(await page.locator('#manufacturerEvidence').textContent(),/SUNBRIDGE|distribuidor oficial/i);
   await page.locator('#close').click();
   await page.locator('#query').fill('(Orion) Nebula');
   assert.equal(await page.locator('.item').count(),1);

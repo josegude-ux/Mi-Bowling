@@ -199,8 +199,19 @@
     "rank": 18,
     "brand": "Hammer",
     "model": "Black Widow 3.0 Ruby",
-    "state": "pendiente",
-    "note": "Hammer Black Widow 3.0 Ruby: comercio japonés especializado publica HK22C2 Cohesion Pearl, Gas Mask, RG 2.500, diff 0.058 (15 lb). Pendiente ficha directa de fabricante o distribuidor oficial acreditado antes de incorporarla como verificada."
+    "state": "ficha-fabricante-verificada",
+    "note": "Edición Ruby japonesa octubre 2026, distinta de Black Widow 3.0 y de Black Sapphire. Sunbridge es distribuidor oficial de Hammer Japón, acreditado por Brunswick. Valores exclusivos 15 lb. Foto no copiada ni licenciada.",
+    "cover": "HK22C² Cohesion Pearl Reactive",
+    "core": "Gas Mask Asymmetric Core",
+    "rg": "2.500 (15 lb)",
+    "diff": "0.058 (15 lb)",
+    "finish": "500 / 1000 / 1500 Siaair Micro Pad + Crown Factory Compound",
+    "oil": "Medio (Sunbridge Japón)",
+    "technicalSource": "https://www.sunbridge-group.com/product/ball/all-balls/black-widow-3-0-ruby/",
+    "photoPage": "https://www.sunbridge-group.com/product/ball/all-balls/black-widow-3-0-ruby/",
+    "sourceAuthority": "Distribuidor oficial Hammer Japón SUNBRIDGE · octubre 2026",
+    "manufacturerReport": "https://www.sunbridge-group.com/pc/download/catalog/ball/2026/2610_black_widow_3_0_ruby.pdf",
+    "intermediateDiff": "0.016 (15 lb)"
   },
   {
     "rank": 19,
