@@ -1,6 +1,42 @@
 'use strict';
 /* MI BOWLING · LAB R1: interfaz del análisis. Render consultivo, sin escrituras. */
 (function(root){
+ function renderCatalog100(ctx,headline,nav,intro){
+  const bridge=root.MiBowlingCatalog100Bridge,escape=ctx.escape,balls=ctx.balls||[];
+  if(!bridge)return headline+nav+'<div class="card">La plantilla de 100 no está disponible. Tus bolas no se han modificado.</div>';
+  const source=bridge.current(),items=source.items,query=String(ctx.catalogQuery||'');
+  const norm=x=>String(x||'').toLowerCase().normalize('NFD')
+   .replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+  const exists=x=>balls.find(b=>bridge.identity(b)===bridge.identity(x));
+  const matching=x=>norm(x.brand+' '+x.model+' '+x.approved).includes(norm(query));
+  const cards=items.map(x=>{
+   const found=exists(x),matched=matching(x);
+   const action=found?'<span class="pill gray">'+escape(found.retired?'Registrada (retirada)':'Registrada en Mis bolas')+'</span>'
+    :'<button class="btn primary" type="button" onclick="registerBallFromCatalog('+escape(JSON.stringify(x.id))+')">Añadir a Mis bolas</button>';
+   return '<article class="arsenal-model" data-search="'+escape(x.brand+' '+x.model+' '+x.approved)+'" style="'+(matched?'':'display:none')+'">'+
+    '<div><strong>'+escape(x.brand+' '+x.model)+'</strong><p class="hint">Fecha de aprobación indicada: '+escape(x.approved)+
+    ' · Núcleo / RG / diferencial pendientes de contraste · Foto real no incluida</p></div>'+
+    '<div class="actions">'+action+'</div></article>';
+  }).join('');
+  const currentSource=source.origin==='local-template'?
+   '100 referencias guardadas localmente en la plantilla (solo si comparten almacenamiento en este dispositivo).':
+   '100 referencias iniciales publicadas; NO se acredita que sean las 100 más recientes del PDF USBC completo.';
+  return headline+nav+intro+
+   '<div class="card"><h2>Catálogo de 100 bolas · plantilla</h2>'+
+   '<p class="hint">'+escape(currentSource)+' Aprobar un modelo en USBC no acredita fecha comercial ni ficha técnica. Sin fotografías copiadas.</p>'+
+   '<div class="actions"><a class="btn outline" target="_blank" rel="noopener noreferrer" href="./catalogo-bolas/">Abrir plantilla independiente de 100</a></div>'+
+   '<label class="field" for="arsenal-catalog-search">Buscar marca, modelo o fecha</label>'+
+   '<input id="arsenal-catalog-search" class="input" type="search" value="'+escape(query)+'" placeholder="Ej. Brunswick o Raptor" oninput="filterArsenalCatalog(this.value)">'+
+   '<p class="hint" aria-live="polite" id="arsenal-catalog-count">'+items.filter(matching).length+' de '+items.length+' modelos</p>'+
+   '<div class="arsenal-model-list">'+cards+'</div>'+
+   '<p id="arsenal-catalog-noresults" class="hint" '+(items.some(matching)?'hidden':'')+'>No figura en esta plantilla. Puedes buscarlo en el catálogo local o registrarlo manualmente.</p>'+
+   '<div class="card"><h3>Transferir bolas marcadas desde la plantilla</h3>'+
+   '<p class="hint">Exporta «JSON de elegidas» en la plantilla independiente y selecciona ese archivo aquí. Se mostrarán las incorporaciones para confirmarlas. No se copiarán fotos, notas ni especificaciones no verificadas.</p>'+
+   '<label class="field" for="catalog100-selection-file">Elegir archivo JSON de selección</label>'+
+   '<input id="catalog100-selection-file" class="input" type="file" accept=".json,application/json" onchange="importCatalog100Selection(this)">'+
+   '<p class="hint">El archivo se lee localmente y nunca sustituye tus sesiones ni las bolas existentes. El alta solo se aplica si confirmas.</p></div>'+
+   '</div>';
+ }
  function render(ctx){
   const lib=root.MiBowlingArsenal,escape=ctx.escape,balls=ctx.balls||[];
   if(!lib)return '<div class="card"><p>Los análisis no están disponibles sin el catálogo local.</p></div>';
@@ -10,8 +46,9 @@
   const intro='<div class="card arsenal-notice"><p class="hint">Estimaciones basadas en fichas de fábrica. No sustituyen pruebas sobre pista: superficie, PAP, taladro y estilo de lanzamiento pendientes.</p></div>';
   const returnLabel=ctx.returnTo==='registro'?'Volver al lanzamiento':ctx.returnTo==='nueva'?'Volver a empezar partida':'';
   const quickReturn=returnLabel?'<button type="button" class="btn primary" onclick="closeBallPicker()">← '+escape(returnLabel)+'</button>':'';
-  const nav='<div class="card arsenal-nav"><div class="actions">'+quickReturn+back+link('Catálogo de 10 modelos','catalog')+link('Comparar marcadas','compare')+link('Asistente de competición','assistant')+'</div></div>';
+  const nav='<div class="card arsenal-nav"><div class="actions">'+quickReturn+back+link('Catálogo de 10 modelos','catalog')+link('100 bolas · plantilla','catalog100')+link('Comparar marcadas','compare')+link('Asistente de competición','assistant')+'</div></div>';
   const headline='<div class="section-head"><div><h1>Análisis de Mis bolas</h1><p>Arsenal seleccionado para '+escape(ctx.scope)+'</p></div></div>';
+  if(ctx.mode==='catalog100')return renderCatalog100(ctx,headline,nav,intro);
   if(ctx.mode==='catalog'){
    const query=String(ctx.catalogQuery||'');
    const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
