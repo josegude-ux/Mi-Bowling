@@ -178,6 +178,33 @@ async function prepare(sources=[null,null,null,null,null,null,null],
  const t=await trace(p,'audit-held');
  return Object.freeze({...t,digest:await hash(t)});
 }
+/* I28 LAB fast path: ONLY newly constructed in-memory dossiers. It runs the
+ * exact same inspect() as prepare(), once instead of prepare() + verify() twice.
+ * Snapshot arrays prevent async mutation of caller-owned slots/claims.
+ * Retained I25.verify() remains mandatory for all subsequently received,
+ * imported, mutated or externally supplied packets. Never external authority.
+ */
+async function prepareCheckedOnce(sources=[null,null,null,null,null,null,null],
+ claimedPins=[null,null,null,null,null,null,null]){
+ if(!Array.isArray(sources)||!Array.isArray(claimedPins))
+  throw Error('I28: seven raw and SHA slots required');
+ const stable=Object.freeze(sources.slice()),pins=Object.freeze(claimedPins.slice());
+ const x=await inspect(stable,pins);
+ const p={format:FORMAT,version:1,sources:stable,claimedPins:pins,...x,
+  authority:'none',operationalApproval:false,externalCustodyProven:false,
+  humanIdentityProven:false,priorPinAuthenticityProven:false,
+  timestampProven:false,immutabilityProven:false,
+  jointReplacementExcluded:false,outsideReviewContacted:false,
+  reRootAuthorized:false,noWrites:true,containsScores:false};
+ const t=await trace(p,'audit-held');
+ const packet=Object.freeze({...t,digest:await hash(t)});
+ return Object.freeze({packet,
+  constructedFromFreshSnapshot:true,
+  stageInspectionPasses:1,
+  externalIndependentReverificationPerformed:false,
+  internallyVerifiedStages:x.evidence.filter(e=>e.state==='internally-verified').length,
+  noWrites:true,externalCustodyProven:false,operationalApproval:false});
+}
 async function verify(packet,expectedDigest=null){
  if(!exact(packet,KEYS)||packet.format!==FORMAT||packet.version!==1||
   !SHA.test(packet.evidenceRoot||'')||!SHA.test(packet.latestEventHash||'')||
@@ -221,5 +248,5 @@ async function noteReview(packet){
  return Object.freeze({...p,digest:await hash(p)});
 }
 root.MiBowlingI25RetentionAudit=Object.freeze({FORMAT,EVENT,STAGES,ZERO,
- MAX_FILE_BYTES,MAX_TOTAL_BYTES,prepare,verify,noteReview,checkSizes});
+ MAX_FILE_BYTES,MAX_TOTAL_BYTES,prepare,prepareCheckedOnce,verify,noteReview,checkSizes});
 })(window);

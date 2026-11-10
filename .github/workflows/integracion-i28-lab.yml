@@ -1,0 +1,79 @@
+name: MI BOWLING · LAB I28 · Single inspection and resource-pressure equivalence
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i28-lab-20261110
+  pull_request:
+    branches:
+      - feature/integracion-main-auth-i27-lab-20261110
+    paths:
+      - 'lab/i25-retention-audit.js'
+      - 'lab/i28-*'
+      - 'lab/integracion-main-auth-i28.html'
+      - 'tests/i28-*'
+      - 'docs/INTEGRACION_MAIN_CP020_I28_SINGLE_INSPECTION_LAB_20261110.md'
+      - '.github/workflows/integracion-i28-lab.yml'
+permissions:
+  contents: read
+jobs:
+  node_validation:
+    name: I28 Node · FGB CP020 + I11-I28 equivalence and bounded observations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis I25/I28 y tests
+        run: |
+          node --check lab/i25-retention-audit.js
+          node --check lab/i28-efficiency.js
+          node --check lab/i28-ui.js
+          node --check tests/i28-efficiency-fixture.cjs
+          node --check tests/i28-efficiency-contract.test.cjs
+          node --check tests/i28-efficiency-browser.test.cjs
+      - name: FGB CP-020 · 31 eventos y contrato preservado
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Regresiones I11-I27
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+          node tests/i13-witness-contract.test.cjs
+          node tests/i14-lifecycle-contract.test.cjs
+          node tests/i15-recovery-contract.test.cjs
+          node tests/i16-anchor-contract.test.cjs
+          node tests/i17-forensics-contract.test.cjs
+          node tests/i18-forensic-contract.test.cjs
+          node tests/i19-review-contract.test.cjs
+          node tests/i20-rival-contract.test.cjs
+          node tests/i21-provenance-contract.test.cjs
+          node tests/i22-uncertainty-contract.test.cjs
+          node tests/i23-external-evidence-contract.test.cjs
+          node tests/i24-manual-crosscheck-contract.test.cjs
+          node tests/i25-retention-contract.test.cjs
+          node tests/i26-bounded-import-contract.test.cjs
+          node tests/i27-resource-contract.test.cjs
+      - name: I28 · deterministic parsing work and safe recovery
+        run: node tests/i28-efficiency-contract.test.cjs
+  browser:
+    name: I28 · WebKit Linux emulated mobile and Chromium desktop
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright LAB only
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit emulated Linux setup
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: I27 compatibility and I28 browser A/B/C no-network scenarios
+        run: |
+          node tests/i27-resource-browser.test.cjs
+          node tests/i28-efficiency-browser.test.cjs
