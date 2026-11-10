@@ -122,20 +122,19 @@
     "rank": 11,
     "brand": "ABS",
     "model": "Nanodesu Mega Grasp",
-    "state": "pendiente",
-    "note": "ABS confirma el modelo MEGA GRASP 2026 y publica reportes oficiales de octubre, pero aún falta cotejar la hoja técnica propia. Los RG/diff comerciales coinciden con GRASP anteriores; no heredar datos por coincidencia numérica. Fotografía no licenciada.",
-    "identityEvidence": {
-      "source": "https://www.absbowling.co.jp/product-tag/nanodesu%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA/",
-      "authority": "Catálogo oficial de ABS Japón (identidad y lanzamiento)",
-      "checkedOn": "2026-11-10",
-      "finding": "NANODESU MEGA GRASP 2026, listado por ABS con fecha de lanzamiento octubre 2026; no confundir con GRASP 2019, MAX o SUPER"
-    },
-    "commercialEvidence": {
-      "source": "https://www.futabaproshop.jp/c/gr23/gd4173",
-      "authority": "Comercio japonés especializado; ficha de especificaciones no validada contra página técnica exacta ABS",
-      "checkedOn": "2026-11-10",
-      "finding": "Nano-Bond 6.0 Solid, Modified BIG Drum IV, RG 2.501 / diff 0.045 (15 lb), 1000 Abralon según comercio. Coincide con otros comercios, pero NO atribuir estas cifras automáticamente al PDF oficial ni a otros modelos GRASP"
-    }
+    "state": "ficha-fabricante-verificada",
+    "note": "MEGA GRASP 2026 contrastada con página de producto ABS y su reporte oficial de octubre de 2026, distinto de GRASP 2019 y MAX GRASP. RG y diferenciales a 15 lb; foto no licenciada ni copiada.",
+    "cover": "Nano-Bond 6.0 Solid (LEVEL.6.0)",
+    "core": "Modified BIG Drum Core with Shock-Absorbing Core System IV",
+    "rg": "2.501 (15 lb)",
+    "diff": "0.045 (15 lb)",
+    "finish": "#1000 Abralon",
+    "oil": "Medio-alto a alto (ABS)",
+    "technicalSource": "https://www.absbowling.co.jp/product/nanodesu-mega-grasp/",
+    "photoPage": "https://www.absbowling.co.jp/product/nanodesu-mega-grasp/",
+    "sourceAuthority": "Fabricante ABS Japón · reporte de octubre 2026",
+    "manufacturerReport": "https://www.absbowling.co.jp/contents/download/ball_report/2026/10/nanodesu_mega_grasp.pdf",
+    "intermediateDiff": "0.014 (15 lb)"
   },
   {
     "rank": 12,
