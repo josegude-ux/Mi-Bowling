@@ -57,7 +57,10 @@ async function test(browser,engine,width,height,url){
   }else{
    assert.equal(await page.locator('.design-lab-sidebar').isVisible(),false,'Sin barra lateral en pantallas pequeñas');
    assert(await page.locator('#bottom-nav').isVisible(),'Barra inferior disponible');
-   await page.locator('.bowling-home-tool-card').filter({hasText:'Mis bolas'}).click();
+   // CP-037: la tarjeta antigua se retiró intencionadamente del Inicio.
+   // Recorre la navegación real con datos ficticios.
+   await page.locator('#bottom-nav button[aria-label="Estadísticas"]').click();
+   await page.getByRole('button',{name:/Ver mis bolas/}).click();
   }
   await page.getByRole('heading',{name:/Mis bolas/i}).waitFor();
   assert.equal(await page.locator('.ball-card').count(),1,'Arsenal real sin inventar bolas');
