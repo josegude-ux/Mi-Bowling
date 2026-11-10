@@ -1,0 +1,49 @@
+name: "MI BOWLING | LAB Catálogo oficial ampliado CP-037"
+on:
+  push:
+    branches: [fix/catalogo-oficial-fuentes-20261110-lab]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Sintaxis de módulos y contratos de datos
+        run: |
+          node --check app.js
+          node --check arsenal-view-lab.js
+          node --check official-ball-catalog.js
+          node --check sw.js
+          node --check tests/catalog-official-sources-lab.cjs
+          node tests/catalog-official-sources-lab.cjs
+          node tests/ui-postpub-static.cjs
+          node tests/design-lab-smoke.cjs
+          node tests/home-clean-lab.cjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Preparar Playwright aislado
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Catálogo oficial, duplicados, offline y almacenamiento ficticio
+        run: node tests/catalog-official-sources-lab.cjs --browser
+      - name: Regresión catálogo histórico, alta, cuotas y dos pestañas
+        run: node tests/arsenal-catalog-selectable-lab.cjs
+      - name: Regresión de análisis y fichas históricas
+        run: node tests/arsenal-analysis-lab.cjs
+      - name: Regresión Inicio limpio y navegación
+        run: node tests/home-clean-lab.cjs --browser
+      - name: Regresión puntuación y PWA offline en LAB
+        run: LAB_AUDIT_MODE=local node tests/ui-postpub-browser.cjs
