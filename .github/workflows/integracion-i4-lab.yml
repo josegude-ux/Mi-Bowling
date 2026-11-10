@@ -1,0 +1,70 @@
+name: MI BOWLING · LAB I4 · Motor desacoplado y recuperación
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i4-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i4-*'
+      - 'lab/integracion-main-auth-i4*'
+      - 'tests/integracion-i4-*'
+      - '.github/workflows/integracion-i4-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contract:
+    name: I4 · integridad, WAL y tres cuentas
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Contrato CP-020 y calendario íntegros
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Comprobación de sintaxis aislada
+        run: |
+          node --check lab/i4-engine-port.js
+          node --check lab/i4-persistence.js
+          node --check lab/i4-guard.js
+          node --check lab/integracion-main-auth-i4.js
+          node --check tests/integracion-i4-journal.test.cjs
+          node --check tests/integracion-i4-browser.test.cjs
+      - name: Recuperación, CAS, journal, conflicto y regresión I3
+        run: |
+          node tests/integracion-i4-journal.test.cjs
+          node tests/score-sync-i3.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
+          node tests/stats-bolos.test.cjs
+  browser:
+    name: I4 · WebKit móvil/tablet + Chromium
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright fijado para CI
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit Linux emulado (NO Safari físico)
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Regresión de UI I2 original
+        run: node tests/integracion-main-auth-cp020-browser.test.cjs
+      - name: Regresión I3 independiente
+        run: node tests/score-sync-i3-browser.test.cjs
+      - name: Puerto CP-020 y journal ficticio I4
+        run: node tests/integracion-i4-browser.test.cjs
+      - name: Evidencias visuales ficticias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-i4-isolated-lab
+          path: tests/artifacts-integracion-i4/*.png
+          retention-days: 14
+          if-no-files-found: warn
