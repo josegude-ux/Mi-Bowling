@@ -69,6 +69,10 @@ async function test(engine,width,url){
   assert.equal(await page.locator('#cover').inputValue(),'Cubierta PERSONAL FICTICIA','Personalización persiste y prevalece');
   await page.locator('#close').click();
   if(engine==='chromium'&&width===390&&realPdf){
+   // Seleccionar una ficha antigua que saldrá del top 100; no debe desaparecer.
+   await page.locator('#query').fill('Prime Angular One');
+   assert.equal(await page.locator('.item').count(),1,'Ficha histórica de prueba presente');
+   await page.locator('.item [data-check]').check();
    await page.locator('#query').fill('Purple Rhino Pro');
    await page.locator('.item [data-check]').check();
    await page.locator('#pdfFile').setInputFiles({name:'usbc-oficial.pdf',mimeType:'application/pdf',buffer:realPdf});
@@ -79,9 +83,11 @@ async function test(engine,width,url){
    assert.equal(imported.app,'NO-TOCAR');
    assert(imported.saved.records.some(x=>x.brand==='Vexa'&&x.model==='Start Red/Black/Green'),'Vexa omitida en el índice previo, presente en USBC real');
    assert(imported.saved.records.some(x=>x.brand==='Brunswick'&&x.model==='Purple Rhino Pro (2026)'&&x.selected),'Conservar selección al importar');
+   assert(Array.isArray(imported.saved.archive)&&imported.saved.archive.length>0,'Archivo histórico disponible');
+   assert(imported.saved.archive.some(x=>x.brand==='Ebonite'&&x.model==='Prime Angular One'&&x.selected),'Ficha/selección desplazada recuperable');
    const dates=imported.saved.records.map(x=>x.approved);
    assert(dates.every((d,i)=>i===0||dates[i-1]>=d),'Orden decreciente por fecha');
-   console.log('PASS REAL PDF IMPORT chromium 390×844: 146 páginas PDF USBC real, 100 últimos, Vexa recuperada, selección e historial aislados');
+   console.log('PASS REAL PDF IMPORT chromium 390×844: PDF USBC real, 100 últimos, Vexa recuperada, archivo histórico con selección preservada y datos de MI BOWLING aislados');
   }
   assert.deepEqual(errors,[]);
   console.log('PASS F20 '+engine+' '+width+': foto oficial enlazada, ficha exacta, variantes ambiguas protegidas y personalización preservada');
