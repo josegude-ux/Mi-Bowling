@@ -1,6 +1,6 @@
 # BOWLING-CATALOG100-VARIANTS-LAB-CP-001 · Protección de variantes y transferencia
 
-**Fase aislada desde PR #57, CP-001 definitivo y HEAD `c470b44519caf6f27a89d90498a659d573cdb498`. Estado: LAB EN VALIDACIÓN. No merge, deploy ni modificación de PR #57, PR #53 o main.**
+**Fase aislada desde PR #57, CP-001 definitivo y HEAD `c470b44519caf6f27a89d90498a659d573cdb498`. Estado: LAB FUNCIONAL VERIFICADO; CIERRE DOCUMENTAL PENDIENTE. No merge, deploy ni modificación de PR #57, PR #53 o main.**
 
 ## Defecto verificable: una coincidencia de nombre no prueba la misma bola
 
@@ -24,3 +24,19 @@ En el código CP-001, `arsenal-view-lab.js` mostraba «Registrada en Mis bolas»
 ## Gates nuevos de esta fase (sin reabrir CP-001)
 
 `BOWLING-CATALOG100-VARIANTS-LAB-CP-001` queda pendiente hasta confirmar para la PR sucesora, sobre SHA exacto, **CI push/PR static+browser SUCCESS 2/2**. Si se valida el código, añadir cierre documental en una nueva revisión y volver a verificar CI exacta; cerrar definitivamente solo en cuerpo de nueva PR LAB sin un commit posterior. No fusionar con #57 ni #53.
+
+
+## Gate funcional verificado · 10/11/2026
+
+**Verificación exacta con GitHub Actions, sin reejecuciones manuales.** En la **PR #58**, rama `lab/catalogo100-variant-identity-20261110`, base de PR `lab/catalogo100-mis-bolas-integracion-20261110` (HEAD de PR #57 `c470b44519caf6f27a89d90498a659d573cdb498`), el HEAD funcional `5f642ebee754a1288053985e219f57c09104bb47` ha aprobado ambas ejecuciones:
+
+| Evento | GitHub Actions | Resultado |
+|---|---|---|
+| push | [42854378127](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42854378127) | **COMPLETED SUCCESS 2/2**, Node y Chromium/WebKit emulados |
+| pull_request | [42855129984](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42855129984) | **COMPLETED SUCCESS 2/2**, Node y Chromium/WebKit emulados |
+
+La ejecución `pull_request` apareció posteriormente al comentario provisional [6772927513](https://github.com/josegude-ux/Mi-Bowling/pull/58#issuecomment-6772927513), que registraba honestamente su ausencia durante la consulta anterior. El bloqueo funcional **se considera resuelto**, sin modificación de `main`, rama base, PR #57 o duplicación de PR; se conserva el comentario como histórico, no como diagnóstico actual. Las CI funcionales prueban únicamente la nueva política de colisiones por nombre, altas manuales y transferencia JSON con datos ficticios; NO prueban licencias, variantes exactas por SKU ni Safari/iPhone físico.
+
+**Estado actual del checkpoint:** `BOWLING-CATALOG100-VARIANTS-LAB-CP-001` **funcional aprobado, cierre documental pendiente**. Este cambio documenta la evidencia y no modifica código. Debe verificarse en el **nuevo SHA documental** que `push` y `pull_request` concluyen otra vez **SUCCESS 2/2** cada uno. Solo después actualizar el cuerpo de PR #58 para cierre LAB sin realizar ningún commit posterior. No fusionar ni publicar.
+
+**Inmutabilidad y protección:** PR #57 `c470b44519caf6f27a89d90498a659d573cdb498` permanece LAB cerrada de su propio checkpoint, sin merge; `main=699d877d5ec4f3891ac6c24504a57605105bfb2d` al control; PR #53 `550b635cccf470edc5ee4fda3cba54b41ab02ead` con 10/20 fichas nivel A sin cambios. Sin efectos sobre `sw.js`, FGB CP-020, plantilla independiente, 10 bolas, 12 sesiones, selecciones reales, fotos comerciales ni contactos.
