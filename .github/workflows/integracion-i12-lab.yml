@@ -1,0 +1,54 @@
+name: MI BOWLING · LAB I12 · Manifiestos, rollback y firma externa
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i12-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i12-*'
+      - 'lab/integracion-main-auth-i12.html'
+      - 'tests/i12-*'
+      - '.github/workflows/integracion-i12-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I12 · CP-020/FGB, SHA-256, PIN, rollback, firmas y concurrencia
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis I12
+        run: |
+          node --check lab/i12-manifest.js
+          node --check lab/i12-ui.js
+          node --check tests/i12-manifest-contract.test.cjs
+          node --check tests/i12-manifest-browser.test.cjs
+      - name: Contratos protegidos CP-020 y calendario FGB
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: I11 y manifiesto independiente I12
+        run: |
+          node tests/i11-audit-contract.test.cjs
+          node tests/i12-manifest-contract.test.cjs
+  browser:
+    name: I12 · WebKit y Chromium, archivos independientes y solo lectura
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright de prueba
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: WebKit para emulación iPhone
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Flujos reales de archivos A/B/C, tamper, PIN y rollback
+        run: node tests/i12-manifest-browser.test.cjs
