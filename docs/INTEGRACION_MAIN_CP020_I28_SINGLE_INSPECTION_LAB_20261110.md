@@ -32,3 +32,20 @@ Se copia la lista de textos y SHA declarativos en arreglos congelados antes de l
 4. Cerrar **solo en el cuerpo de la nueva PR draft**, después de comprobar ambos SHAs; ningún commit tras las CI finales. Sin merge, publicación ni despliegue.
 
 **Estado inicial:** I28 LAB en desarrollo; checkpoint `BOWLING-I28-CP-001` no cerrado hasta pruebas verificables.
+
+## Checkpoint funcional verificado · BOWLING-I28-CP-001 (pendiente de cierre documental)
+
+**SHA funcional I28 exacto:** `b52a07a41e862083cca4d825f0408ab3fa68bef4`.
+
+**CI funcional en ese mismo SHA, ambas COMPLETED/SUCCESS 2/2 jobs:**
+- [Push 42790103380](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42790103380) — `push`, **SUCCESS 2/2**, jobs Node y WebKit/Chromium.
+- [PR 42790223057](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42790223057) — `pull_request`, **SUCCESS 2/2**, jobs Node y WebKit/Chromium.
+- [Regresión adicional I25 PR 42790222929](https://github.com/josegude-ux/Mi-Bowling/actions/runs/42790222929) — **SUCCESS 2/2** sobre el mismo SHA por ampliación compatible de `lab/i25-retention-audit.js`.
+
+**Evidencia funcional:** FGB CP-020 **PASS 31 eventos** (10 gallegos, 21 nacionales); regresiones I11–I27; `PASS I28 Node` con equivalencia de digest y serialización de sobres I25 A/B/C y `I25.verify` preservado para expedientes externos. En el fixture idéntico y el mismo VM se contabilizaron **14 llamadas `JSON.parse` I27 frente a 7 I28 (50 % menos llamadas en esta prueba)**, sin extrapolarlo a reducción de tiempo o RAM. Nodo `push`: ejemplo de observaciones del runner, entrada 6.449.260 bytes, 200 fragmentos, 557,528 ms y `heapUsed` muestreado de 50.703.352 a 71.442.472 bytes; **no** son valores de memoria del iPhone ni medidas comparables universalmente. Cancelación, presión muestreada, importaciones truncadas/UTF-8 inválido y recuperación sin sobre de éxito parcial probadas.
+
+Pruebas de navegador en PR: `PASS I27 webkit`, `PASS I27 chromium`, `PASS I28 webkit`, `PASS I28 chromium`; WebKit Linux en viewport móvil emulado y Chromium escritorio en HTTPS local. Ninguna validación real de Safari/iPhone ni de custodia/identidad/tiempo/autoridad externa.
+
+**Comparación funcional I28 vs I27 HEAD** `b2a633002d47c690bef98a5ec9d67df5686ac64a`: **8 archivos añadidos, uno modificado (únicamente nueva API I25 de LAB), 0 eliminados**, 10 commits adelante/0 detrás. `main` preservado `699d877d5ec4f3891ac6c24504a57605105bfb2d`. PR #55 permanece OPEN/DRAFT/UNMERGED. FGB CP-020, `app.js`, `sw.js`, PWA, datos reales y producción sin tocar desde I28.
+
+**Gate documental abierto:** este añadido documental genera un **nuevo HEAD**. Se requieren las nuevas CI **push y pull_request SUCCESS 2/2 en ese mismo SHA documental**. No declarar cerrado definitivamente `BOWLING-I28-CP-001` hasta comprobarlas. Entonces registrar exclusivamente en el cuerpo de PR #55 el cierre y la continuidad, sin otro commit. Sin fusiones ni publicación.
