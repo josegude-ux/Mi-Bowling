@@ -133,6 +133,9 @@ async function scenario(engine,viewport,origin){
   },initial);
   await page.reload({waitUntil:'load'});
   const before=await state(page);
+  // migrate() normaliza el esquema de las sesiones ficticias al cargar app.js.
+  // Comparar contra el estado operativo previo, no el JSON incompleto de siembra.
+  const normalizedSessions=await page.evaluate(()=>JSON.parse(JSON.stringify(db.sessions)));
   await open100(page);
   assert.equal(await page.locator('.arsenal-model[data-search]').count(),100);
   assert.match(await page.locator('#arsenal-catalog-count').textContent(),/100 de 100/);
@@ -147,7 +150,7 @@ async function scenario(engine,viewport,origin){
   assert.equal(added.db.balls[10].model,'Lunar Orbit (Under 13 lbs.)');
   for(const k of ['weight','kind','notes','photo'])assert.equal(added.db.balls[10][k],'');
   assert.deepEqual(added.db.balls.slice(0,10),before.db.balls,'10 bolas y taladros ficticios sin tocar');
-  assert.deepEqual(added.db.sessions,before.db.sessions,'12 sesiones y lanzamientos intactos');
+  assert.deepEqual(added.db.sessions,normalizedSessions,'12 sesiones y lanzamientos intactos');
   assert.deepEqual(added.selection,before.selection,'sin autoseleccionar bolas');
   assert.equal(await page.locator('.arsenal-model:visible button').filter({hasText:'Añadir'}).count(),0,
    'Alta idempotente en el panel');
@@ -162,7 +165,7 @@ async function scenario(engine,viewport,origin){
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')).balls.length===13);
   const afterBatch=await state(page);
   assert.equal(afterBatch.db.balls.length,13,'2 nuevos + 1 existente');
-  assert.deepEqual(afterBatch.db.sessions,before.db.sessions);
+  assert.deepEqual(afterBatch.db.sessions,normalizedSessions);
   assert.deepEqual(afterBatch.selection,before.selection);
   assert.deepEqual(afterBatch.db.balls.slice(0,10),before.db.balls);
   assert(afterBatch.db.balls.slice(10).every(x=>x.photo===''&&x.weight===''&&x.notes===''));
@@ -180,7 +183,7 @@ async function scenario(engine,viewport,origin){
   await page.locator('#arsenal-catalog-search').fill('Modelo 99 ficticio');
   assert.equal(await page.locator('.arsenal-model:visible').count(),1,
    'snapshot compartido actualizado, sin importar PDF automáticamente');
-  const unchanged=await state(page);assert.deepEqual(unchanged.db.sessions,before.db.sessions);
+  const unchanged=await state(page);assert.deepEqual(unchanged.db.sessions,normalizedSessions);
   await page.evaluate(()=>localStorage.setItem('mi-bowling-plantilla-100-v1','INVALID_JSON'));
   await page.evaluate(()=>setArsenalPanel('catalog100'));
   assert.equal(await page.locator('.arsenal-model').count(),100,'fallback al seed tras corrupción');
