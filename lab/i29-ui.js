@@ -3,7 +3,9 @@
  */
 (function(root){
 'use strict';
-const Profile=root.MiBowlingI29Efficiency;
+const Session=root.MiBowlingI29SessionGuard;
+if(!Session)throw Error('I29: session controller required');
+const session=Session.createSession();
 const $=id=>root.document.getElementById(id),stageNames=['I18','I19','I20','I21','I22','I23','I24'];
 let current=null,busy=false,revision=0,canceled=false;
 const show=text=>{$('i29-status').textContent=text};
