@@ -19,6 +19,14 @@ for(let i=0;i<20;i++)assert.equal(key(records[i]),key(seeds[i]),'Fuente asociada
 assert(html.includes('enrichment20.js?v=lab-first20-20261110'),'Se importa el registro independiente');
 assert(records.filter(x=>x.sourceAuthority?.includes('Hi-Sports')).length===2,'Fuentes de distribuidor oficial identificadas');
 assert(!records.some(x=>x.image),'Sin archivos fotográficos de terceros copiados');
+const sources=records.filter(x=>x.identityEvidence||x.commercialEvidence);
+assert.deepEqual(sources.map(x=>x.rank),[2,11],'Dos investigaciones con procedencia desglosada');
+for(const x of sources){
+ assert.equal(x.state,'pendiente','Identidad y comercio no elevan estado de ficha técnica');
+ assert(x.identityEvidence?.source.startsWith('https://'),'Identidad oficial vinculada');
+ assert(x.commercialEvidence?.source.startsWith('https://'),'Fuente comercial distinguida');
+ for(const field of ['cover','core','rg','diff','finish','image','photoPage','technicalSource'])assert(!x[field],'No publicar especificaciones sin ficha oficial: '+field);
+}
 console.log('PASS F20 static: veinte nombres exactos, ocho fichas contrastadas, doce pendientes, enlaces sin copia ni permiso implícito');
 if(!process.argv.includes('--browser'))process.exit(0);
 const {chromium,webkit}=require('playwright');
@@ -70,7 +78,22 @@ async function test(engine,width,url){
   assert.equal(await page.locator('.item a:has-text("Ver fotografía en fuente oficial")').count(),0,'Variante ambigua sin foto errónea');
   await page.locator('.item [data-edit]').click();
   assert.equal(await page.locator('#rg').inputValue(),'','Orion no hereda RG de Nebula 2025');
-  assert.match(await page.locator('#manufacturerEvidence').textContent(),/MOTIV Nebula 2025/);
+  assert.match(await page.locator('#manufacturerEvidence').textContent(),/MOTIV Nebula de 2025|MOTIV Nebula 2025/);
+  assert(await page.locator('#identityEvidenceLink').isVisible(),'Fuente PBA identidad visible');
+  assert(await page.locator('#commercialEvidenceLink').isVisible(),'Fuente comercial no verificada diferenciada');
+  assert.equal(await page.locator('#identityEvidenceLink').getAttribute('href'),'https://www.pba.com/registered-products/motiv');
+  assert.equal(await page.locator('#commercialEvidenceLink').getAttribute('href'),'https://www.bowling.com/products/motiv-orion-nebula.htm');
+  assert.equal(await page.locator('#cover').inputValue(),'','Sin cubierta heredada de Nebula original ni promoción de datos de comercio');
+  await page.locator('#close').click();
+  await page.locator('#query').fill('Nanodesu Mega Grasp');
+  assert.equal(await page.locator('.item').count(),1,'Mega Grasp 2026 único');
+  await page.locator('.item [data-edit]').click();
+  assert.equal(await page.locator('#rg').inputValue(),'','Sin RG heredado de Nanodesu Grasp 2019');
+  assert.equal(await page.locator('#diff').inputValue(),'','Sin diferencial heredado de modelo anterior');
+  assert(await page.locator('#identityEvidenceLink').isVisible(),'Fuente oficial ABS identidad visible');
+  assert(await page.locator('#commercialEvidenceLink').isVisible(),'Fuente comercial Mega Grasp no verificada');
+  assert.match(await page.locator('#manufacturerEvidence').textContent(),/2026/);
+  assert.equal(await page.locator('#searchPhoto').getAttribute('href').includes('google.com'),true,'No asociar fotografía externa comercial automáticamente');
   await page.locator('#close').click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('mi-bowling-analitica-v2')),'NO-TOCAR');
   assert.equal(await page.evaluate(()=>localStorage.getItem('mi-bowling-plantilla-100-v1')),null,'Consultar fichas no escribe ni cambia selecciones');
