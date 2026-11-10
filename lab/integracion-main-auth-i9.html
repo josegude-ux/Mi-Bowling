@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f8fb">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>MI BOWLING · Integración segura · LAB I9</title>
+<base href="../">
+<link rel="stylesheet" href="styles.css?v=338fgb1">
+<link rel="stylesheet" href="auth-lab.css?v=a8">
+<link rel="stylesheet" href="stats-bolos.css?v=r1">
+<link rel="stylesheet" href="lab/integracion-main-auth-cp020.css?v=i2">
+</head>
+<body data-lab-isolation="PENDING">
+<div class="i2-ribbon" role="note">
+ <strong>🧪 MI BOWLING · INTEGRACIÓN LAB I9</strong>
+ <span>Exportación y restauración cifrada verificable · confirmados y WAL · solo LAB ficticio</span>
+</div>
+<div id="lab-safety-status" role="alert" hidden></div>
+<section id="lab-auth-area" class="i2-auth-area" aria-label="Identificación ficticia de jugadores">
+ <div class="i2-intro">
+  <p class="i2-eyebrow">MI BOWLING · Acceso individual</p>
+  <h1>Una cuenta para cada jugador</h1>
+  <p>Este LAB reproduce el acceso por correo y contraseña, sin crear ninguna cuenta. Cada identidad dispone de puntuaciones propias y documentos privados simulados.</p>
+  <div class="i2-demo-accounts" role="group" aria-label="Cuentas ficticias">
+   <button type="button" class="i2-demo-login" data-demo-account="A">Jugador A <small>Entrenamiento con partidas</small></button>
+   <button type="button" class="i2-demo-login" data-demo-account="B">Jugador B <small>Cuenta nueva sin partidas</small></button>
+   <button type="button" class="i2-demo-login" data-demo-account="C">Jugador C <small>Historial independiente</small></button>
+  </div>
+  <label class="field" for="lab-i9-passphrase">Frase de desbloqueo de pruebas (mínimo 12 caracteres; no se guarda)</label>
+   <input id="lab-i9-passphrase" type="password" class="input" minlength="12" maxlength="256" autocomplete="off"
+    placeholder="Introduce una frase ficticia y repítela después de recargar">
+   <p class="i2-small">Usa una frase de prueba propia y la misma tras recargar. Perderla impide descifrar un pendiente. No utilices contraseñas reales.</p>
+ </div>
+ <div id="auth-gate" aria-live="polite"></div>
+</section>
+<section id="lab-i9-backup-panel" class="i2-summary" aria-label="Respaldo cifrado de demostración" style="margin:16px auto;max-width:1060px;padding:16px">
+ <h2>Respaldo cifrado de LAB · I9</h2>
+ <p>Solo partidas ficticias A/B/C. El archivo contiene puntuaciones confirmadas y todos los WAL pendientes. Usa una frase de respaldo independiente; nunca uses contraseñas reales.</p>
+ <label for="lab-i9-backup-password">Frase de cifrado del archivo (mínimo 12 caracteres)</label>
+ <input id="lab-i9-backup-password" class="input" type="password" minlength="12" maxlength="256" autocomplete="off" placeholder="Frase ficticia distinta de la del diario">
+ <label for="lab-i9-backup-file">Archivo de respaldo I9 (solo .mbi9/.json)</label>
+ <input id="lab-i9-backup-file" type="file" accept=".mbi9,.json,application/json">
+ <label for="lab-i9-restore-consent">
+  <input id="lab-i9-restore-consent" type="checkbox"> Confirmo restaurar únicamente los datos ficticios A/B/C tras verificar el respaldo. No sobrescribir confirmados existentes.
+ </label>
+ <div class="i2-toolbar-buttons">
+  <button type="button" id="lab-i9-download">Exportar y descargar respaldo cifrado</button>
+  <button type="button" id="lab-i9-preview">Verificar archivo sin modificar nada</button>
+  <button type="button" id="lab-i9-import">Restaurar archivo validado (confirmación obligatoria)</button>
+ </div>
+ <p id="lab-i9-backup-status" role="status" aria-live="polite">Selecciona una identidad ficticia para exportar. Para recuperar en un LAB vacío, selecciona el archivo, la frase, marca la confirmación y accede a la misma cuenta.</p>
+</section>
+<section id="lab-app-shell" hidden aria-label="Aplicación de MI BOWLING con datos ficticios">
+ <div id="lab-toolbar" class="i2-toolbar">
+  <span id="lab-owner" class="i2-owner">Cuenta de demostración</span>
+  <div class="i2-toolbar-buttons">
+   <button type="button" id="lab-home">Portada actual</button>
+   <button type="button" id="lab-calendar">Calendario FGB</button>
+   <button type="button" id="lab-stats">Estadísticas visuales</button>
+   <button type="button" id="lab-league">Liga Nacional</button>
+   <button type="button" id="lab-save-private">Guardar partida en LAB</button>
+   <button type="button" id="lab-logout">Cerrar sesión ficticia</button>
+  </div>
+ </div>
+ <div id="lab-private-summary" class="i2-summary" role="status" aria-live="polite"></div>
+ <div class="i2-summary" role="group" aria-label="Recuperación de pendientes de prueba">
+  <label for="lab-i9-operation">Pendientes cifrados (elige una operación para conciliar)</label>
+  <select id="lab-i9-operation" aria-label="Operación pendiente cifrada" style="max-width:100%;min-height:38px"><option value="">Sin operaciones</option></select>
+  <button type="button" id="lab-i9-refresh">Actualizar diario</button>
+  <button type="button" id="lab-i9-audit">Auditar cifrado sin borrar (solo recuentos)</button>
+  <button type="button" id="lab-i4-inspect">Inspeccionar todas</button>
+  <button type="button" id="lab-i4-recover">Recuperar operación seleccionada sin sobrescribir</button>
+  <button type="button" id="lab-i4-merge">Confirmar fusión conservadora seleccionada</button>
+  <button type="button" id="lab-i4-export">Verificar checksum de operación</button>
+  <p id="lab-i4-recovery-status" role="status"></p>
+ </div>
+ <div id="lab-visual" hidden><div id="lab-pinmap"></div></div>
+ <div id="lab-live-app">
+  <header class="topbar">
+   <div class="topbar-inner">
+    <button class="brand" type="button" id="lab-brand" aria-label="Volver a la portada"><span class="brand-mark" aria-hidden="true"><img src="./icon-192.png?v=338icon1" alt="" width="35" height="35"></span>Mi <b>Bowling</b><span class="brand-sub">LAB</span></button>
+    <div class="header-actions"><span class="offline-label">Datos ficticios · almacenamiento cifrado aislado</span><span class="i2-verified">Cuenta verificada por doble de servidor</span></div>
+   </div>
+  </header>
+  <main id="app" class="app-main" role="main"></main>
+  <nav id="bottom-nav" class="bottom-nav" aria-label="Navegación"></nav>
+  <input id="restore-file" type="file" accept=".json,application/json" hidden disabled>
+ </div>
+ <section id="lab-archive" class="i2-archive">
+  <h2>Perfiles antiguos y PDF</h2>
+  <p>El perfil local es únicamente una fuente de recuperación. No sustituye el acceso por correo. Los PDF de muestra se verifican solo en RAM; exclusivamente el LAB I9 guarda diarios y puntuaciones confirmadas cifrados en su propia IndexedDB.</p>
+  <p id="lab-archive-proof">Pendiente de verificación de copia ficticia.</p>
+ </section>
+</section>
+<script src="lab/i9-encrypted-store.js?v=i9"></script>
+<script src="lab/i9-backup.js?v=i9"></script>
+<script src="lab/i9-guard.js?v=i9"></script>
+<script src="official-calendar-2026-2027.js?v=338fgb1"></script>
+<script src="auth-private-repository.js?v=a8"></script>
+<script src="auth-lab.js?v=a8"></script>
+<script src="profiles.js?v=i1"></script>
+<script src="stats-bolos.js?v=r1"></script>
+<script src="auth-legacy-migration-lab.js?v=a6"></script>
+<script src="lab/i9-persistence.js?v=i9"></script>
+<script src="lab/i4-engine-port.js?v=i4"></script>
+<script src="lab/integracion-main-auth-i9.js?v=i9"></script>
+<script src="lab/i9-backup-ui.js?v=i9"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+name: MI BOWLING · LAB I9 · Respaldo cifrado portátil y restauración CAS
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i9-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i9-*'
+      - 'lab/integracion-main-auth-i9*'
+      - 'tests/integracion-i9-*'
+      - 'tests/i9-*'
+      - '.github/workflows/integracion-i9-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I9 · CP-020, FGB, firma de respaldo y regresión I8
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Activos CP-020 y calendario FGB de la rama original intactos
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Comprobar sintaxis de I9
+        run: |
+          node --check lab/i9-encrypted-store.js
+          node --check lab/i9-backup.js
+          node --check lab/i9-persistence.js
+          node --check lab/i9-guard.js
+          node --check lab/i9-backup-ui.js
+          node --check lab/integracion-main-auth-i9.js
+          node --check tests/integracion-i9-browser.test.cjs
+          node --check tests/i9-backup-browser.test.cjs
+          node --check tests/i9-backup-contract.test.cjs
+      - name: Seguridad AES-GCM y contratos previos A/B/C
+        run: |
+          node tests/i9-backup-contract.test.cjs
+          node tests/i8-storage-contract.test.cjs
+          node tests/i7-multi-wal-contract.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
+  browser:
+    name: "I9 · WebKit/Chromium: cifrado, recuperación, stale, fork y doble import"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preparar Playwright aislado
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: Instalar WebKit para emulación móvil
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Motor CP-020 con nueva pantalla de respaldo I9
+        run: node tests/integracion-i9-browser.test.cjs
+      - name: Exportación WebKit y restauración Chromium con CAS atómico
+        run: node tests/i9-backup-browser.test.cjs
+      - name: Capturas únicamente de LAB ficticio
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-i9-lab-cifrado
+          path: tests/artifacts-integracion-i9/*.png
+          retention-days: 14
+          if-no-files-found: warn

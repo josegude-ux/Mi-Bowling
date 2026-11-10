@@ -1,0 +1,69 @@
+name: MI BOWLING · LAB I8 · Resistencia de WAL cifrado y recuperación
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i8-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/i8-*'
+      - 'lab/integracion-main-auth-i8*'
+      - 'tests/integracion-i8-*'
+      - 'tests/i8-*'
+      - '.github/workflows/integracion-i8-lab.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: I8 · CP-020, FGB, regresión I7 y fallos de almacenamiento
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificar activos CP-020 y calendario FGB sin ediciones
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Sintaxis de código y pruebas nuevas
+        run: |
+          node --check lab/i8-encrypted-store.js
+          node --check lab/i8-persistence.js
+          node --check lab/i8-guard.js
+          node --check lab/integracion-main-auth-i8.js
+          node --check tests/i8-storage-contract.test.cjs
+          node --check tests/integracion-i8-browser.test.cjs
+          node --check tests/i8-resilience-browser.test.cjs
+      - name: I8 cuota/transacción, contrato I7 y aislamiento A/B/C
+        run: |
+          node tests/i8-storage-contract.test.cjs
+          node tests/i7-multi-wal-contract.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
+  browser:
+    name: "I8 · WebKit y Chromium: cuota, bloqueo, integridad, clave y reinicio"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright de pruebas independiente
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: Instalar WebKit Linux emulado
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Integración CP-020 I8 de cuentas ficticias
+        run: node tests/integracion-i8-browser.test.cjs
+      - name: Cuota simulada, bloqueo REAL IDB, corrupción AES, clave y reinicio de proceso
+        run: node tests/i8-resilience-browser.test.cjs
+      - name: Evidencias visuales ficticias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-i8-lab-storage-hardening
+          path: tests/artifacts-integracion-i8/*.png
+          retention-days: 14
+          if-no-files-found: warn
