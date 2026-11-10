@@ -9,6 +9,8 @@ const {fixture:fixture26,A,B,C_ID,PASS,clone}=require('./i26-bounded-import-fixt
 function module28(){
  const env={crypto:webcrypto,TextEncoder,TextDecoder,atob,btoa,console,performance};
  env.window=env;env.globalThis=env;vm.createContext(env);
+ // The same VM counts every JSON.parse call in I27 and I28 pipelines.
+ vm.runInContext('globalThis.__parseCount=0; const __i28Parse=JSON.parse; JSON.parse=function(...xs){globalThis.__parseCount++;return __i28Parse.apply(this,xs)}',env);
  for(const name of [
   'i11-audit-core.js','i11-evidence.js','i12-manifest.js',
   'i13-witnesses.js','i14-policy-lifecycle.js','i15-recovery.js',
