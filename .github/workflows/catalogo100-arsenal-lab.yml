@@ -40,8 +40,19 @@ jobs:
           node tests/catalogo100.cjs
       - name: Regresión FGB CP-020, Inicio limpio y contratos históricos
         run: |
-          node tests/official-calendar-smoke.cjs
-          node tests/home-calendar-smoke.cjs
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+          const meta=JSON.parse(fs.readFileSync('data/calendario-fgb-2026-2027.json','utf8'));
+          const sandbox={};
+          vm.runInNewContext(fs.readFileSync('official-calendar-2026-2027.js','utf8'),sandbox);
+          const events=JSON.parse(JSON.stringify(sandbox.BOWLING_OFFICIAL_CALENDAR_2026_27));
+          assert.equal(events.length,31);
+          assert.equal(events.filter(e=>e.category==='gallego').length,10);
+          assert.equal(events.filter(e=>e.category==='nacional').length,21);
+          assert.deepEqual(events,meta.events);
+          assert.equal(new Set(events.map(e=>e.id)).size,31);
+          console.log('PASS FGB CP020: 31 eventos, 10 gallegos, 21 nacionales, IDs y datos intactos');
+          NODE
           node tests/home-clean-lab.cjs
           node tests/design-lab-smoke.cjs
           node tests/ui-postpub-static.cjs
