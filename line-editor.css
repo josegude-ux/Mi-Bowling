@@ -1,0 +1,37 @@
+/* Editor visual de posición y objetivos — MI BOWLING R1 */
+.shot-editor{margin-top:13px;padding:13px 12px;border:1px solid #d9e8ed;border-radius:16px;background:#fff}
+.shot-explanation{margin:0 0 12px;color:#3d5b70;font-size:13px;line-height:1.5}
+.shot-editor-layout{display:grid;grid-template-columns:minmax(180px,360px) minmax(0,1fr);gap:16px;align-items:start}
+.shot-visual{min-width:0;background:linear-gradient(180deg,#eff8fa,#e9f1f5);border-radius:14px;padding:4px 6px 10px}
+.shot-lane{display:block;width:100%;max-width:380px;height:auto;margin:auto;user-select:none}
+.shot-marker{cursor:grab;outline:none;touch-action:none}
+.shot-marker:active{cursor:grabbing}
+.shot-marker:focus-visible .shot-marker-disc{stroke:#102c48;stroke-width:4}
+.shot-marker-halo{pointer-events:all}
+.shot-legend{display:flex;align-items:center;justify-content:center;gap:15px;flex-wrap:wrap;font-size:11px;color:#4a697d;font-weight:700}
+.shot-legend span{display:inline-flex;align-items:center;gap:5px}
+.shot-dot{width:10px;height:10px;display:inline-block;border-radius:50%}
+.shot-dot.foot{background:#df842d}.shot-dot.arrow{background:#008d9e}.shot-dot.bp{background:#6d48ab}
+.shot-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;align-content:start}
+.shot-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.shot-field span{color:#284c62;font-size:12px;font-weight:750}
+.shot-field .input{width:100%;min-height:45px}
+.shot-line-summary{grid-column:1/-1;background:#eaf7f8;border:1px solid #cce8e9;color:#0c6271;padding:10px;border-radius:11px;font-size:13px;font-weight:750}
+.shot-controls>.hint{grid-column:1/-1;font-size:11px;line-height:1.5;margin:0}
+@media(max-width:640px){.shot-editor-layout{grid-template-columns:1fr}.shot-visual{width:100%;max-width:360px;margin:0 auto}.shot-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:340px){.shot-controls{grid-template-columns:1fr}}
+
+/* Corrección segura de líneas registradas, sin eliminar lanzamientos */
+.shot-log-edit{margin:8px 0 14px;padding:13px;border:1px solid #cde3eb;background:#f2f9fc;border-radius:14px}
+.shot-log-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+.shot-log-fields .shot-field .input{min-width:0}
+@media(max-width:600px){.shot-log-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.roll-log .list-item{flex-wrap:wrap}}
+@media(max-width:340px){.shot-log-fields{grid-template-columns:1fr}}
+
+/* R4 · controles táctiles de tamaño suficiente en pantallas estrechas */
+.shot-field-block{display:flex;flex-direction:column;gap:6px;min-width:0}
+.shot-field-block>.shot-field{min-width:0}
+.shot-nudges{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.shot-nudges button{display:flex;align-items:center;justify-content:center;min-height:44px;border:1px solid #c5e0ea;border-radius:10px;background:#edf7fa;color:#155f79;font-size:23px;font-weight:700;touch-action:manipulation}
+.shot-nudges button:active{background:#cfeef5}
+.shot-nudges button:focus-visible{outline:3px solid #28a4c0;outline-offset:2px}

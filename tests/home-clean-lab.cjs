@@ -10,8 +10,8 @@ const app=read('app.js'),html=read('index.html'),sw=read('sw.js');
 const from=app.indexOf('function home(){'),to=app.indexOf('let calendarMonth',from);
 assert(from>=0&&to>from,'Inicio localizable');
 const home=app.slice(from,to);
-assert.equal((home.match(/bowling-home-module bowling-home-module-/g)||[]).length,3,'Tres funciones principales');
-assert(!home.includes('bowling-home-tools')&&!home.includes('bowling-home-tool-card'),'Inicio sin bloque adicional');
+assert.equal((home.match(/bowling-home-module bowling-home-module-/g)||[]).length,4,'Cuatro módulos principales');
+assert(home.includes('bowling-home-tools')&&home.includes('data-target="patrones"'),'Herramientas de Liga y patrones conservadas');
 for(const route of ['nueva','historial','estadisticas'])
  assert(home.includes('data-target="'+route+'"'),'Función principal '+route);
 assert(app.includes('onclick="openBallPickerFor(\x27\x27,\x27estadisticas\x27)"'),'Arsenal desde Análisis');
@@ -23,7 +23,7 @@ assert(html.includes('data-design-target="bolas"'),'Mis bolas en navegación de 
 for(const token of ["const APP_VERSION='3.3.10-catalogo'","const KEY='mi-bowling-analitica-v2'","const BALL_SELECTION_KEY='mi-bowling-ball-selection-v1'","function recordRoll(","function undoRoll(","function ligaView(","function ballsView(","function calendarView("])
  assert(app.includes(token),'Contrato preservado: '+token);
 assert(sw.includes("const CACHE='mi-bowling-analitica-v3-3-10-ui-cp036'"),'Caché publicada sin tocar');
-console.log('PASS HOME CLEAN static: 3 rutas, navegación a arsenal/liga/patrones, datos y motor intactos.');
+console.log('PASS HOME static: 4 módulos, navegación a arsenal/liga/patrones, datos y motor intactos.');
 
 if(!process.argv.includes('--browser'))process.exit(0);
 

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#e8f5fa">
+ <title>MI BOWLING · Aplicación LAB de prueba</title>
+ <link rel="stylesheet" href="../styles.css">
+ <link rel="stylesheet" href="../line-editor.css">
+ <link rel="stylesheet" href="../lane-3d.css">
+ <style>
+ .lab-strip{position:sticky;top:0;z-index:100;background:#183f63;color:#fff;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 16px;padding:8px 12px;font-size:12px;line-height:1.35;text-align:center}
+ .lab-strip strong{font-weight:850;letter-spacing:.6px}
+ .lab-strip button{border:1px solid #b0dceb;color:#e5fbff;border-radius:8px;background:#26597b;min-height:30px;padding:4px 9px;font-size:11px}
+ .topbar{top:0}
+ .lab-instructions{max-width:950px;margin:0 auto;padding:9px 17px 0;font-size:12px;color:#526d82}
+ .lab-instructions p{margin:0 0 4px}
+ </style>
+</head>
+<body>
+ <div class="lab-strip" role="status">
+  <strong>🧪 MI BOWLING LAB · DATOS FICTICIOS</strong>
+  <span>La prueba no modifica tu MI BOWLING publicado. Los datos de prueba se pierden al cerrar o recargar.</span>
+  <button type="button" id="lab-reset" onclick="window.labReset&&window.labReset()">Reiniciar LAB</button>
+ </div>
+ <header class="topbar">
+   <div class="topbar-inner">
+     <button class="brand" type="button" onclick="go('inicio')" aria-label="Ir al inicio"><span class="brand-mark">🎳</span>Mi <b>Bowling</b><span class="brand-sub">LAB 3D</span></button>
+     <div class="header-actions"><span class="offline-label"><i></i> Memoria temporal</span></div>
+   </div>
+ </header>
+ <div class="lab-instructions"><p>Para probar: <b>Empezar partida → Entrenamiento → Comenzar sesión</b>. En «Línea de juego», mueve los marcadores de la vista 3D o cambia a vista cenital. Usa solo datos ficticios; la carga de archivos está deshabilitada.</p></div>
+ <main id="app" class="app-main" role="main"></main>
+ <nav id="bottom-nav" class="bottom-nav" aria-label="Navegación"></nav>
+ <input id="restore-file" type="file" accept=".json,application/json" hidden disabled>
+ <script>
+ (function(){
+   'use strict';
+   const entries=new Map();
+   const memory={
+     getItem(key){return entries.has(String(key))?entries.get(String(key)):null;},
+     setItem(key,value){entries.set(String(key),String(value));},
+     removeItem(key){entries.delete(String(key));},
+     clear(){entries.clear();},
+     key(index){return Array.from(entries.keys())[index]??null;},
+     get length(){return entries.size;}
+   };
+   let isolated=false;
+   try{
+     Object.defineProperty(window,'localStorage',{configurable:true,value:memory});
+     isolated=window.localStorage===memory;
+   }catch(err){}
+   if(!isolated){
+     document.body.dataset.labIsolated='false';
+     document.getElementById('app').textContent='Este navegador no permite aislar el almacenamiento. Por seguridad, la prueba no se abrirá aquí.';
+     return;
+   }
+   document.body.dataset.labIsolated='true';
+   window.labMemory=memory;
+   window.labReset=()=>{memory.clear();location.reload();};
+   // No persistimos PDFs/fotos: el almacenamiento binario y la selección de archivos
+   // se deshabilitan explícitamente para evitar cualquier interacción con datos reales.
+   try{Object.defineProperty(window,'indexedDB',{configurable:true,value:undefined});}
+   catch(e){}
+   document.addEventListener('change',event=>{
+     if(event.target?.matches?.('input[type="file"]')){
+       event.stopImmediatePropagation();
+       event.preventDefault();
+       event.target.value='';
+       alert('La carga de archivos está deshabilitada en la prueba. No adjuntes documentación real.');
+     }
+   },true);
+   const files=['../lane-3d.js','../line-editor.js','../app.js'];
+   function next(i){
+     if(i===files.length){
+       document.body.dataset.labReady='true';
+       if(new URL(location.href).searchParams.has('smoke'))smoke();
+       return;
+     }
+     const script=document.createElement('script');
+     script.src=files[i];
+     script.onload=()=>next(i+1);
+     script.onerror=()=>{document.body.dataset.labReady='false';document.getElementById('app').textContent='No se han podido cargar los módulos del laboratorio.';};
+     document.body.appendChild(script);
+   }
+   function smoke(){
+     try{
+       if(!window.MiBowlingLane3D||!window.MiBowlingLineEditor)throw Error('Módulos visuales ausentes');
+       if(!/mi\s+bowling/i.test(document.getElementById('app').textContent))throw Error('Portada no cargada');
+       for(const label of ['Registrar partida','Consultar partidas','Analizar estadísticas','Gestionar mis bolas']){
+         if(!document.getElementById('app').textContent.includes(label))throw Error('Menú 3.3.3 ausente: '+label);
+       }
+       go('nueva');
+       const form=document.getElementById('newSessionForm');
+       if(!form)throw Error('Formulario de sesión ausente');
+       createSession({preventDefault(){},currentTarget:form});
+       const canvas=document.getElementById('lane3d-canvas');
+       if(!canvas||!document.getElementById('shot-stage'))throw Error('Pista 3D no integrada en registro');
+       const v=window.MiBowlingLane3D.inspect();
+       if(v.markers!==3)throw Error('No aparecen tres marcadores');
+       const fields={approach:'25',arrow:'15',breakpoint:'8',breakpointFt:'43'};
+       for(const [key,value] of Object.entries(fields)){const input=document.getElementById(key);if(!input)throw Error('Campo ausente: '+key);input.value=value;}
+       window.MiBowlingLineEditor.refresh();
+       recordRoll();
+       const saved=JSON.parse(memory.getItem('mi-bowling-analitica-v2'));
+       const roll=saved.sessions.at(-1).games[0].rolls[0];
+       if(roll.line.breakpointFt!=='43'||roll.line.approach!=='25'||roll.pins.length!==10)throw Error('Registro o score incorrectos');
+       if(!memory.getItem('mi-bowling-analitica-v2'))throw Error('Memoria temporal inactiva');
+       if(document.documentElement.scrollWidth>window.innerWidth+3)throw Error('Desbordamiento horizontal');
+       document.body.dataset.fullAppTest='PASS';
+     }catch(err){document.body.dataset.fullAppTest='FAIL';document.body.dataset.fullAppError=String(err);console.error(err);}
+   }
+   next(0);
+ })();
+ </script>
+</body>
+</html>

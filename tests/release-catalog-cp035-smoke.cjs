@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const read=p=>fs.readFileSync(path.resolve(__dirname,'..',p),'utf8');
 const app=read('app.js'),html=read('index.html'),sw=read('sw.js'),insights=read('arsenal-insights.js'),view=read('arsenal-view-lab.js'),css=read('styles.css');
-const VERSION='3.3.10-catalogo',CACHE='mi-bowling-analitica-v3-3-10-catalogo-cp035',QUERY='3310cat1',MODULES='arsenal-catalog-cp035';
+const VERSION='3.3.10-catalogo',CACHE='mi-bowling-analitica-v3-3-10-ui-cp036',QUERY='3310cat1',MODULES='arsenal-catalog-cp035';
 assert(app.includes("const APP_VERSION='"+VERSION+"'"),'Versión visible en la aplicación');
 assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Mismo contrato de almacenamiento');
 assert(sw.includes("const CACHE='"+CACHE+"'"),'Caché PWA renovada');

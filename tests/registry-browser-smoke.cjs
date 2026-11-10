@@ -230,7 +230,7 @@ async function runOffline(browser,origin){
   await page.waitForTimeout(350);
   assert.equal(navigations.length,1,'No debe recargar al tomar el control por primera vez');
   const cacheNames=await page.evaluate(()=>caches.keys());
-  assert(cacheNames.some(x=>x.includes('v3-3-10-catalogo-cp035')),'Caché versionada disponible');
+  assert(cacheNames.some(x=>x.includes('v3-3-10-ui-cp036')),'Caché versionada disponible');
   await page.evaluate(db=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db));},fixture);
   await context.setOffline(true);
   await page.reload({waitUntil:'load'});

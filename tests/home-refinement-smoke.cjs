@@ -6,7 +6,7 @@ new Function(app);
 assert(app.includes("const APP_VERSION='3.3.10-catalogo'"),'Versión funcional preservada');
 assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Sin migración de datos');
 assert(html.includes('app.js?v=3310cat1')&&html.includes('styles.css?v=3310cat1'),'Recursos nuevos');
-assert(sw.includes('mi-bowling-analitica-v3-3-10-catalogo-cp035'),'Caché nueva');
+assert(sw.includes('mi-bowling-analitica-v3-3-10-ui-cp036'),'Caché nueva');
 assert(css.includes("url('./home-estadisticas-limpio.jpg')"),'Tarjeta usa imagen sin porcentajes ilustrativos');
 assert(!css.includes("url('./home-estadisticas.jpg')"),'Tarjeta no usa fondo anterior del 85%');
 const jpg=read('home-estadisticas-limpio.jpg');

@@ -60,11 +60,11 @@ assert(saves>=6,'Cambios guardados');
 assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Datos existentes conservados');
 assert(app.includes("const APP_VERSION='3.3.10-catalogo'"));
 assert(index.includes('styles.css?v=3310cat1')&&index.includes('app.js?v=3310cat1'));
-assert(worker.includes('mi-bowling-analitica-v3-3-10-catalogo-cp035'));
+assert(worker.includes('mi-bowling-analitica-v3-3-10-ui-cp036'));
 assert(worker.includes("'./styles.css?v=3310cat1','./app.js?v=3310cat1'"));
 assert(styles.includes('MI BOWLING · LAB visual R2'));
-assert(app.includes('${laneVisual(s)}'),'La pista está integrada en el registro');
-assert(app.includes("' · Break '+esc(r.line.breakpoint)"),'El historial muestra breakpoint');
+assert(app.includes("MiBowlingLineEditor!=='undefined'?MiBowlingLineEditor.html(s.currentLine):laneVisual(s)"),'Pista 3D con alternativa cenital integrada');
+assert(app.includes("esc(r.line.breakpoint||'—')"),'El historial muestra breakpoint');
 assert(app.includes('scene.innerHTML=laneVisualSvg(s)'),'Refresco parcial de la pista para preservar el foco');
 
 /* Regression: undo must live beside 'Cambiar par' inside the score panel. */
