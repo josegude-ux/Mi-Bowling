@@ -70,7 +70,7 @@ async function test(engine,width,url){
   assert.equal(await page.locator('.item a:has-text("Ver fotografía en fabricante")').count(),0,'Variante ambigua sin foto errónea');
   await page.locator('.item [data-edit]').click();
   assert.equal(await page.locator('#rg').inputValue(),'','Orion no hereda RG de Nebula 2025');
-  assert.match(await page.locator('#manufacturerEvidence').textContent(),/Nebula de 2025/);
+  assert.match(await page.locator('#manufacturerEvidence').textContent(),/MOTIV Nebula 2025/);
   await page.locator('#close').click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('mi-bowling-analitica-v2')),'NO-TOCAR');
   assert.equal(await page.evaluate(()=>localStorage.getItem('mi-bowling-plantilla-100-v1')),null,'Consultar fichas no escribe ni cambia selecciones');
