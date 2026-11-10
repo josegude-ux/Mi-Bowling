@@ -5,8 +5,8 @@ const root=path.resolve(__dirname,'..'),dir=path.join(root,'catalogo-bolas'),sou
 const sandbox={};vm.runInNewContext(source,sandbox);
 const records=sandbox.MiBowlingCatalog20.entries;
 assert.equal(records.length,20,'Primeras 20 referencias auditadas');
-assert.equal(records.filter(x=>x.state==='ficha-fabricante-verificada').length,3,'Tres fichas exactas respaldadas por fabricante');
-assert.equal(records.filter(x=>x.state==='pendiente').length,17,'Diecisiete fichas sin datos inventados');
+assert.equal(records.filter(x=>x.state==='ficha-fabricante-verificada').length,6,'Seis fichas exactas respaldadas por fabricante');
+assert.equal(records.filter(x=>x.state==='pendiente').length,14,'Catorce fichas sin datos inventados');
 for(const x of records)if(x.state==='ficha-fabricante-verificada'){
  assert(x.technicalSource.startsWith('https://')&&x.photoPage===x.technicalSource);
  assert(x.core&&x.rg&&x.diff&&x.cover&&x.finish);
@@ -17,7 +17,7 @@ const seeds=JSON.parse(m[1]),key=x=>(x.brand+'|'+x.model).normalize('NFD').toLow
 assert.equal(seeds.length,100);
 for(let i=0;i<20;i++)assert.equal(key(records[i]),key(seeds[i]),'Fuente asociada a la ficha correcta #'+(i+1));
 assert(html.includes('enrichment20.js?v=lab-first20-20261110'),'Se importa el registro independiente');
-console.log('PASS F20 static: veinte nombres exactos, tres fichas verificadas, diecisiete pendientes, fotografías enlazadas al fabricante y sin copia');
+console.log('PASS F20 static: veinte nombres exactos, seis fichas verificadas, catorce pendientes, fotografías enlazadas al fabricante y sin copia');
 if(!process.argv.includes('--browser'))process.exit(0);
 const {chromium,webkit}=require('playwright');
 const pdfjs=path.join(root,'node_modules/pdfjs-dist/build/pdf.min.js'),worker=path.join(root,'node_modules/pdfjs-dist/build/pdf.worker.min.js');
@@ -36,7 +36,7 @@ async function test(engine,width,url){
  try{
   await page.goto(url,{waitUntil:'load',timeout:35000});
   assert.equal(await page.locator('.item').count(),100);
-  assert.equal(await page.locator('.item a:has-text("Ver fotografía en fabricante")').count(),3,'Tres enlaces oficiales, ninguna imagen incrustada de tercero');
+  assert.equal(await page.locator('.item a:has-text("Ver fotografía en fabricante")').count(),6,'Seis enlaces oficiales, ninguna imagen incrustada de tercero');
   await page.evaluate(()=>localStorage.setItem('mi-bowling-analitica-v2','NO-TOCAR'));
   await page.locator('#query').fill('Purple Rhino Pro');
   assert.equal(await page.locator('.item').count(),1);
