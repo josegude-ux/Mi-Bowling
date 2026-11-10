@@ -25,21 +25,21 @@
     "brand": "Motiv",
     "model": "(Orion) Nebula",
     "state": "pendiente",
-    "note": "No confundir con MOTIV Nebula de 2025; Orion Nebula aún requiere ficha propia."
+    "note": "USBC (Orion) Nebula 2026 NO se identifica con MOTIV Nebula 2025. La ficha de MOTIV disponible corresponde a otra edición. Pendiente variante Orion."
   },
   {
     "rank": 3,
     "brand": "PBS",
     "model": "乾坤 木 (Qiankun Wood)",
     "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "note": "PBS Qiankun Wood (乾坤 木): la lista USBC aporta identidad, pero no localizamos ficha técnica propia del fabricante. Sin inferencias de la versión Qiankun Gold."
   },
   {
     "rank": 4,
     "brand": "Storm",
     "model": "Lunar Orbit (Under 13 lbs.)",
     "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "note": "Storm Lunar Orbit (Under 13 lbs.): variante ligera específica. Sin ficha exacta; no extrapolar RG, cubierta ni núcleo de Lunar Orbit de otro peso."
   },
   {
     "rank": 5,
@@ -61,7 +61,7 @@
     "brand": "Legends",
     "model": "The Black Pearl Phantom",
     "state": "pendiente",
-    "note": "No confundir con Brunswick Vintage Phantom."
+    "note": "Legends The Black Pearl Phantom: distinto de Brunswick Vintage Phantom. Pendiente fabricante, fotografía y especificaciones del modelo exacto."
   },
   {
     "rank": 7,
@@ -82,14 +82,14 @@
     "brand": "Radical",
     "model": "The Hitter Teal",
     "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "note": "Radical The Hitter Teal: no equiparar con The Hitter 2023 ni The Hitter Pearl 2024. RG/diff anteriores NO transferibles; pendiente ficha Teal."
   },
   {
     "rank": 9,
     "brand": "Storm",
     "model": "The Code Black",
     "state": "pendiente",
-    "note": "Hay un Code Black histórico; no trasladar datos sin verificar la edición 2026."
+    "note": "Storm The Code Black aprobado en 2026: hi-sp.co.jp/product/code-black/ corresponde a una reedición de 2022; no atribuirle la misma cubierta, acabado ni foto hasta validar variante."
   },
   {
     "rank": 10,
@@ -111,7 +111,7 @@
     "brand": "ABS",
     "model": "Nanodesu Mega Grasp",
     "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "note": "ABS NANODESU MEGA GRASP (2026) figura en el catálogo oficial de ABS: https://www.absbowling.co.jp/product-tag/nanodesu%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA/ . Comercios especializados citan Nano-Bond 6.0 Solid, Modified BIG Drum, 15 lb RG 2.501/diff 0.045; no pasar a ficha técnica verificada sin cotejo directo con documento específico ABS."
   },
   {
     "rank": 12,
@@ -133,42 +133,51 @@
     "brand": "Roto Grip",
     "model": "Idol Star",
     "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "note": "Roto Grip Idol Star (octubre 2026) aparece en USBC; no localizar ficha técnica exacta en sitio del fabricante/distribuidor, evitar heredados de Idol, Idol Helios o Idol Pearl."
   },
   {
     "rank": 14,
     "brand": "Storm",
     "model": "PhysiX Ignition",
-    "state": "pendiente",
-    "note": "Ficha localizada en fuente secundaria; falta confirmación de fabricante."
+    "state": "ficha-fabricante-verificada",
+    "note": "Coincidencia exacta PhysiX Ignition (2026), distinta de PhysiX 2018. Ficha de distribuidor oficial de Storm en Japón, 15 lb; diferencial intermedio 0.018.",
+    "cover": "R2S Deep Solid Reactive",
+    "core": "Atomic A.I. Core",
+    "rg": "2.470 (15 lb)",
+    "diff": "0.055 (15 lb)",
+    "finish": "Power Edge",
+    "oil": "Medium / Medium Heavy",
+    "technicalSource": "https://hi-sp.co.jp/product/physix_ignition/",
+    "photoPage": "https://hi-sp.co.jp/product/physix_ignition/",
+    "sourceAuthority": "Distribuidor oficial japonés Storm — Hi-Sports"
   },
   {
     "rank": 15,
     "brand": "Swag",
     "model": "Valkyrie",
     "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "note": "SWAG Valkyrie (octubre 2026) aparece en listado USBC. Ficha técnica del fabricante, producto e imagen aún sin contraste."
   },
   {
     "rank": 16,
     "brand": "Brunswick",
     "model": "Team Brunswick",
     "state": "pendiente",
-    "note": "Sin ficha exacta contrastada en fabricante; conservar parámetros técnicos vacíos y fotografía pendiente."
+    "note": "Brunswick Team Brunswick: existe Team Brunswick White (https://brunswickbowling.com/products/balls/current/team-brunswick-white), de poliéster, pero USBC escribe solo Team Brunswick sin color; no asociar automáticamente edición White ni foto."
   },
   {
     "rank": 17,
     "brand": "Brunswick",
     "model": "Vaporize X",
     "state": "pendiente",
-    "note": "No confundir con Brunswick Vaporize histórico."
+    "note": "Brunswick Vaporize X (2026) es diferente de Vaporize (2024). Hoja oficial Brunswick para Vaporize 2024 NO valida Vaporize X; no transferir RG/cover ni fotografía."
   },
   {
     "rank": 18,
     "brand": "Hammer",
     "model": "Black Widow 3.0 Ruby",
     "state": "pendiente",
-    "note": "No equiparar a Black Widow 3.0 u otras variantes."
+    "note": "Hammer Black Widow 3.0 Ruby: comercio japonés especializado publica HK22C2 Cohesion Pearl, Gas Mask, RG 2.500, diff 0.058 (15 lb). Pendiente ficha directa de fabricante o distribuidor oficial acreditado antes de incorporarla como verificada."
   },
   {
     "rank": 19,
@@ -188,8 +197,17 @@
     "rank": 20,
     "brand": "Storm",
     "model": "Ion Max (Veil)",
-    "state": "pendiente",
-    "note": "La variante Veil no está verificada como la ficha genérica Ion Max."
+    "state": "ficha-fabricante-verificada",
+    "note": "Coincidencia exacta ION MAX VEIL (2026), no ION MAX genérica. Ficha de distribuidor oficial de Storm en Japón, 15 lb; diferencial intermedio 0.014.",
+    "cover": "NRG Smooth Solid Reactive",
+    "core": "Element Max A.I. Core",
+    "rg": "2.470 (15 lb)",
+    "diff": "0.055 (15 lb)",
+    "finish": "4000-grit Abralon",
+    "oil": "Medium",
+    "technicalSource": "https://hi-sp.co.jp/product/ion_max_veil/",
+    "photoPage": "https://hi-sp.co.jp/product/ion_max_veil/",
+    "sourceAuthority": "Distribuidor oficial japonés Storm — Hi-Sports"
   }
 ].map(x=>Object.freeze(x)));
  root.MiBowlingCatalog20=Object.freeze({updated:'2026-11-10',entries});
