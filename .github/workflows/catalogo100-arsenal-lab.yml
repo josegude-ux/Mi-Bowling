@@ -1,0 +1,66 @@
+name: MI BOWLING · LAB Catálogo 100 en Mis bolas · integración segura
+on:
+  push:
+    branches:
+      - lab/catalogo100-mis-bolas-integracion-20261110
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'catalogo100-mis-bolas-bridge.js'
+      - 'arsenal-view-lab.js'
+      - 'app.js'
+      - 'index.html'
+      - 'tests/catalogo100-arsenal-bridge-lab.cjs'
+      - 'docs/BOWLING-CATALOG100-ARSENAL-LAB-20261110.md'
+      - '.github/workflows/catalogo100-arsenal-lab.yml'
+permissions:
+  contents: read
+jobs:
+  static:
+    name: Catálogo 100 LAB · sintaxis, fuentes, FGB y regresiones
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis de los cambios sin alterar PWA
+        run: |
+          node --check catalogo100-mis-bolas-bridge.js
+          node --check arsenal-view-lab.js
+          node --check app.js
+          node --check tests/catalogo100-arsenal-bridge-lab.cjs
+      - name: Comparación exacta de 100 seeds y aislamiento de selecciones
+        run: node tests/catalogo100-arsenal-bridge-lab.cjs
+      - name: Catálogo 31 y plantilla de 100 independientes
+        run: |
+          node tests/catalog-official-sources-lab.cjs
+          node tests/catalogo100.cjs
+      - name: Regresión FGB CP-020, Inicio limpio y contratos históricos
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+          node tests/home-clean-lab.cjs
+          node tests/design-lab-smoke.cjs
+          node tests/ui-postpub-static.cjs
+  browser:
+    name: Catálogo 100 LAB · Chromium/WebKit móvil, escritorio, PWA sin datos reales
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependencias efímeras para navegadores emulados
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          ./node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Integración, alta individual y JSON seleccionado, 10 bolas/12 sesiones ficticias
+        run: node tests/catalogo100-arsenal-bridge-lab.cjs --browser
+      - name: Regresión catálogo de 31 y selección vigente
+        run: node tests/catalog-official-sources-lab.cjs --browser
+      - name: Inicio limpio, navegación, historial y responsive
+        run: node tests/home-clean-lab.cjs --browser
