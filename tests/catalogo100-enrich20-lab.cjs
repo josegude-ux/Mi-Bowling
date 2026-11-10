@@ -20,7 +20,7 @@ assert(html.includes('enrichment20.js?v=lab-first20-20261110'),'Se importa el re
 assert(records.filter(x=>x.sourceAuthority?.includes('Hi-Sports')).length===2,'Fuentes de distribuidor oficial identificadas');
 assert(!records.some(x=>x.image),'Sin archivos fotográficos de terceros copiados');
 const sources=records.filter(x=>x.identityEvidence||x.commercialEvidence);
-assert.deepEqual(sources.map(x=>x.rank),[2,11],'Dos investigaciones con procedencia desglosada');
+assert.equal(sources.map(x=>x.rank).join(','),'2,11','Dos investigaciones con procedencia desglosada');
 for(const x of sources){
  assert.equal(x.state,'pendiente','Identidad y comercio no elevan estado de ficha técnica');
  assert(x.identityEvidence?.source.startsWith('https://'),'Identidad oficial vinculada');
