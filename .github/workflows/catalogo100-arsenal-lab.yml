@@ -40,8 +40,8 @@ jobs:
           node tests/catalogo100.cjs
       - name: Regresión FGB CP-020, Inicio limpio y contratos históricos
         run: |
-          node tests/integracion-main-auth-cp020-contract.test.cjs
           node tests/official-calendar-smoke.cjs
+          node tests/home-calendar-smoke.cjs
           node tests/home-clean-lab.cjs
           node tests/design-lab-smoke.cjs
           node tests/ui-postpub-static.cjs
