@@ -1,0 +1,84 @@
+'use strict';
+/* BOWLING · laboratorio visual 3.3.3. Ejecutar: node tests/visual-lab-smoke.cjs */
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const p=require('node:path');
+const root=p.join(__dirname,'..');
+const app=fs.readFileSync(p.join(root,'app.js'),'utf8');
+const index=fs.readFileSync(p.join(root,'index.html'),'utf8');
+const styles=fs.readFileSync(p.join(root,'styles.css'),'utf8');
+const worker=fs.readFileSync(p.join(root,'sw.js'),'utf8');
+new Function(app); // Análisis sintáctico. No inicia la app.
+const start=app.indexOf('function laneBoardNum(');
+const end=app.indexOf('function registry(){',start);
+assert(start>=0&&end>start,'Funciones de pista localizadas');
+const line=app.split('\n').find(x=>x.startsWith('function changeLine('));
+assert(line,'Función changeLine localizada');
+const db={hand:'diestro'};
+const current={currentLine:{approach:'20',arrow:'15',breakpoint:'8'}};
+let saves=0;
+const values={approach:{value:''},arrow:{value:''},breakpoint:{value:''}};
+const scene={innerHTML:''};
+const labels={approach:{textContent:''},arrow:{textContent:''},breakpoint:{textContent:''}};
+const live={querySelector:selector=>{
+ if(selector==='.lane-visual-scene')return scene;
+ const m=selector.match(/\[data-lane-row="([^"]+)"\]/);
+ return m?labels[m[1]]||null:null;
+}};
+const byId=id=>id==='lane-visual-live'?live:values[id]||null;
+const doc={};
+const factory=new Function('db','session','save','$','document','esc',
+ app.slice(start,end)+'\n'+line+'\nreturn {laneBoardNum,laneX,laneVisual,laneSelect,laneNudge,changeLine};');
+const api=factory(db,()=>current,()=>{saves++},byId,doc,x=>String(x));
+assert.equal(api.laneBoardNum('1'),1);
+assert.equal(api.laneBoardNum('39'),39);
+for(const invalid of ['','0','40','-1','2.5','abc'])assert.equal(api.laneBoardNum(invalid),null);
+assert(api.laneX(1,'diestro')>api.laneX(39,'diestro'));
+assert(api.laneX(1,'zurdo')<api.laneX(39,'zurdo'));
+const html=api.laneVisual(current);
+for(const token of ['<svg','Posición inicial','Flechas','Breakpoint','Tabla 20','Tabla 15','Tabla 8'])assert(html.includes(token),token);
+assert.equal(saves,0,'Dibujar nunca modifica datos');
+const click=x=>({clientX:x,currentTarget:{getBoundingClientRect:()=>({left:100,width:380})}});
+api.laneSelect(click(480),'approach');
+assert.equal(current.currentLine.approach,'1');
+assert.equal(values.approach.value,'1');
+api.laneSelect(click(100),'approach');
+assert.equal(current.currentLine.approach,'39');
+db.hand='zurdo';
+api.laneSelect(click(100),'arrow');
+assert.equal(current.currentLine.arrow,'1');
+api.laneNudge('arrow',-1);
+assert.equal(current.currentLine.arrow,'1');
+current.currentLine.breakpoint='39';
+api.laneNudge('breakpoint',1);
+assert.equal(current.currentLine.breakpoint,'39');
+api.changeLine('breakpoint','27');
+assert.equal(current.currentLine.breakpoint,'27');
+assert(scene.innerHTML.includes('<svg'));
+assert.equal(labels.breakpoint.textContent,'Tabla 27');
+assert(saves>=6,'Cambios guardados');
+assert(app.includes("const KEY='mi-bowling-analitica-v2'"),'Datos existentes conservados');
+assert(app.includes("const APP_VERSION='3.3.10-catalogo'"));
+assert(index.includes('styles.css?v=3310cat1')&&index.includes('app.js?v=3310cat1'));
+assert(worker.includes('mi-bowling-analitica-v3-3-10-ui-cp036'));
+assert(worker.includes("'./styles.css?v=3310cat1','./app.js?v=3310cat1'"));
+assert(styles.includes('MI BOWLING · LAB visual R2'));
+assert(app.includes("MiBowlingLineEditor!=='undefined'?MiBowlingLineEditor.html(s.currentLine):laneVisual(s)"),'Pista 3D con alternativa cenital integrada');
+assert(app.includes("esc(r.line.breakpoint||'—')"),'El historial muestra breakpoint');
+assert(app.includes('scene.innerHTML=laneVisualSvg(s)'),'Refresco parcial de la pista para preservar el foco');
+
+/* Regression: undo must live beside 'Cambiar par' inside the score panel. */
+const registrySource=app.slice(app.indexOf('function registry(){'),app.indexOf('function changeBall(',app.indexOf('function registry(){')));
+const scoreIndex=registrySource.indexOf('${scoreStrip(g,n)}');
+const pairIndex=registrySource.indexOf('onclick="editPair=!editPair;render()"');
+const undoIndex=registrySource.indexOf('onclick="undoRoll()"');
+assert(scoreIndex>=0&&pairIndex>scoreIndex&&undoIndex>pairIndex&&undoIndex-pairIndex<300,'Deshacer junto a Cambiar par');
+assert.equal(registrySource.split('onclick="undoRoll()"').length-1,1,'Un único botón Deshacer');
+assert(registrySource.includes("g.rolls.length?'':'disabled'"),'Deshacer inactivo sin tiradas');
+assert(registrySource.includes("score-action-buttons"),'Ambos botones agrupados en marcador');
+assert(!registrySource.includes("${lane.pair?`<button"),'Cambiar par debe mostrarse incluso sin par');
+assert(registrySource.includes('<button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button>'),'Cambiar par siempre presente');
+assert(registrySource.includes('onclick="undoRoll()"'),'Deshacer permanece junto a Cambiar par');
+assert(styles.includes('grid-template-columns:repeat(2,minmax(0,1fr))'),'Botones en paralelo en móvil');
+
+console.log('BOWLING LAB: pruebas de sintaxis, tablas, controles, persistencia simulada y recursos correctas.');

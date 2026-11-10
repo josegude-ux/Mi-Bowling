@@ -1,0 +1,90 @@
+name: "MI BOWLING | Registro compacto LAB"
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app.js'
+      - 'arsenal-insights.js'
+      - 'arsenal-view-lab.js'
+      - 'tests/arsenal-analysis-lab.cjs'
+      - 'tests/arsenal-catalog-selectable-lab.cjs'
+      - 'styles.css'
+      - 'index.html'
+      - 'sw.js'
+      - 'icon-180.png'
+      - 'icon-192.png'
+      - 'icon-512.png'
+      - 'manifest.json'
+      - 'tests/icon-smoke.cjs'
+      - 'tests/registry-browser-smoke.cjs'
+      - 'home-registro.jpg'
+      - 'home-partidas.jpg'
+      - 'home-estadisticas.jpg'
+      - 'home-estadisticas-limpio.jpg'
+      - 'icon-registro-3d.svg'
+      - 'icon-partidas-3d.svg'
+      - 'icon-estadisticas-3d.svg'
+      - 'tests/home-refinement-smoke.cjs'
+      - 'tests/home-calendar-smoke.cjs'
+      - 'official-calendar-2026-2027.js'
+      - 'data/calendario-fgb-2026-2027.json'
+      - 'tests/official-calendar-smoke.cjs'
+      - 'tests/registry-compact-smoke.cjs'
+      - '.github/workflows/registry-compact-lab.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: bowling-registro-lab-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validar-registro:
+    if: github.head_ref == 'release/catalogo-cp035-preparado-20261109' || github.head_ref == 'feature/arsenal-catalogo-seleccionable-f2-lab-20261109' || github.head_ref == 'release/arsenal-f1-cp034-20261109' || github.head_ref == 'feature/catalogo-arsenal-f1-lab-20261108' || github.head_ref == 'feature/calendario-fgb-2026-2027-lab-20261108' || github.head_ref == 'design/inicio-visura-refinamiento-3d-20261108' || github.head_ref == 'design/inicio-visura-calendario-20261108' || github.head_ref == 'design/icono-mi-bowling-visura-20261108' || github.head_ref == 'design/registro-compacto-r1-20261108' || github.head_ref == 'fix/mini-pins-black-red-after-second-20261108' || github.head_ref == 'fix/mini-bolos-rojos-fin-frame-20261108' || github.ref == 'refs/heads/design/registro-compacto-r1-20261108' || github.ref == 'refs/heads/fix/mini-bolos-rojos-fin-frame-20261108'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright aislado para pruebas
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Iconos y recursos PWA
+        run: node tests/icon-smoke.cjs
+      - name: Portada y calendario de partidas (datos ficticios)
+        run: node tests/home-calendar-smoke.cjs
+      - name: Verificar ajustes visuales CP-019
+        run: node tests/home-refinement-smoke.cjs
+      - name: Comprobar 31 fechas FGB y separación de calendario
+        run: node tests/official-calendar-smoke.cjs
+      - name: Pruebas de lógica existentes
+        run: |
+          node tests/visual-lab-smoke.cjs
+          node tests/registry-compact-smoke.cjs
+      - name: Validación real Chromium + WebKit (emulación móvil, tablet y escritorio)
+        run: node tests/registry-browser-smoke.cjs
+      - name: Arsenal F1 - selección por sesión, compatibilidad y WebKit
+        if: github.head_ref == 'release/catalogo-cp035-preparado-20261109' || github.head_ref == 'feature/arsenal-catalogo-seleccionable-f2-lab-20261109' || github.head_ref == 'release/arsenal-f1-cp034-20261109' || github.head_ref == 'feature/catalogo-arsenal-f1-lab-20261108'
+        run: node tests/ball-selection-lab.cjs
+      - name: Arsenal R1 - ficha, comparativa y asistente (datos ficticios)
+        if: github.head_ref == 'release/catalogo-cp035-preparado-20261109' || github.head_ref == 'feature/arsenal-catalogo-seleccionable-f2-lab-20261109'
+        run: node tests/arsenal-analysis-lab.cjs
+      - name: Catálogo - búsqueda, añadir sin duplicar, dos pestañas (datos ficticios)
+        if: github.head_ref == 'release/catalogo-cp035-preparado-20261109' || github.head_ref == 'feature/arsenal-catalogo-seleccionable-f2-lab-20261109'
+        run: node tests/arsenal-catalog-selectable-lab.cjs
+      - name: Candidata CP-035 - integridad de version y cache antes de publicar
+        if: github.head_ref == 'release/catalogo-cp035-preparado-20261109'
+        run: node tests/release-catalog-cp035-smoke.cjs
+      - name: Guardar capturas de pantalla de LAB
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bowling-registro-lab-capturas
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

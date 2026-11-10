@@ -18,7 +18,7 @@ for(const target of needed){
   assert.ok(assets.includes('./'+target),'Falta en caché offline: '+target);
   assert.ok(fs.existsSync(path.join(root,target.split('?')[0])),'No existe: '+target);
 }
-assert.match(sw,/mi-bowling-analitica-v3-3-3-3d-lab-r4/,'Caché versionada de laboratorio');
+assert.match(sw,/mi-bowling-analitica-v3-3-10-ui-cp036/,'Caché versionada de laboratorio');
 assert.ok(html.indexOf('src="lane-3d.js')<html.indexOf('src="line-editor.js'),'El editor 3D se debe cargar antes de la integración cenital');
 assert.ok(html.indexOf('src="line-editor.js')<html.indexOf('src="app.js'),'El editor debe cargar antes de la app');
 console.log('OK · Cache PWA: 6 recursos CSS/JS versionados, orden de scripts y ficheros existentes');

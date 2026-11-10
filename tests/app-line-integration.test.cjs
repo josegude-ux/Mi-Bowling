@@ -40,7 +40,7 @@ const document={
   body:{classList:{toggle(){}}}
 };
 const context=vm.createContext({
-  window:{scrollTo(){}},
+  window:{scrollTo(){},addEventListener(){}},
   document,
   localStorage:storage,
   navigator:{},
