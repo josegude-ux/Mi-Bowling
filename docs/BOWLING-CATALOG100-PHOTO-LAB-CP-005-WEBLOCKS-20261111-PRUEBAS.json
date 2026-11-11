@@ -1,0 +1,25 @@
+{
+  "checkpoint": "BOWLING-CATALOG100-PHOTO-LAB-CP-005-WEBLOCKS-20261111",
+  "date": "2026-11-11",
+  "branch": "lab/catalogo100-fotografias-permisos-20261111",
+  "base": "7662b56b2f062a338979dfdb72652d1e0a14f80e",
+  "bug": {
+    "optimistic_check_write_race": true,
+    "synthetic_two_tab_lost_update": true
+  },
+  "new_validation": {
+    "V8_real_source_mock": {
+      "pass": 8,
+      "fail": 0
+    },
+    "Node_extracted_algorithm_fixture": "PASS",
+    "Node_full_git_repository": "NOT_EXECUTED",
+    "Chromium_real_pages": "BLOCKED_BY_ADMINISTRATOR",
+    "Safari_PWA": "NOT_EXECUTED"
+  },
+  "lock_support": "navigator.locks exclusive lock where available; fallback optimistic only",
+  "prior_closed_tests_rerun": false,
+  "no_photo_assets": true,
+  "no_licenses": true,
+  "release_gate": "BLOCKED_PENDING_REAL_BROWSER_AND_FULL_SUITE"
+}

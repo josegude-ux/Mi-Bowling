@@ -42,10 +42,24 @@ function getSaved(){try{const v=JSON.parse(localStorage.getItem(STORAGE)||'null'
 const initial=getSaved();let arr=initial?.records||structuredClone(seeds),meta=initial?.meta||{source:'Referencia reciente (ver aviso)',date:'2026-11-03',reviewed:false},archive=Array.isArray(initial?.archive)?initial.archive:[];
 let storedSnapshot=localStorage.getItem(STORAGE);
 function commitLocalState(){
- if(localStorage.getItem(STORAGE)!==storedSnapshot)throw Error('Conflicto de pestañas: existen cambios recientes en este catálogo. Recarga antes de guardar; no se han sobrescrito.');
- const next=JSON.stringify({records:arr,meta,archive});localStorage.setItem(STORAGE,next);storedSnapshot=next;
+ const persist=()=>{
+  if(localStorage.getItem(STORAGE)!==storedSnapshot)throw Error('Conflicto de pestañas: existen cambios recientes en este catálogo. Recarga antes de guardar; no se han sobrescrito.');
+  const next=JSON.stringify({records:arr,meta,archive});localStorage.setItem(STORAGE,next);storedSnapshot=next;
+ };
+ // LAB: coordinar lecturas y escrituras entre pestañas en navegadores con Web Locks.
+ // Sin esta API se conserva la comprobación optimista previa; NO hay garantía atómica.
+ const locks=typeof navigator!=='undefined'&&navigator.locks;
+ return locks&&typeof locks.request==='function'
+  ?locks.request('mi-bowling-catalogo100-local-v1',{mode:'exclusive'},persist):persist();
 }
-function saveLocal(){try{commitLocalState();return true}catch(e){msg(e.message&&e.message.startsWith('Conflicto de pestañas')?e.message:'No se pudo guardar: espacio local agotado. Exporta lo seleccionado para conservarlo.',true);return false}}
+function saveFailure(e){msg(e.message&&e.message.startsWith('Conflicto de pestañas')?e.message:'No se pudo guardar: espacio local agotado. Exporta lo seleccionado para conservarlo.',true);return false}
+function saveLocal(){
+ try{const result=commitLocalState();return result&&typeof result.then==='function'?result.then(()=>true,saveFailure):true}
+ catch(e){return saveFailure(e)}
+}
+function afterSave(result,success,rollback){
+ return result&&typeof result.then==='function'?result.then(ok=>ok?success():rollback()):result?success():rollback();
+}
 function msg(text,error=false){const s=$('#status');s.textContent=text;s.classList.toggle('danger',!!error)}
 function colorFor(s){let v=0;for(const c of s)v=(v*31+c.charCodeAt(0))>>>0;return ['#155183','#0b8a95','#6b65a8','#4d7e92','#a46549','#177a70'][v%6]}
 function ballSVG(x){const col=colorFor(x.brand),gid="g"+keyOf(x).replaceAll("|", "").slice(0,22);return `<div class="placeholder"><svg viewBox="0 0 90 90" role="img" aria-label="Ilustración genérica, no foto del modelo"><defs><radialGradient id="${gid}"><stop offset="0" stop-color="#fff" stop-opacity=".8"/><stop offset=".36" stop-color="${col}"/><stop offset="1" stop-color="#132b49"/></radialGradient></defs><circle cx="45" cy="45" r="39" fill="url(#${gid})"/><circle cx="35" cy="32" r="4" fill="#071827"/><circle cx="49" cy="30" r="4" fill="#071827"/><circle cx="41" cy="43" r="4" fill="#071827"/></svg><span>Foto real pendiente</span></div>`}
@@ -57,7 +71,7 @@ function draw(){stat();const q=$('#query').value.trim().toLowerCase().normalize(
  $('#count').textContent=`Mostrando ${shown.length} de ${arr.length}`;$('#empty').classList.toggle('hidden',shown.length>0);
  $('#cards').innerHTML=shown.map(x=>{const i=arr.indexOf(x);return `<article class="item ${x.selected?'is-selected':''}"><div class="photo"><span class="num">#${i+1}</span>${photoHTML(x)}</div><div class="content"><div class="brand">${esc(x.brand)}</div><div class="model">${esc(x.model)}</div><div class="date">Aprobación: ${esc(x.approved)}</div><div class="tags"><span class="pill">${x.cover?esc(x.cover):'Cubierta pendiente'}</span><span class="pill">${x.rg?'RG '+esc(x.rg):'RG pendiente'}</span></div><div class="selectRow"><label><input type="checkbox" data-check="${i}" ${x.selected?'checked':''} aria-label="Elegir ${esc(x.brand+' '+x.model)}"> Elegir</label><button class="btn small" data-edit="${i}">Ficha / foto</button></div></div></article>`}).join('')}
 $('#query').addEventListener('input',draw);$('#brand').addEventListener('change',draw);$('#filter').addEventListener('change',draw);
-$('#cards').addEventListener('change',e=>{const i=Number(e.target.dataset.check);if(e.target.matches('[data-check]')&&arr[i]){const previous=arr[i].selected;arr[i].selected=e.target.checked;if(!saveLocal())arr[i].selected=previous;draw()}});
+$('#cards').addEventListener('change',e=>{const i=Number(e.target.dataset.check);if(e.target.matches('[data-check]')&&arr[i]){const previous=arr[i].selected;arr[i].selected=e.target.checked;return afterSave(saveLocal(),()=>draw(),()=>{arr[i].selected=previous;draw()})}});
 let editAt=-1;$('#cards').addEventListener('click',e=>{const btn=e.target.closest('[data-edit]');if(btn)openDetail(Number(btn.dataset.edit))});
 function openDetail(i){editAt=i;const x=arr[i];if(!x)return;$('#modalTitle').textContent=x.model;$('#modalSubtitle').textContent=x.brand+' · aprobado '+x.approved;
  for(const id of ['cover','core','rg','diff','finish','oil','image','imageSource','technicalSource','notes'])$('#'+id).value=x[id]||'';
@@ -65,11 +79,11 @@ function openDetail(i){editAt=i;const x=arr[i];if(!x)return;$('#modalTitle').tex
  const page=window.MiBowlingPhotoLab.get(x);const official=page&&page.matchStatus==='oficial-exacto'?page.sourcePage:null;$('#searchPhoto').href=official||SOURCE_URL;$('#searchPhoto').textContent=official?'Abrir ficha oficial (no se copia foto)':'Consultar fuente USBC';$('#detail').showModal()}
 $('#close').onclick=()=>$('#detail').close();$('#save').onclick=()=>{const x=arr[editAt];if(!x)return;const previous={...x};for(const id of ['cover','core','rg','diff','finish','oil','image','imageSource','technicalSource','notes'])x[id]=$('#'+id).value.trim().slice(0,500);
  for(const id of ['image','imageSource','technicalSource'])if(x[id]&&!/^https:\/\//i.test(x[id])){Object.assign(x,previous);msg('Se requieren enlaces HTTPS para fotos y fuentes.',true);return}
- if(!saveLocal()){Object.assign(x,previous);return}$('#detail').close();draw();msg('Ficha guardada en este navegador; no modifica MI BOWLING.')};
+ return afterSave(saveLocal(),()=>{$('#detail').close();draw();msg('Ficha guardada en este navegador; no modifica MI BOWLING.')},()=>{Object.assign(x,previous)})};
 function download(text,name,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
 $('#saveJson').onclick=()=>{const chosen=arr.filter(x=>x.selected);if(!chosen.length)return msg('Marca una o más bolas antes de exportar.',true);download(JSON.stringify({schema:'mi-bowling-template-balls-v1',created:new Date().toISOString(),items:chosen},null,2),'MI_BOWLING_Bolas_elegidas.json','application/json');msg(`${chosen.length} bolas exportadas en JSON.`)};
 $('#saveCsv').onclick=()=>{const chosen=arr.filter(x=>x.selected);if(!chosen.length)return msg('Marca una o más bolas antes de exportar.',true);const cols=['brand','model','approved','cover','core','rg','diff','finish','oil','image','technicalSource','notes'];const csv=[cols.join(';'),...chosen.map(x=>cols.map(c=>'"'+String(x[c]||'').replaceAll('"','""')+'"').join(';'))].join('\r\n');download('\ufeff'+csv,'MI_BOWLING_Bolas_elegidas.csv','text/csv;charset=utf-8');msg(`${chosen.length} bolas exportadas en CSV.`)};
-$('#reset').onclick=()=>{if(!confirm('¿Restaurar las 100 referencias iniciales? La selección, fichas y archivo histórico de esta plantilla local se perderán; MI BOWLING no se modifica.'))return;const beforeArr=arr,beforeArchive=archive,beforeMeta=meta;arr=structuredClone(seeds);archive=[];meta={source:'Referencia reciente',date:'2026-11-03',reviewed:false};if(!saveLocal()){arr=beforeArr;archive=beforeArchive;meta=beforeMeta;return}renderBrands();draw();msg('Restauradas las 100 referencias iniciales.')};
+$('#reset').onclick=()=>{if(!confirm('¿Restaurar las 100 referencias iniciales? La selección, fichas y archivo histórico de esta plantilla local se perderán; MI BOWLING no se modifica.'))return;const beforeArr=arr,beforeArchive=archive,beforeMeta=meta;arr=structuredClone(seeds);archive=[];meta={source:'Referencia reciente',date:'2026-11-03',reviewed:false};return afterSave(saveLocal(),()=>{renderBrands();draw();msg('Restauradas las 100 referencias iniciales.')},()=>{arr=beforeArr;archive=beforeArchive;meta=beforeMeta})};
 $('#saveArchive').onclick=()=>{if(!archive.length)return msg('Todavía no hay fichas desplazadas del top 100.',true);
  download(JSON.stringify({schema:'mi-bowling-template-archive-v1',created:new Date().toISOString(),items:archive},null,2),'MI_BOWLING_Archivo_bolas.json','application/json');
  msg(archive.length+' fichas archivadas exportadas, incluidas selecciones y notas.');};
@@ -96,7 +110,7 @@ $('#pdfFile').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;
   const preserved=updated.filter(x=>x.selected).length;const activeKeys=new Set(updated.map(x=>keyOf(x))),historical=new Map([...archive,...arr].map(x=>[keyOf(x),x]));const nextArchive=[...historical.values()].filter(x=>!activeKeys.has(keyOf(x)));const message=`PDF: ${result.totalPages} páginas, ${result.detected} referencias desde 2024 reconocidas. Se mostrarán las 100 más nuevas por aprobación. ${preserved} selecciones actuales de esos modelos se conservarán. ${nextArchive.length} fichas fuera del top 100 quedarán en el ARCHIVO HISTÓRICO para exportar sus datos o recuperarlos si vuelven a aparecer. ¿Confirmas?`;
   if(!confirm(message))return;
   // Actualización completa de una vez; no se reemplazan datos antes de la confirmación.
-  const oldArr=arr,oldMeta=meta,oldArchive=archive;arr=updated;archive=nextArchive;meta={source:'PDF USBC elegido por el usuario',date:new Date().toISOString().slice(0,10),reviewed:true};try{commitLocalState()}catch(err){arr=oldArr;meta=oldMeta;archive=oldArchive;throw Error(err.message&&err.message.startsWith('Conflicto de pestañas')?err.message:'Sin espacio para guardar; catálogo y archivo anteriores conservados.')}
+  const oldArr=arr,oldMeta=meta,oldArchive=archive;arr=updated;archive=nextArchive;meta={source:'PDF USBC elegido por el usuario',date:new Date().toISOString().slice(0,10),reviewed:true};try{await commitLocalState()}catch(err){arr=oldArr;meta=oldMeta;archive=oldArchive;throw Error(err.message&&err.message.startsWith('Conflicto de pestañas')?err.message:'Sin espacio para guardar; catálogo y archivo anteriores conservados.')}
   renderBrands();$('#query').value='';$('#filter').value='all';draw();msg('Catálogo actualizado desde tu PDF local: 100 registros ordenados por fecha.');
  }catch(err){console.error(err);msg('No se aplicó la actualización: '+err.message,true)}finally{$('#pdfFile').value=''}};
 renderBrands();draw();
