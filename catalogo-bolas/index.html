@@ -40,19 +40,27 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'
 const keyOf=x=>String((x.brand||'')+'|'+(x.model||'')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9|]+/g,'');
 function getSaved(){try{const v=JSON.parse(localStorage.getItem(STORAGE)||'null');return v?.records?.length? v:null}catch{return null}}
 const initial=getSaved();let arr=initial?.records||structuredClone(seeds),meta=initial?.meta||{source:'Referencia reciente (ver aviso)',date:'2026-11-03',reviewed:false},archive=Array.isArray(initial?.archive)?initial.archive:[];
-let storedSnapshot=localStorage.getItem(STORAGE);
+let storedSnapshot=localStorage.getItem(STORAGE),localWritePending=false;
 function commitLocalState(){
+ // Impedir que otra acción local cambie arr mientras una escritura espera al Web Lock.
+ if(localWritePending)throw Error('Guardado en curso: termina el guardado anterior antes de modificar otra bola.');
+ localWritePending=true;
  const persist=()=>{
   if(localStorage.getItem(STORAGE)!==storedSnapshot)throw Error('Conflicto de pestañas: existen cambios recientes en este catálogo. Recarga antes de guardar; no se han sobrescrito.');
   const next=JSON.stringify({records:arr,meta,archive});localStorage.setItem(STORAGE,next);storedSnapshot=next;
  };
- // LAB: coordinar lecturas y escrituras entre pestañas en navegadores con Web Locks.
- // Sin esta API se conserva la comprobación optimista previa; NO hay garantía atómica.
- const locks=typeof navigator!=='undefined'&&navigator.locks;
- return locks&&typeof locks.request==='function'
-  ?locks.request('mi-bowling-catalogo100-local-v1',{mode:'exclusive'},persist):persist();
+ // Web Locks protegen lectura+escritura entre pestañas compatibles. Sin esta
+ // API el fallback optimista NO ofrece garantía de atomicidad inter-pestañas.
+ try{
+  const locks=typeof navigator!=='undefined'&&navigator.locks;
+  const result=locks&&typeof locks.request==='function'
+   ?locks.request('mi-bowling-catalogo100-local-v1',{mode:'exclusive'},persist):persist();
+  if(result&&typeof result.then==='function')
+   return Promise.resolve(result).finally(()=>{localWritePending=false});
+  localWritePending=false;return result;
+ }catch(e){localWritePending=false;throw e}
 }
-function saveFailure(e){msg(e.message&&e.message.startsWith('Conflicto de pestañas')?e.message:'No se pudo guardar: espacio local agotado. Exporta lo seleccionado para conservarlo.',true);return false}
+function saveFailure(e){msg(e.message&&(e.message.startsWith('Conflicto de pestañas')||e.message.startsWith('Guardado en curso'))?e.message:'No se pudo guardar: espacio local agotado. Exporta lo seleccionado para conservarlo.',true);return false}
 function saveLocal(){
  try{const result=commitLocalState();return result&&typeof result.then==='function'?result.then(()=>true,saveFailure):true}
  catch(e){return saveFailure(e)}

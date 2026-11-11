@@ -1,0 +1,45 @@
+{
+  "checkpoint": "BOWLING-CATALOG100-PHOTO-LAB-CP-007-PENDING-WRITES-20261111",
+  "date": "2026-11-11",
+  "branch": "lab/catalogo100-fotografias-permisos-20261111",
+  "initialHead": "35f6e46e766df8bcc3fd6c899a3f501c7fa8d4b0",
+  "defect": {
+    "kind": "async-same-tab-pending-write-divergence",
+    "reproduced": true,
+    "scenario": "two fast fictitious selections plus 2nd quota failure",
+    "stored": [
+      true,
+      true
+    ],
+    "visible": [
+      true,
+      false
+    ]
+  },
+  "change": {
+    "localWritePending": true,
+    "releasesAfterPromise": true,
+    "blockingUI": true,
+    "no_licenses": true
+  },
+  "evidence": {
+    "Node22_extracted": {
+      "pass": 13,
+      "fail": 0
+    },
+    "GitHub_code_V8": {
+      "pass": 6,
+      "fail": 0
+    },
+    "Node_full_checkout": "NOT_EXECUTED",
+    "browser_integrated": "BLOCKED",
+    "real_WebLocks": "NOT_EXECUTED",
+    "priorCpsRerun": false
+  },
+  "filesLocal": [
+    "pending_write_race.cjs",
+    "pending_guard_regression.cjs",
+    "pending_guard_regression_report.json"
+  ],
+  "gate": "BLOCKED"
+}
