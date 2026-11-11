@@ -1,0 +1,69 @@
+{
+  "checkpoint": "BOWLING-CATALOG100-PHOTO-LAB-CP-002-LOCAL-VALIDACION-20261111",
+  "date": "2026-11-11",
+  "branch": "lab/catalogo100-fotografias-permisos-20261111",
+  "base": "8f62b8f6c668053371df5064b184a3f4260f18c9",
+  "main": "699d877d5ec4f3891ac6c24504a57605105bfb2d",
+  "tests": {
+    "github_v8": {
+      "pass": 19,
+      "fail": 0
+    },
+    "local_node": {
+      "check": "PASS",
+      "synthetic": "PASS"
+    },
+    "chromium_synthetic": [
+      {
+        "width": 320,
+        "columns": 1,
+        "cards": 100,
+        "placeholders": 100,
+        "images": 0,
+        "externalRequests": 0,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "columns": 2,
+        "cards": 100,
+        "placeholders": 100,
+        "images": 0,
+        "externalRequests": 0,
+        "overflow": false
+      },
+      {
+        "width": 820,
+        "columns": 3,
+        "cards": 100,
+        "placeholders": 100,
+        "images": 0,
+        "externalRequests": 0,
+        "overflow": false
+      },
+      {
+        "width": 1280,
+        "columns": 4,
+        "cards": 100,
+        "placeholders": 100,
+        "images": 0,
+        "externalRequests": 0,
+        "overflow": false
+      }
+    ],
+    "not_executed": [
+      "full git tests/catalogo100-photos-lab.cjs",
+      "browser full application",
+      "physical iPhone Safari",
+      "CI remote"
+    ]
+  },
+  "identity": {
+    "total": 100,
+    "exactOfficialLinks": 14,
+    "candidate": 1,
+    "unresolved": 85,
+    "licensedImages": 0
+  },
+  "newCodeChanges": 0
+}
