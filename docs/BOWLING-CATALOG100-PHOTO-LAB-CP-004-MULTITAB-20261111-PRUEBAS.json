@@ -1,0 +1,28 @@
+{
+  "checkpoint": "BOWLING-CATALOG100-PHOTO-LAB-CP-004-MULTITAB-20261111",
+  "date": "2026-11-11",
+  "branch": "lab/catalogo100-fotografias-permisos-20261111",
+  "base": "48a283f3c6d1a2859a6baeb453d69782dc4f8b0f",
+  "source_file": "catalogo-bolas/index.html",
+  "test_file": "tests/catalogo100-photo-multitab-lab.cjs",
+  "proof": {
+    "original_bug": {
+      "stale_selection_overwrote_import": true,
+      "archived_records_lost": true,
+      "synthetic_only": true
+    },
+    "patched_v8": {
+      "pass": 10,
+      "fail": 0,
+      "prior_closed_tests_rerun": false
+    },
+    "node_reposuite": "NOT_RUN",
+    "full_browser": "NOT_RUN",
+    "strict_simultaneous_interleaving": "NOT_PROVEN"
+  },
+  "preserved": {
+    "seed": 100,
+    "licensed_photo_count": 0,
+    "pwa_data": "unmodified"
+  }
+}
