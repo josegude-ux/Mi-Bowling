@@ -1,0 +1,55 @@
+{
+  "checkpoint": "BOWLING-CATALOG100-PHOTO-LAB-CP-003-IMPORT-HISTORY-20261111",
+  "date": "2026-11-11",
+  "branch": "lab/catalogo100-fotografias-permisos-20261111",
+  "base": "bf0c4399cb98fae824c207616c2e410c8b65eff8",
+  "scope": "isolated V8 (actual GitHub JS + fake DOM + 25 page synthetic PDF; no real data)",
+  "passes": 26,
+  "failures": 0,
+  "testNames": [
+    "100 rendered",
+    "14 manufacturer links",
+    "photos filter zero",
+    "search Nebula",
+    "brand filter",
+    "2 selected",
+    "selected filter",
+    "detail",
+    "note saved",
+    "no external IMG",
+    "source modal exact",
+    "USBC candidate not official link",
+    "cancel import non-destructive",
+    "PDF synthetic import 100",
+    "original ID preserved",
+    "official source retained",
+    "all 14 official pages survive",
+    "retired record archived",
+    "retired selection notes preserved",
+    "archived JSON export",
+    "return model restores ID",
+    "return model restores notes",
+    "new model in archive",
+    "duplicate import archive idempotent",
+    "invalid PDF no mutation",
+    "quota failure rollback"
+  ],
+  "previousEvidenceRetained": {
+    "logical": 19,
+    "responsiveWidths": [
+      320,
+      390,
+      820,
+      1280
+    ],
+    "rerun": false
+  },
+  "knownPending": [
+    "Node suite on full checked-out repo",
+    "full app Playwright browser",
+    "Safari physical",
+    "remote CI"
+  ],
+  "photosCopied": 0,
+  "rightsGranted": 0
+}
