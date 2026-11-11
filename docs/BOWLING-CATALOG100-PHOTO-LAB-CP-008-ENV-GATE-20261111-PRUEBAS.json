@@ -1,0 +1,34 @@
+{
+  "checkpoint": "BOWLING-CATALOG100-PHOTO-LAB-CP-008-ENV-GATE-20261111",
+  "date": "2026-11-11",
+  "lab_branch": "lab/catalogo100-fotografias-permisos-20261111",
+  "base_head": "1c9c95a5eb5b31fbe88e8420efa681858e55dd10",
+  "scope": "environment-capability audit only; no new application tests",
+  "new_app_tests": {
+    "executed": 0,
+    "passed": 0,
+    "failed": 0
+  },
+  "git_sha_verified": {
+    "main": "699d877d5ec4f3891ac6c24504a57605105bfb2d",
+    "pr53": "550b635cccf470edc5ee4fda3cba54b41ab02ead",
+    "pr54": "160c19f2d7ef9a75de6bb3586913e389e7116f5b"
+  },
+  "prior_test_evidence_preserved": true,
+  "environment": {
+    "node": "v22.16.0",
+    "git_clone": "DNS_FAILED",
+    "system_chromium": "installed; about:blank origin null, native Web Locks not exposed",
+    "playwright_chromium": "NOT_INSTALLED",
+    "playwright_webkit": "NOT_INSTALLED",
+    "real_two_tab": "NOT_EXECUTED",
+    "pdf_browser_integration": "NOT_EXECUTED"
+  },
+  "existing_repo_test_files": 5,
+  "cp007_dedicated_node_test_exists": false,
+  "local_report_sha256": "c2d0aa77e8f6380337adeb83ee3060c5afe219001996b6255d1d4dfb7ed72986",
+  "code_changes": 0,
+  "no_new_licenses": true,
+  "release_gate": "BLOCKED",
+  "next_checkpoint_requires": "environment capability change or reproduced defect"
+}
