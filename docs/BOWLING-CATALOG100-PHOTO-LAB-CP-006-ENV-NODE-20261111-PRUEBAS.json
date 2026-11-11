@@ -1,0 +1,50 @@
+{
+  "id": "BOWLING-CATALOG100-PHOTO-LAB-CP-006-ENV-NODE-20261111",
+  "date": "2026-11-11",
+  "branch": "lab/catalogo100-fotografias-permisos-20261111",
+  "initial_head": "4fd235ade5316625d96fd82ef0891c43c8eeec5b",
+  "run_scope": "node22 standalone fixture, not full repo",
+  "checks": [
+    {
+      "name": "without Web Locks: sequential local selection",
+      "status": "PASS"
+    },
+    {
+      "name": "async lock rejection rolls back memory",
+      "status": "PASS"
+    },
+    {
+      "name": "sync lock failure rolls back memory",
+      "status": "PASS"
+    },
+    {
+      "name": "quota error inside mock lock rolls back",
+      "status": "PASS"
+    },
+    {
+      "name": "stale tab prevented from overwriting committed state",
+      "status": "PASS"
+    }
+  ],
+  "pass": 5,
+  "fail": 0,
+  "script_sha256": "d4526c341d3fe9ae839a6811c9b6db627e7d25276c396187f172cfa15d53b049",
+  "report_sha256": "bf4c0f1a7949be977784a10209ae841a70833bb15c37afccb96970bb331448b7",
+  "blocked": {
+    "git_clone": "DNS could not resolve github.com",
+    "chromium": "ERR_BLOCKED_BY_ADMINISTRATOR on localhost, fake https, file, data; about:blank lacks secure origin",
+    "webkit": "browser binary not installed"
+  },
+  "unexecuted": [
+    "full Node repository suite",
+    "full Chromium app",
+    "real browser Web Locks across two tabs",
+    "WebKit",
+    "Safari iPhone",
+    "new PDF browser integration"
+  ],
+  "code_changes": 0,
+  "real_data": false,
+  "licensed_photos": 0,
+  "release_gate": "BLOCKED"
+}
