@@ -1,0 +1,31 @@
+name: MI BOWLING | LAB PDF USBC real (sin publicar)
+on:
+  push:
+    branches: [lab/catalogo100-fichas-usbc-real-20261110]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-pdf:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Instalar lector temporal
+        run: npm install --no-save --package-lock=false pdfjs-dist@3.11.174
+      - name: Descargar temporalmente PDF oficial sin guardarlo en Git
+        run: |
+          set -euo pipefail
+          curl -fL --retry 2 --retry-delay 3 --max-time 95 --connect-timeout 15 -sS \
+            -A 'Mozilla/5.0 (compatible; MI-BOWLING-USBC-validation/1.0)' \
+            'https://bowl.com/getmedia/8b570e80-761c-4486-8628-9d50d718dd60/approved_balllist_CURRENT.pdf' \
+            -o "$RUNNER_TEMP/usbc.pdf"
+          file "$RUNNER_TEMP/usbc.pdf"
+          test "$(head -c5 "$RUNNER_TEMP/usbc.pdf")" = '%PDF-'
+      - name: Validar extracción con PDF USBC real (solo resumen en log)
+        run: node tests/catalogo100-usbc-pdf-real-lab.cjs "$RUNNER_TEMP/usbc.pdf"
+      - name: Eliminar PDF descargado
+        if: always()
+        run: rm -f "$RUNNER_TEMP/usbc.pdf"
