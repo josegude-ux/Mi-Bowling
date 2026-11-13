@@ -6,7 +6,7 @@ const original=fs.readFileSync(path.join(source,'sw.js'),'utf8');
 const oldAssets=JSON.parse(original.match(/const ASSETS=(\[[^\n]+?\]);/)[1].replaceAll("'",'"'));
 const oldHTML=fs.readFileSync(path.join(source,'index.html'),'utf8'),oldJS=fs.readFileSync(path.join(source,'app.js'),'utf8');
 const fixture={version:2,hand:'zurdo',balls:[{id:'LAB-B1',brand:'Columbia 300',model:'Bully',photo:'data:image/png;base64,FAKE',weight:'15 lb',retired:false}],patterns:[{id:'LAB-P1',name:'Ficticio',pdfName:'lab.pdf'}],sessions:[{id:'LAB-S1',type:'entrenamiento',date:'2026-11-01',patternId:'LAB-P1',games:[{id:'LAB-G1',pair:[1,2],startLane:1,rolls:Array.from({length:12},(_,i)=>({frame:Math.min(i+1,10),ball:i<10?1:i-8,pins:[1,2,3,4,5,6,7,8,9,10],ballId:'LAB-B1',lane:1}))}]}]};
-const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l5kAAAAASUVORK5CYII=','base64');
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAALUlEQVR4nGPUrVjFQEvARFPTRy0YtWDUglELRi0YtWDUglELRi0YtWDUAioCAGvkAY/3fquUAAAAAElFTkSuQmCC','base64');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml'};
 function file(dir,name){const n=name.replace(/^\.\//,'').split('?')[0];return path.join(dir,n===''||n.endsWith('/')?n+'index.html':n)}
 function put(dir,name,bytes){const f=file(dir,name);fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,bytes)}
