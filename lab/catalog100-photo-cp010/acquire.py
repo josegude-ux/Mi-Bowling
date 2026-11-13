@@ -27,9 +27,11 @@ def image_url(e,s):
     u=img.get('data-src') or img.get('src')
     if u and not u.startswith('data:'):return urljoin(e['page'],u)
   raise ValueError('Exact ball image alt not found')
- meta=s.find('meta',property='og:image')
+ meta=s.find('meta',property='og:image:secure_url') or s.find('meta',property='og:image')
  if not meta or not meta.get('content'):raise ValueError('No OG image')
  u=urljoin(e['page'],meta['content'])
+ if urlparse(u).scheme=='http' and urlparse(u).hostname in HOSTS:u='https:'+u[5:]
+ if urlparse(u).scheme!='https' or urlparse(u).hostname not in HOSTS:raise ValueError('OG image host/scheme not approved: '+str(urlparse(u).hostname)+' / '+urlparse(u).scheme)
  if 'synthesis' not in u.lower() or 'prime' not in u.lower():raise ValueError('OG image not exact model filename')
  return u
 b64=lambda x:base64.b64encode(x).decode('ascii')

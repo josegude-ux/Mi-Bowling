@@ -1,15 +1,5 @@
 [
   {
-    "id": "ref-5d3b45997852",
-    "brand": "Brunswick",
-    "model": "Purple Rhino Pro (2026)",
-    "title": "Purple Rhino Pro",
-    "sku": "60-108739-93X",
-    "page": "https://brunswickbowling.com/products/balls/current/purple-rhino-pro",
-    "release": "2026-10-22",
-    "image": null
-  },
-  {
     "id": "ref-d91b559f82c4",
     "brand": "Track Inc.",
     "model": "Synthesis Prime",
@@ -18,15 +8,5 @@
     "page": "https://trackbowling.com/products/synthesis-prime",
     "release": "2026-10-22",
     "image": null
-  },
-  {
-    "id": "ref-4f85f876efcc",
-    "brand": "Track Inc.",
-    "model": "Theorem Delta",
-    "title": "Theorem Delta",
-    "sku": "60-108645-93X",
-    "page": "https://trackbowling.com/products/theorem-delta",
-    "release": "2026-08-13",
-    "image": "https://trackbowling.com/cdn/shop/files/Theorem_Delta_1600x1600_3b21d45e-77c1-4cc2-b957-875dda875646.png?v=1781018237&width=1080"
   }
 ]
