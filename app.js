@@ -545,7 +545,7 @@ function statsTechnical(a){let lanes={},pairs={},balls={},lines={};for(const r o
 function renderCharts(){if(statPane!=='general')return;const a=aggregate(statMode,statsBallId).totals.slice(-25);const el=$('trend-chart');if(!el||!a.length)return;const w=660,h=180,pad=31;let point=(v,i)=>`${pad+i*(w-2*pad)/Math.max(1,a.length-1)},${h-pad-(v/300)*(h-pad*2)}`;let coords=a.map(point);const circles=coords.map((xy,i)=>{const[x,y]=xy.split(',');return `<circle cx="${x}" cy="${y}" r="4.4" fill="#0996a3"><title>Partida ${i+1}: ${a[i]}</title></circle>`}).join('');el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" aria-label="Evolución de las últimas ${a.length} partidas" role="img" width="100%"><g stroke="#e0eaf0" stroke-width="1">${[0,100,200,300].map(v=>{let y=h-pad-(v/300)*(h-pad*2);return `<line x1="${pad}" x2="${w-pad}" y1="${y}" y2="${y}"/><text x="${pad-9}" y="${y+4}" font-size="11" text-anchor="end" fill="#7994a3" stroke="none">${v}</text>`}).join('')}</g><polyline points="${coords.join(' ')}" stroke="#0093a5" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${circles}</svg>`}
 /* ANALISIS ARSENAL R1 LAB: interfaz y motor consultivo, sin cambiar db.version ni bolas. */
 let arsenalPanel='list',arsenalDetailId='',arsenalIssue='pocket',arsenalCatalogQuery='';
-function setArsenalPanel(panel,id=''){arsenalPanel=panel;arsenalDetailId=id;if(panel==='catalog')ballEditingId=null;render()}
+function setArsenalPanel(panel,id=''){arsenalPanel=panel;arsenalDetailId=id;if(panel==='catalog'||panel==='catalog100')ballEditingId=null;render()}
 function filterArsenalCatalog(term){
  arsenalCatalogQuery=String(term||'').slice(0,100);
  const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
@@ -561,7 +561,8 @@ function registerBallFromCatalog(profileId){
  const lib=window.MiBowlingArsenal;
  const historic=lib?.profiles.find(p=>p.id===profileId);
  const official=window.MiBowlingOfficialBallCatalog?.models.find(p=>p.id===profileId);
- const profile=historic||official;
+ const template=window.MiBowlingCatalog100Bridge?.current().items.find(p=>p.id===profileId);
+ const profile=historic||official||template;
  if(!profile)return alert('Modelo no disponible en el catálogo local.');
  const normalize=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
  // Prevenir sobrescrituras de otra pestaña: no guardar datos locales obsoletos.
@@ -585,6 +586,56 @@ function registerBallFromCatalog(profileId){
  if(saveError){db.balls.pop();render();return}
  render();
 }
+/* BOWLING-CATALOG100-ARSENAL-LAB-001: explicit local selected-JSON handoff.
+ * The catalog never replaces balls/sessions or auto-selects for a game. No
+ * photos, notes or technical claims from user-provided JSON are imported.
+ */
+let catalog100ImportBusy=false;
+async function importCatalog100Selection(input){
+ if(catalog100ImportBusy)return;
+ const file=input?.files?.[0],bridge=window.MiBowlingCatalog100Bridge;
+ if(!file)return;
+ catalog100ImportBusy=true;
+ try{
+  if(!bridge)throw Error('La plantilla de 100 no está disponible.');
+  if(file.size<=0||file.size>bridge.SIZE_LIMIT)
+   throw Error('Archivo JSON vacío o mayor de 1 MiB.');
+  const selected=bridge.parseSelection(await file.text());
+  const existing=new Set(db.balls.map(x=>bridge.identity(x)));
+  const add=selected.filter(x=>!existing.has(bridge.identity(x)));
+  if(!add.length){alert('Todos esos modelos ya figuran en Mis bolas. No se han modificado datos.');return}
+  const already=selected.length-add.length;
+  if(!confirm('Archivo de selección: '+selected.length+' modelos. Se añadirán '+add.length+
+   ' y '+already+' ya existen. NO se importan fotos, peso, núcleo, RG, taladro ni estadísticas. '+
+   'Tus sesiones y selecciones no se modificarán. ¿Confirmas?'))return;
+  // A stale tab is never permitted to overwrite current persistent data.
+  let raw;
+  try{raw=localStorage.getItem(KEY)}
+  catch(_){throw Error('No se puede comprobar el almacenamiento. No se ha guardado nada.')}
+  if(raw){
+   let latest;
+   try{latest=migrate(JSON.parse(raw))}
+   catch(_){throw Error('Los datos guardados no se pueden verificar. No se ha guardado nada.')}
+   if(JSON.stringify(latest)!==JSON.stringify(db))
+    throw Error('Hay cambios en otra pestaña. Recarga antes de importar.');
+  }
+  // Recheck duplication after confirmation. Never update existing/retired balls.
+  const current=new Set(db.balls.map(x=>bridge.identity(x))),fresh=[];
+  for(const x of add){
+   const key=bridge.identity(x);if(current.has(key))continue;
+   current.add(key);fresh.push({id:uid(),brand:x.brand,model:x.model,
+    weight:'',kind:'',notes:'',photo:'',retired:false});
+  }
+  if(!fresh.length)return;
+  db.balls.push(...fresh);
+  save();
+  if(saveError){db.balls.splice(db.balls.length-fresh.length,fresh.length);
+   throw Error('No se pudo guardar por cuota. Tu arsenal anterior se conserva.')}
+  render();
+  alert('Se han añadido '+fresh.length+' modelos. Revisa sus fichas y márcalos manualmente si quieres usarlos.');
+ }catch(err){alert('No se ha importado la selección: '+err.message)}
+ finally{catalog100ImportBusy=false;if(input)input.value=''}
+}
 function setArsenalIssue(problem){if(window.MiBowlingArsenal?.problems[problem])arsenalIssue=problem;render()}
 function openBallAdvisorFor(sessionId){openBallPickerFor(sessionId,'registro');setArsenalPanel('assistant')}
 function arsenalInsightView(){
@@ -601,7 +652,7 @@ function ballsView(){
  }).join('');
  const empty=`<div class="card empty">Elige un modelo del catálogo o registra una bola manualmente.<div class="mt16"><button class="btn primary" onclick="ballEditingId='nuevo';render()">Añadir una bola</button></div></div>`;
  return `${head('Mis bolas','Material y rendimiento asociado a cada lanzamiento.',`<button class="btn primary" onclick="setArsenalPanel('catalog')">⌕ Catálogo</button><button class="btn outline" onclick="ballEditingId='nuevo';render()">＋ Manual</button>`)}
- ${`<div class="card ball-pick-toolbar"><strong>Selección para ${sessionScope}</strong><p class="hint">${chosen.length} bola(s) marcada(s). Desmarcar no retira ninguna bola ni cambia las estadísticas.</p><button type="button" class="btn outline block" onclick="closeBallPicker()">← ${ballPickReturn==='registro'?'Volver al lanzamiento':ballPickReturn==='nueva'?'Volver a empezar partida':ballPickReturn==='estadisticas'?'Volver al análisis':'Volver al inicio'}</button><div class="actions mt12 arsenal-nav-actions"><button type="button" class="btn outline" onclick="setArsenalPanel('catalog')">Buscar y añadir del catálogo</button><button type="button" class="btn outline" onclick="setArsenalPanel('compare')">Comparar marcadas</button><button type="button" class="btn outline" onclick="setArsenalPanel('assistant')">Asistente de competición</button></div></div>`}${ballEditingId?ballForm():''}${db.balls.length?`<div class="balls-grid">${cards}</div>`:empty}
+ ${`<div class="card ball-pick-toolbar"><strong>Selección para ${sessionScope}</strong><p class="hint">${chosen.length} bola(s) marcada(s). Desmarcar no retira ninguna bola ni cambia las estadísticas.</p><button type="button" class="btn outline block" onclick="closeBallPicker()">← ${ballPickReturn==='registro'?'Volver al lanzamiento':ballPickReturn==='nueva'?'Volver a empezar partida':ballPickReturn==='estadisticas'?'Volver al análisis':'Volver al inicio'}</button><div class="actions mt12 arsenal-nav-actions"><button type="button" class="btn outline" onclick="setArsenalPanel('catalog')">Buscar y añadir del catálogo</button><button type="button" class="btn outline" onclick="setArsenalPanel('catalog100')">100 bolas · plantilla</button><button type="button" class="btn outline" onclick="setArsenalPanel('compare')">Comparar marcadas</button><button type="button" class="btn outline" onclick="setArsenalPanel('assistant')">Asistente de competición</button></div></div>`}${ballEditingId?ballForm():''}${db.balls.length?`<div class="balls-grid">${cards}</div>`:empty}
  <div class="card"><p class="hint">Retirar una bola no borra sus estadísticas históricas. Si cambias de bola durante una partida, se registrará en el lanzamiento correspondiente.</p></div>`
 }
 function ballForm(){const b=db.balls.find(x=>x.id===ballEditingId)||{},isNew=ballEditingId==='nuevo';return `<div class="card"><div class="card-head"><h2>${isNew?'Nueva bola':'Editar bola'}</h2><button class="btn outline" onclick="ballEditingId=null;render()">Cancelar</button></div>
