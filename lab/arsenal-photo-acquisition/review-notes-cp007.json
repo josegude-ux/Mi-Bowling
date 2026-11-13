@@ -1,0 +1,12 @@
+{
+  "bully": {"reviewed": true, "sha256": "ef55ae3fb62854864117ca3ba048e1ef89f1372829d4ee2775a1c4d4b424f747", "reviewNote": "WebP real: esfera azul oscuro y negra, logotipo BULLY naranja y figura amarilla; coincide con fuente Columbia 300."},
+  "rally": {"reviewed": true, "sha256": "bc1dfbb481cba7c5dddffe59ffea791b2b9ee26cd9d65204a266bf0491fc8686", "reviewNote": "WebP real: azul, verde lima y gris claro, logotipo RALLY amarillo; coincide con edición oficial 2025."},
+  "ringer": {"reviewed": true, "sha256": "54630a5243f99ede2a5ee740b4ad2f3d98d3198c5190371dcac6ad082dbad559", "reviewNote": "WebP real: granate perlado con negro y logotipo RINGER dorado con corona; fuente exacta Burgundy Pearl."},
+  "rhino": {"reviewed": true, "sha256": "d54c3e8337d92a160efa52ef47309798d93f98f0893eefee01eebe404e427c2c", "reviewNote": "WebP real: bola dorada/bronce, RHINO PRO blanco con rinoceronte; recorte de catálogo Brunswick 1995 página 2 corregido mediante máscara, sin bola Teal ni dibujo del núcleo. Coincide con original 60-101536, no Vintage 2015.", "originalReference": "60-101536", "pdfPageIndex": 1},
+  "csystem": {"reviewed": true, "sha256": "39bea076db57a2e5ad8022dd82f06f170994cd17269ef74cfd61f8ba88bad15a", "reviewNote": "WebP real: negro, azul y gris perlado, logotipo C (System) 4.5 blanco; versión 4.5 visible."},
+  "phantom": {"reviewed": true, "sha256": "f0e643710045109e1495ee3e8edf0b804a6e3fc3cde1d9a3964bef9a192b4919", "reviewNote": "WebP real: negro/gris oscuro, emblema verde y PHANTOM blanco; fuente Brunswick Vintage Phantom 2019."},
+  "web": {"reviewed": true, "sha256": "5587ed50c62703ac7c5ac56e3b1e52c8e12a8f8c6ae9805489a5b2dfd55aae16", "reviewNote": "WebP real: azul y negro, telaraña y WEB TOUR EDITION rojo; fuente oficial Hybrid 2020 US, SKU 60-106358-93X."},
+  "cutting": {"reviewed": true, "sha256": "f594b450178f104daeac425ea4e0c7837856a85dcae84cd9be79751f2877763c", "reviewNote": "WebP real: negro/gris sólido, CUTTING EDGE verde lima; fuente oficial Solid y SKU 60-106033-93X."},
+  "pitbull": {"reviewed": true, "sha256": "cc9e5739e4529f22ff0a1b2ed00a1f33ae5116f4b34f8ea44145e305809657f6", "reviewNote": "WebP real: negro, verde y amarillo; DV8 PITBULL BITE naranja visible, no Pitbull original."},
+  "legion": {"reviewed": true, "sha256": "67731937bb0d8b09467db9cc6e0fc9978830a52c5bbf4196699fe9bdedbc5c18", "reviewNote": "WebP real: morado, negro y plata perlado, LEGION y escudo naranja; fuente oficial Legion Pearl 2021."}
+}

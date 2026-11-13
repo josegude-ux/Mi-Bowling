@@ -1,4 +1,4 @@
-name: MI BOWLING | LAB CP007 encrypted visual review
+name: MI BOWLING | LAB CP008 reviewed integration
 on:
   push:
     branches: [lab/arsenal-photo-acquisition-20261113-cp006]
@@ -8,32 +8,80 @@ on:
 permissions:
   contents: read
 jobs:
-  review-transfer:
+  integrate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Verify immutable base and exact sources
-        shell: bash
+      - name: Prepare exact PR58 LAB checkout and review scripts
         run: |
           set -euo pipefail
           git merge-base --is-ancestor 859a25960e99a1ee7a9dbf82f117dee5bc66f48e HEAD
-          cd lab/arsenal-photo-acquisition
-          printf '%s\n' '8ef1b596c6fa4ed1781b0dfa9c183de5e1cc8eeb043de8ed97722f2f118da143  fetch-assets.py' 'c7ccb8f2e665be7855811848c59efe84449eb6f73b562ab860f0508285e7ddb7  photo-sources.json' '4b4743b3301f372c696c30dd130e97646b12e2c75ee11aa6799cf859401a6e82  manifest-acquisition-cp006.json' 'c8da691548e72a9a6600cd15fe2ecb44797e8b1c958edfc88f5ad6d323dcfcbc  prepare-review.py' | sha256sum -c -
-          mkdir -p "$RUNNER_TEMP/bowling-review"
-          cp fetch-assets.py photo-sources.json manifest-acquisition-cp006.json prepare-review.py review-public.pem "$RUNNER_TEMP/bowling-review/"
-      - name: Reacquire and validate exact hashes; seal image bytes for private review
-        shell: bash
+          git worktree add -b lab/arsenal-photo-integration-local "$RUNNER_TEMP/bowling-pr58" 859a25960e99a1ee7a9dbf82f117dee5bc66f48e
+          test -z "$(git -C "$RUNNER_TEMP/bowling-pr58" status --porcelain)"
+          mkdir "$RUNNER_TEMP/bowling-integrate"
+          cp lab/arsenal-photo-acquisition/{fetch-assets.py,photo-sources.json,manifest-acquisition-cp006.json,prepare-review.py,review-notes-cp007.json,review-assets.py,apply-lab.py,arsenal-photo-integration-lab.js,patch-card-cp008.py,test-photo-integration-cp008.cjs} "$RUNNER_TEMP/bowling-integrate/"
+          cd "$RUNNER_TEMP/bowling-integrate"
+          sha256sum -c <<'HASHES'
+          8ef1b596c6fa4ed1781b0dfa9c183de5e1cc8eeb043de8ed97722f2f118da143  fetch-assets.py
+          c7ccb8f2e665be7855811848c59efe84449eb6f73b562ab860f0508285e7ddb7  photo-sources.json
+          c8da691548e72a9a6600cd15fe2ecb44797e8b1c958edfc88f5ad6d323dcfcbc  prepare-review.py
+          4b4743b3301f372c696c30dd130e97646b12e2c75ee11aa6799cf859401a6e82  manifest-acquisition-cp006.json
+          f5e2d853ea94d261d657e9cf2429fbd8bcdc1a4a3af30cc3ea12f2247fc9772d  review-notes-cp007.json
+          7354006939c27a84a2dc5574ecc05fa80795a8dd1f720bb4ca82ed2d4d1cf3fa  review-assets.py
+          69033f3c0f37f40c634454a2262f38a8cc71e30c8af1906f274b2467881f9f0f  apply-lab.py
+          0d035a8ca350bbddc263dd6dc9597993620d543028506a8682af8b76d9ce4588  arsenal-photo-integration-lab.js
+          55b69f46b6bf89855ee3023799e00590e72c8f2168d13919fa68093317aaed75  patch-card-cp008.py
+          HASHES
+      - name: Reacquire exact reviewed photos and integrate only in ephemeral LAB
         run: |
           set -euo pipefail
-          python3 -m venv "$RUNNER_TEMP/bowling-review-venv"
-          "$RUNNER_TEMP/bowling-review-venv/bin/pip" install --disable-pip-version-check --no-cache-dir requests==2.34.2 Pillow==13.0.0 PyMuPDF==2.1 cryptography==46.0.4
-          cd "$RUNNER_TEMP/bowling-review"
-          "$RUNNER_TEMP/bowling-review-venv/bin/python" prepare-review.py
-      - name: Clean temporary files
+          python3 -m venv "$RUNNER_TEMP/venv"
+          PY="$RUNNER_TEMP/venv/bin/python"
+          "$PY" -m pip install --no-cache-dir requests==2.34.2 Pillow==13.0.0 PyMuPDF==2.1 cryptography==46.0.4
+          cd "$RUNNER_TEMP/bowling-integrate"
+          "$PY" - <<'PYTHON'
+          import importlib.util,json,pathlib
+          p=pathlib.Path.cwd()
+          spec=importlib.util.spec_from_file_location('prepare_review',p/'prepare-review.py')
+          m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+          f=m.load_acquirer()
+          if f.main()!=0:raise SystemExit('Acquisition failed')
+          records=json.loads((p/'staged-assets/manifest.json').read_text())
+          prior=json.loads((p/'manifest-acquisition-cp006.json').read_text())
+          m.verify(records,prior)
+          entries=json.loads((p/'photo-sources.json').read_text())
+          (p/'photo-sources.js').write_text('/* CP004: referencias verificadas visualmente; activos locales pendientes. */\n(function(root){"use strict"; const entries=Object.freeze('+json.dumps(entries,ensure_ascii=False)+'.map(Object.freeze));root.MiBowlingPhotoSources=Object.freeze({entries,get:id=>entries.find(e=>e.profileId===id)||null});})(typeof window==="undefined"?globalThis:window);\n')
+          PYTHON
+          echo '38b941760544d8b1f897b57d537ae37c20c436d203deb408676bdabab3100833  photo-sources.js' | sha256sum -c -
+          "$PY" review-assets.py review-notes-cp007.json "$RUNNER_TEMP/bowling-reviewed"
+          "$PY" apply-lab.py "$RUNNER_TEMP/bowling-pr58" --reviewed "$RUNNER_TEMP/bowling-reviewed"
+          "$PY" apply-lab.py "$RUNNER_TEMP/bowling-pr58" --reviewed "$RUNNER_TEMP/bowling-reviewed" --apply
+          "$PY" patch-card-cp008.py "$RUNNER_TEMP/bowling-pr58"
+          cp test-photo-integration-cp008.cjs "$RUNNER_TEMP/bowling-pr58/tests/"
+          cp "$RUNNER_TEMP/bowling-reviewed/reviewed-arsenal-assets.json" "$RUNNER_TEMP/bowling-pr58/docs/BOWLING-ARSENAL-PHOTO-REVIEWED-CP008.json"
+          cd "$RUNNER_TEMP/bowling-pr58"
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "app.js arsenal-view-lab.js index.html "
+          git diff --exit-code -- sw.js catalogo-bolas/index.html arsenal-insights.js
+          for f in app.js arsenal-view-lab.js photo-sources.js reviewed-arsenal-assets.js arsenal-photo-integration-lab.js tests/test-photo-integration-cp008.cjs; do node --check "$f"; done
+          echo 'CP008_FILE_HASHES'
+          sha256sum app.js index.html arsenal-view-lab.js photo-sources.js reviewed-arsenal-assets.js arsenal-photo-integration-lab.js licensed-arsenal-photos/*.webp tests/test-photo-integration-cp008.cjs docs/BOWLING-ARSENAL-PHOTO-REVIEWED-CP008.json
+          echo 'CP008_REVIEWED_MANIFEST'
+          cat docs/BOWLING-ARSENAL-PHOTO-REVIEWED-CP008.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test complete app with new fictitious fixtures (not previous gates)
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/bowling-pr58"
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+          node tests/test-photo-integration-cp008.cjs
+      - name: Remove private temporary bytes
         if: always()
-        shell: bash
-        run: rm -rf "$RUNNER_TEMP/bowling-review" "$RUNNER_TEMP/bowling-review-venv"
+        run: |
+          rm -rf "$RUNNER_TEMP/bowling-integrate" "$RUNNER_TEMP/bowling-reviewed" "$RUNNER_TEMP/bowling-pr58" "$RUNNER_TEMP/venv"
