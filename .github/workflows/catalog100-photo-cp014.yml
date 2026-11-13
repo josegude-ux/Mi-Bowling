@@ -1,0 +1,26 @@
+name: MI BOWLING | CP014 encrypted regional photo review
+on:
+  push:
+    branches: [lab/catalog100-photo-cp014-20261113]
+    paths:
+      - '.github/workflows/catalog100-photo-cp014.yml'
+      - 'lab/catalog100-photo-cp014/**'
+permissions:
+  contents: read
+jobs:
+  acquire:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Acquire new authorized-brand distributor candidates, encrypted only
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/photo"
+          "$RUNNER_TEMP/photo/bin/pip" install --no-cache-dir requests==2.34.2 Pillow==13.0.0 cryptography==46.0.4 beautifulsoup4==4.14.3
+          "$RUNNER_TEMP/photo/bin/python" lab/catalog100-photo-cp014/acquire.py
+      - name: Clean
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/photo"
