@@ -1,0 +1,27 @@
+name: MI BOWLING | CP015 PWA synthetic release lifecycle
+on:
+  push:
+    branches: [lab/pwa-release-cp015-20261113]
+    paths:
+      - '.github/workflows/pwa-release-cp015.yml'
+      - 'lab/pwa-release-cp015/**'
+permissions:
+  contents: read
+jobs:
+  lifecycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check isolated baseline and test synthetic app only
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "d16b941a5889b52b1cd2b4bfb51e99b10b25887a"
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+          node lab/pwa-release-cp015/test-lifecycle.cjs
