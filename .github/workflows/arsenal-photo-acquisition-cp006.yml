@@ -1,0 +1,51 @@
+name: MI BOWLING | LAB CP006 acquisition only
+on:
+  push:
+    branches: [lab/arsenal-photo-acquisition-20261113-cp006]
+    paths:
+      - '.github/workflows/arsenal-photo-acquisition-cp006.yml'
+      - 'lab/arsenal-photo-acquisition/**'
+permissions:
+  contents: read
+jobs:
+  acquire:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify immutable baseline and acquisition inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "859a25960e99a1ee7a9dbf82f117dee5bc66f48e"
+          git worktree add --detach "$RUNNER_TEMP/bowling-pr58" 859a25960e99a1ee7a9dbf82f117dee5bc66f48e
+          test -z "$(git -C "$RUNNER_TEMP/bowling-pr58" status --porcelain)"
+          test "$(git -C "$RUNNER_TEMP/bowling-pr58" rev-parse HEAD)" = "859a25960e99a1ee7a9dbf82f117dee5bc66f48e"
+          git -C "$RUNNER_TEMP/bowling-pr58" rev-parse HEAD:app.js HEAD:index.html HEAD:arsenal-insights.js HEAD:arsenal-view-lab.js
+          cd lab/arsenal-photo-acquisition
+          printf '%s\n' '8ef1b596c6fa4ed1781b0dfa9c183de5e1cc8eeb043de8ed97722f2f118da143  fetch-assets.py' 'c7ccb8f2e665be7855811848c59efe84449eb6f73b562ab860f0508285e7ddb7  photo-sources.json' | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/bowling-acquisition"
+          cp fetch-assets.py photo-sources.json "$RUNNER_TEMP/bowling-acquisition/"
+      - name: Acquire exact official sources in ephemeral workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/bowling-venv"
+          "$RUNNER_TEMP/bowling-venv/bin/pip" install --disable-pip-version-check --no-cache-dir requests Pillow PyMuPDF
+          cd "$RUNNER_TEMP/bowling-acquisition"
+          set +e
+          "$RUNNER_TEMP/bowling-venv/bin/python" fetch-assets.py
+          rc=$?
+          set -e
+          test -f staged-assets/manifest.json
+          cat staged-assets/manifest.json
+          echo "ACQUISITION_EXIT_CODE=$rc"
+          exit "$rc"
+      - name: Remove temporary files
+        if: always()
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/bowling-acquisition" "$RUNNER_TEMP/bowling-venv"
