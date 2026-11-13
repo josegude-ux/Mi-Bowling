@@ -25,5 +25,5 @@ jobs:
           git merge-base --is-ancestor d16b941a5889b52b1cd2b4bfb51e99b10b25887a HEAD
           git diff --exit-code d16b941a5889b52b1cd2b4bfb51e99b10b25887a HEAD -- app.js index.html sw.js catalogo-bolas/index.html
           npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps chromium webkit
+          npx playwright install --with-deps webkit
           node lab/pwa-release-cp015/test-lifecycle.cjs
