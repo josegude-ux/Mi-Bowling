@@ -1,0 +1,122 @@
+[
+  {
+    "profileId": "bully",
+    "source": "https://columbia300.com/cdn/shop/files/Bully_1600x1707_website.png?v=1700241838&width=1080",
+    "status": "REVIEW_REQUIRED",
+    "file": "bully.webp",
+    "sourceSha256": "98b6ba73fc6d49adc8133859aceaf5dd84262765899189ef0ebb4482a5b704f7",
+    "sha256": "ef55ae3fb62854864117ca3ba048e1ef89f1372829d4ee2775a1c4d4b424f747",
+    "dimensions": [
+      600,
+      640
+    ]
+  },
+  {
+    "profileId": "rally",
+    "source": "https://columbia300.com/cdn/shop/files/Rally_1600x1707_website.png?v=1743526532&width=1080",
+    "status": "REVIEW_REQUIRED",
+    "file": "rally.webp",
+    "sourceSha256": "22e18ff01eccd1ed8602c0affc1a09918ca1ae7e319d28bb72660decfb6ea2a3",
+    "sha256": "bc1dfbb481cba7c5dddffe59ffea791b2b9ee26cd9d65204a266bf0491fc8686",
+    "dimensions": [
+      600,
+      640
+    ]
+  },
+  {
+    "profileId": "ringer",
+    "source": "https://brunswickbowling.nyc3.cdn.digitaloceanspaces.com/production/transforms/bowlerproducts/Products/Balls/Affordable/849561/Ringer_1600x1600_18694ddcf445590f9b69434f3e02c496.png",
+    "status": "REVIEW_REQUIRED",
+    "file": "ringer.webp",
+    "sourceSha256": "52bf97386a9570f5d4ac2124da220ad1555b2fd383ba5b25a4e9bb1b0d7bee2e",
+    "sha256": "54630a5243f99ede2a5ee740b4ad2f3d98d3198c5190371dcac6ad082dbad559",
+    "dimensions": [
+      640,
+      640
+    ]
+  },
+  {
+    "profileId": "rhino",
+    "source": "https://brunswickbowling.nyc3.cdn.digitaloceanspaces.com/production/downloads/Catalogs/Ball/Brunswick_Ball_Catalog_1995.pdf",
+    "status": "REVIEW_REQUIRED",
+    "file": "rhino.webp",
+    "sourceSha256": "3bc311b144534788b137544a3176d25eb57bad64b9b5c769ce473e0695b7cd4e",
+    "sha256": "5aeb43cbaead4ee34216db31cf838411bbec6a6dbda80db27a7d4235d2206e47",
+    "dimensions": [
+      640,
+      626
+    ]
+  },
+  {
+    "profileId": "csystem",
+    "source": "https://brunswickbowling.nyc3.cdn.digitaloceanspaces.com/production/transforms/bowlerproducts/Products/Balls/Pro/850191/CSystem_4_5_Next_1600x1600_18694ddcf445590f9b69434f3e02c496.png",
+    "status": "REVIEW_REQUIRED",
+    "file": "csystem.webp",
+    "sourceSha256": "6b307a6e250b0cce7634b624612ea7c3eb1c0b147af6729b5e39671ac1373c68",
+    "sha256": "39bea076db57a2e5ad8022dd82f06f170994cd17269ef74cfd61f8ba88bad15a",
+    "dimensions": [
+      640,
+      640
+    ]
+  },
+  {
+    "profileId": "phantom",
+    "source": "https://brunswickbowling.nyc3.cdn.digitaloceanspaces.com/production/transforms/bowlerproducts/Products/Balls/High/35772/Vintage_Phantom_1600x1600_18694ddcf445590f9b69434f3e02c496.png",
+    "status": "REVIEW_REQUIRED",
+    "file": "phantom.webp",
+    "sourceSha256": "a8fc2b20f12dda246600ee55b28017cb0395241a3c3be2a0165a2cc9772bf50f",
+    "sha256": "f0e643710045109e1495ee3e8edf0b804a6e3fc3cde1d9a3964bef9a192b4919",
+    "dimensions": [
+      640,
+      640
+    ]
+  },
+  {
+    "profileId": "web",
+    "source": "https://hammerbowling.com/cdn/shop/files/Web_Tour_Edition_Hybrid_1600x1707_website.png?v=1755620310&width=1080",
+    "status": "REVIEW_REQUIRED",
+    "file": "web.webp",
+    "sourceSha256": "6b8052a1c9b6c1ce09d94cf1b0151f755d4a37fec79fb0aa23e1fadfc5671d28",
+    "sha256": "5587ed50c62703ac7c5ac56e3b1e52c8e12a8f8c6ae9805489a5b2dfd55aae16",
+    "dimensions": [
+      600,
+      640
+    ]
+  },
+  {
+    "profileId": "cutting",
+    "source": "https://brunswickbowling.nyc3.cdn.digitaloceanspaces.com/production/transforms/bowlerproducts/Products/Balls/Advanced/3627/60-106033-93X_Cutting_Edge_Solid_1600x1600_18694ddcf445590f9b69434f3e02c496.png",
+    "status": "REVIEW_REQUIRED",
+    "file": "cutting.webp",
+    "sourceSha256": "6e5e25d0bfbaf6bedd1893258c8ea571397c6622cc241176fb89a733ea5b9a81",
+    "sha256": "f594b450178f104daeac425ea4e0c7837856a85dcae84cd9be79751f2877763c",
+    "dimensions": [
+      640,
+      640
+    ]
+  },
+  {
+    "profileId": "pitbull",
+    "source": "https://dv8bowling.nyc3.cdn.digitaloceanspaces.com/production/transforms/bowlerproducts/Products/Balls/DV8/SSSSSS/5964/60-106001-93X_Pitbull_Bite_1600x1600_18694ddcf445590f9b69434f3e02c496.png",
+    "status": "REVIEW_REQUIRED",
+    "file": "pitbull.webp",
+    "sourceSha256": "be14bfae447f271d853414a355c0ace178a09792252c59f7d56b8bf2eefb1138",
+    "sha256": "cc9e5739e4529f22ff0a1b2ed00a1f33ae5116f4b34f8ea44145e305809657f6",
+    "dimensions": [
+      640,
+      640
+    ]
+  },
+  {
+    "profileId": "legion",
+    "source": "https://trackbowling.com/cdn/shop/products/Legion_Pearl_1600x1600_af8e070f-835c-4ea9-9e30-bcc4987c1556.png?v=1647560123&width=1080",
+    "status": "REVIEW_REQUIRED",
+    "file": "legion.webp",
+    "sourceSha256": "b7220bec339bb578e75fad49252e651e6e2b1b10d7c1bf8555d634b8cbb37e31",
+    "sha256": "67731937bb0d8b09467db9cc6e0fc9978830a52c5bbf4196699fe9bdedbc5c18",
+    "dimensions": [
+      640,
+      640
+    ]
+  }
+]

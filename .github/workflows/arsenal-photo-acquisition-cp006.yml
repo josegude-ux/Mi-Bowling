@@ -1,4 +1,4 @@
-name: MI BOWLING | LAB CP006 acquisition only
+name: MI BOWLING | LAB CP007 encrypted visual review
 on:
   push:
     branches: [lab/arsenal-photo-acquisition-20261113-cp006]
@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 jobs:
-  acquire:
+  review-transfer:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
@@ -16,36 +16,24 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Verify immutable baseline and acquisition inputs
+      - name: Verify immutable base and exact sources
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "859a25960e99a1ee7a9dbf82f117dee5bc66f48e"
-          git worktree add --detach "$RUNNER_TEMP/bowling-pr58" 859a25960e99a1ee7a9dbf82f117dee5bc66f48e
-          test -z "$(git -C "$RUNNER_TEMP/bowling-pr58" status --porcelain)"
-          test "$(git -C "$RUNNER_TEMP/bowling-pr58" rev-parse HEAD)" = "859a25960e99a1ee7a9dbf82f117dee5bc66f48e"
-          git -C "$RUNNER_TEMP/bowling-pr58" rev-parse HEAD:app.js HEAD:index.html HEAD:arsenal-insights.js HEAD:arsenal-view-lab.js
+          git merge-base --is-ancestor 859a25960e99a1ee7a9dbf82f117dee5bc66f48e HEAD
           cd lab/arsenal-photo-acquisition
-          printf '%s\n' '8ef1b596c6fa4ed1781b0dfa9c183de5e1cc8eeb043de8ed97722f2f118da143  fetch-assets.py' 'c7ccb8f2e665be7855811848c59efe84449eb6f73b562ab860f0508285e7ddb7  photo-sources.json' | sha256sum -c -
-          mkdir -p "$RUNNER_TEMP/bowling-acquisition"
-          cp fetch-assets.py photo-sources.json "$RUNNER_TEMP/bowling-acquisition/"
-      - name: Acquire exact official sources in ephemeral workspace
+          printf '%s\n' '8ef1b596c6fa4ed1781b0dfa9c183de5e1cc8eeb043de8ed97722f2f118da143  fetch-assets.py' 'c7ccb8f2e665be7855811848c59efe84449eb6f73b562ab860f0508285e7ddb7  photo-sources.json' '4b4743b3301f372c696c30dd130e97646b12e2c75ee11aa6799cf859401a6e82  manifest-acquisition-cp006.json' 'c8da691548e72a9a6600cd15fe2ecb44797e8b1c958edfc88f5ad6d323dcfcbc  prepare-review.py' | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/bowling-review"
+          cp fetch-assets.py photo-sources.json manifest-acquisition-cp006.json prepare-review.py review-public.pem "$RUNNER_TEMP/bowling-review/"
+      - name: Reacquire and validate exact hashes; seal image bytes for private review
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m venv "$RUNNER_TEMP/bowling-venv"
-          "$RUNNER_TEMP/bowling-venv/bin/pip" install --disable-pip-version-check --no-cache-dir requests Pillow PyMuPDF
-          cd "$RUNNER_TEMP/bowling-acquisition"
-          set +e
-          "$RUNNER_TEMP/bowling-venv/bin/python" fetch-assets.py
-          rc=$?
-          set -e
-          test -f staged-assets/manifest.json
-          cat staged-assets/manifest.json
-          echo "ACQUISITION_EXIT_CODE=$rc"
-          exit "$rc"
-      - name: Remove temporary files
+          python3 -m venv "$RUNNER_TEMP/bowling-review-venv"
+          "$RUNNER_TEMP/bowling-review-venv/bin/pip" install --disable-pip-version-check --no-cache-dir requests==2.34.2 Pillow==13.0.0 PyMuPDF==2.1 cryptography==46.0.4
+          cd "$RUNNER_TEMP/bowling-review"
+          "$RUNNER_TEMP/bowling-review-venv/bin/python" prepare-review.py
+      - name: Clean temporary files
         if: always()
         shell: bash
-        run: |
-          rm -rf "$RUNNER_TEMP/bowling-acquisition" "$RUNNER_TEMP/bowling-venv"
+        run: rm -rf "$RUNNER_TEMP/bowling-review" "$RUNNER_TEMP/bowling-review-venv"
