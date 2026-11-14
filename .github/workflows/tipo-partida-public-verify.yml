@@ -1,0 +1,22 @@
+name: MI BOWLING | CP008 verificacion publica solo lectura
+on:
+  push:
+    branches: [lab/tipo-partida-verificacion-publica-cp008-20261114]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: HTTPS GET publicos, hashes de CP004 y 33 recursos
+        run: python3 -u lab/verify-public-cp004.py
+      - name: Conservar evidencia sintetica
+        uses: actions/upload-artifact@v4
+        with:
+          name: cp008-public-https-results
+          path: public-cp004-results.json
+          retention-days: 7
