@@ -2,7 +2,7 @@
 import argparse,json,tempfile,time,hashlib
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
-p=argparse.ArgumentParser();p.add_argument('engine',choices=['chromium','webkit']);p.add_argument('scenario',choices=['classification','whole','league','quota-primary','quota-selection']);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('engine',choices=['chromium','webkit']);p.add_argument('scenario',choices=['classification','whole','league','league-stale','quota-primary','quota-selection']);a=p.parse_args()
 origin='http://127.0.0.1:8774/'
 KEY='mi-bowling-analitica-v2';SEL='mi-bowling-ball-selection-v1';LIGA='mi-bowling-liga-acta-v32'
 def log(tag,value=None):print('TIPO_REAL',a.engine,a.scenario,tag,json.dumps(value,ensure_ascii=False,default=str),flush=True)
@@ -36,7 +36,7 @@ def expand(pg,date):pg.locator('.v25-day-head').filter(has_text=date).click()
 def change(pg,sid,gid,typ,accept=True):
  sel=f'button[data-session="{sid}"][data-game="{gid}"][data-type="{typ}"]'
  opt=pg.locator(sel)
- opt.locator('xpath=../..').locator('xpath=preceding-sibling::button[1]').click()
+ if not opt.is_visible():opt.locator('xpath=../..').locator('xpath=preceding-sibling::button[1]').click()
  dialogs=[]
  def handle(d):
   dialogs.append(d.message);d.accept() if d.type!='confirm' or accept else d.dismiss()
@@ -49,7 +49,7 @@ def change(pg,sid,gid,typ,accept=True):
 def setfixture(pg,linked=False):
  pg.goto(origin,wait_until='load');gate(pg)
  data=fixture()
- pg.evaluate('''d=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(migrate(d)));localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify({'LAB-S':['LAB-B'],__next__:[]}));if(d.linked){liga32.matches[0].players[0].links={0:{sessionId:'LAB-S',gameId:'LAB-G1'}};liga32Save()}}''',{**data,'linked':linked})
+ pg.evaluate('''d=>{localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(migrate(d)));localStorage.setItem('mi-bowling-ball-selection-v1',JSON.stringify(d.primary?{__next__:[]}:{'LAB-S':['LAB-B'],__next__:[]}));if(d.linked){liga32.matches[0].players[0].links={0:{sessionId:'LAB-S',gameId:'LAB-G1'}};liga32Save()}}''',{**data,'linked':linked,'primary':a.scenario=='quota-primary'})
  pg.reload(wait_until='load');gate(pg)
 def context(engine,profile):
  return engine.launch_persistent_context(profile,headless=True,accept_downloads=True,viewport={'width':390,'height':844},service_workers='block')
@@ -81,13 +81,20 @@ with sync_playwright() as pw,tempfile.TemporaryDirectory(prefix='tipo-real-') as
    messages=[];pg.on('dialog',lambda d:(messages.append(d.message),d.accept()))
    pg.evaluate("applyClassification('LAB-S','LAB-G2','oficial')")
    assert messages and 'Liga' in messages[0];assert snap(pg)==before;after=before
+  elif a.scenario=='league-stale':
+   other=ctx.new_page();other.goto(origin,wait_until='load');gate(other)
+   other.evaluate("()=>{liga32.matches[0].players[0].links={0:{sessionId:'LAB-S',gameId:'LAB-G1'}};liga32Save()}")
+   expected=snap(pg);assert expected['db']==before['db'] and expected['sel']==before['sel'] and expected['league']!=before['league']
+   messages=change(pg,'LAB-S','LAB-G1','oficial');assert any('Liga' in x for x in messages[1:]);assert snap(pg)==expected
+   pg.evaluate("render()");assert pg.locator('button[data-session="LAB-S"]').count()==0
+   after=expected;before=expected;log('STALE_LEAGUE_BLOCKED')
   else:
    # Fill actual browser localStorage, outside the app namespace; no monkeypatch.
    cap=8*1024*1024
    result=pg.evaluate('''cap=>{const k='lab-tipo-quota';let lo=0,hi=cap;const write=n=>{try{localStorage.setItem(k,'x'.repeat(n));return true}catch(e){if(e.name!=='QuotaExceededError')throw e;return false}};if(write(hi)){localStorage.removeItem(k);return {reached:false}};while(hi-lo>1){let m=Math.floor((lo+hi)/2);if(write(m))lo=m;else hi=m}if(!write(lo))throw Error('quota changed');return {reached:true,bytes:lo,failedNext:!write(lo+1)}}''',cap)
    log('QUOTA_LIMIT',result)
    if not result['reached'] or not result['failedNext']:raise AssertionError('PENDING actual quota not reached')
-   messages=change(pg,'LAB-S','' if a.scenario=='quota-primary' else 'LAB-G1','oficial')
+   messages=change(pg,'LAB-S','LAB-G1','oficial')
    observed=snap(pg);log('QUOTA_IMMEDIATE',{'warned':any('No se pudo confirmar' in x for x in messages),'old':observed==before,'counts':counts(pg)})
    pg.evaluate("localStorage.removeItem('lab-tipo-quota')")
    # Read current storage before navigation, after reload, and after closing the entire context.
