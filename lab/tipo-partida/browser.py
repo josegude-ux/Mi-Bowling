@@ -2,7 +2,7 @@
 import argparse,json,tempfile,time,hashlib
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
-p=argparse.ArgumentParser();p.add_argument('engine',choices=['chromium','webkit']);p.add_argument('scenario',choices=['classification','whole','league','league-stale','quota-primary','quota-selection']);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('engine',choices=['chromium','webkit']);p.add_argument('scenario',choices=['classification','whole','league','league-stale','quota-primary','quota-selection','quota-partial']);a=p.parse_args()
 origin='http://127.0.0.1:8774/'
 KEY='mi-bowling-analitica-v2';SEL='mi-bowling-ball-selection-v1';LIGA='mi-bowling-liga-acta-v32'
 def log(tag,value=None):print('TIPO_REAL',a.engine,a.scenario,tag,json.dumps(value,ensure_ascii=False,default=str),flush=True)
@@ -94,6 +94,12 @@ with sync_playwright() as pw,tempfile.TemporaryDirectory(prefix='tipo-real-') as
    result=pg.evaluate('''cap=>{const k='lab-tipo-quota';let lo=0,hi=cap;const write=n=>{try{localStorage.setItem(k,'x'.repeat(n));return true}catch(e){if(e.name!=='QuotaExceededError')throw e;return false}};if(write(hi)){localStorage.removeItem(k);return {reached:false}};while(hi-lo>1){let m=Math.floor((lo+hi)/2);if(write(m))lo=m;else hi=m}if(!write(lo))throw Error('quota changed');return {reached:true,bytes:lo,failedNext:!write(lo+1)}}''',cap)
    log('QUOTA_LIMIT',result)
    if not result['reached'] or not result['failedNext']:raise AssertionError('PENDING actual quota not reached')
+   if a.scenario=='quota-partial':
+    # Leave 128 characters free: enough for the copied selection, not the
+    # split history. Check actual sizes before using this boundary.
+    growth=pg.evaluate("()=>{const plan=classificationPlan(db,'LAB-S','LAB-G1','oficial',()=> 'LAB-NEW-SESSION',liga32);const old=JSON.stringify(db);const sel=JSON.parse(localStorage.getItem('mi-bowling-ball-selection-v1'));return {main:JSON.stringify(plan.db).length-old.length,selection:JSON.stringify({...sel,'LAB-NEW-SESSION':sel['LAB-S']}).length-JSON.stringify(sel).length}}")
+    log('QUOTA_PARTIAL_GROWTH',growth);assert growth['selection']<128<growth['main']
+    pg.evaluate("(n)=>localStorage.setItem('lab-tipo-quota','x'.repeat(n))",result['bytes']-128)
    messages=change(pg,'LAB-S','LAB-G1','oficial')
    observed=snap(pg);log('QUOTA_IMMEDIATE',{'warned':any('No se pudo confirmar' in x for x in messages),'old':observed==before,'counts':counts(pg)})
    pg.evaluate("localStorage.removeItem('lab-tipo-quota')")
@@ -102,7 +108,15 @@ with sync_playwright() as pw,tempfile.TemporaryDirectory(prefix='tipo-real-') as
    pg.reload(wait_until='load');gate(pg);reloaded=snap(pg);invariant(before,reloaded)
    log('QUOTA_RELOAD',{'old':reloaded==before,'sameImmediate':reloaded==after,'counts':counts(pg)})
    assert any('No se pudo confirmar' in x for x in messages),messages
-   assert reloaded==before,'Unexpected durable mutation after rejected write'
+   if a.scenario=='quota-partial':
+    assert observed['db']==before['db'] and reloaded['db']==before['db'] and reloaded['league']==before['league']
+    assert reloaded==observed
+    added=set(reloaded['sel'])-set(before['sel']);assert len(added)==1
+    orphan=next(iter(added));assert orphan not in {x['id'] for x in reloaded['db']['sessions']}
+    assert reloaded['sel'][orphan]==before['sel']['LAB-S']
+    assert all(reloaded['sel'][k]==v for k,v in before['sel'].items())
+    log('PARTIAL_QUOTA_NO_GAME_CHANGE_OR_LOSS',{'extraSelectionWithoutSession':True})
+   else:assert reloaded==before,'Unexpected durable mutation after rejected write'
    after=reloaded
   log('BEFORE_CONTEXT_CLOSE',counts(pg));pg.reload(wait_until='load');gate(pg);assert snap(pg)==after
  finally:ctx.close()

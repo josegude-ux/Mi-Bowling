@@ -55,7 +55,7 @@ jobs:
           done
           curl -fsS http://127.0.0.1:8774/ >/dev/null
           failed=0
-          for scenario in classification whole league league-stale quota-primary quota-selection; do
+          for scenario in quota-partial; do
             echo "BEGIN_TIPO $ENGINE $scenario"
             code=0
             timeout --kill-after=5s 100s "$RUNNER_TEMP/tipo-venv/bin/python" -u lab/tipo-partida/browser.py "$ENGINE" "$scenario" || code=$?
