@@ -1,0 +1,4 @@
+/* Scoped to the three history tabs; existing views unchanged. */
+#app .seg:has(button[onclick*="historyMode='pendiente'"]) {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+#app .seg:has(button[onclick*="historyMode='pendiente'"]) button {min-width:0;min-height:44px;overflow-wrap:anywhere;padding:9px 4px;line-height:1.25}
+@media(max-width:360px){#app .seg:has(button[onclick*="historyMode='pendiente'"]) button{font-size:11px}}
