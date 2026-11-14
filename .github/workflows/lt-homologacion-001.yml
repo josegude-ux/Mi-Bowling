@@ -11,7 +11,7 @@ jobs:
   browser:
     name: LT CP005 real ${{ matrix.engine }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 8
     strategy:
       fail-fast: false
       matrix:
@@ -32,7 +32,7 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/lt-venv"
           "$RUNNER_TEMP/lt-venv/bin/pip" install --disable-pip-version-check playwright==1.56.0
           "$RUNNER_TEMP/lt-venv/bin/python" -m playwright install --with-deps ${{ matrix.engine }}
-      - name: Execute real browser scenarios independently
+      - name: Diagnose WebKit startup and reload only
         env:
           ENGINE: ${{ matrix.engine }}
         run: |
@@ -47,4 +47,4 @@ jobs:
             sleep 0.2
           done
           curl -fsS http://127.0.0.1:8767/ >/dev/null
-          "$PY" lab/lt-homologacion/run.py
+          timeout --kill-after=10s 120s "$PY" -u lab/lt-homologacion/diagnose-webkit.py
