@@ -33,7 +33,7 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/lt-venv"
           "$RUNNER_TEMP/lt-venv/bin/pip" install --disable-pip-version-check playwright==1.56.0
           "$RUNNER_TEMP/lt-venv/bin/python" -m playwright install --with-deps ${{ matrix.engine }}
-      - name: Verify WebKit pending lifecycle using script-opened popup
+      - name: Verify WebKit PDF viewer and real offline (server stopped)
         env:
           ENGINE: ${{ matrix.engine }}
         run: |
@@ -42,10 +42,11 @@ jobs:
           PY="$RUNNER_TEMP/lt-venv/bin/python"
           "$PY" "$LAB/serve_lab.py" > "$RUNNER_TEMP/lt-server.log" 2>&1 &
           server=$!
+          export LAB_SERVER_PID="$server"
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in $(seq 1 50); do
             if curl -fsS http://127.0.0.1:8767/ >/dev/null; then break; fi
             sleep 0.2
           done
           curl -fsS http://127.0.0.1:8767/ >/dev/null
-          "$PY" -u lab/lt-homologacion/run-cp009-webkit.py
+          "$PY" -u lab/lt-homologacion/run-cp009-webkit-media-offline.py
