@@ -11,6 +11,22 @@ b=(tests/'browser-cp004-authorized.py').read_text()
 for phase in ('before','after','bfcache'):
  s=b.replace("for phase in ['before','after']:", "for phase in "+repr([] if phase=='bfcache' else [phase])+":")
  if phase!='bfcache':s=s.split(' # Observe actual BFCache')[0]+' b.close()\n'
+ else:
+  s=s.replace("import argparse, base64, hashlib, pathlib, json","import argparse, base64, hashlib, pathlib, json, time")
+  s=s.replace("def ready(page):",'''def poll(page):
+ deadline=time.monotonic()+20
+ while time.monotonic()<deadline:
+  if page.evaluate("()=>document.querySelector('#lt-app-shell')?.hidden===false || document.querySelector('#lt-gate-status')?.textContent.includes('Otra ventana')"):return
+  time.sleep(.1)
+ raise AssertionError('gate did not reach terminal UI state')
+def ready(page):''')
+  predicate="document.querySelector('#lt-app-shell')?.hidden===false || document.querySelector('#lt-gate-status')?.textContent.includes('Otra ventana')"
+  s=s.replace('first.wait_for_function("'+predicate+'")','poll(first)')
+  s=s.replace('other.wait_for_function("'+predicate+'")','poll(other)')
+  # Chromium's test launcher disables BFCache by default. Enable the normal
+  # browser feature without bypassing origin, CSP, locks or app guards.
+  s=s.replace("getattr(pw,a.engine).launch()","getattr(pw,a.engine).launch(**({'ignore_default_args':['--disable-back-forward-cache']} if a.engine=='chromium' else {}))")
+
  (tests/('ci-'+phase+'.py')).write_text(s)
 # Each scenario is a separate process; failures do not prevent collecting other evidence.
 cases=[('core','ci-core.py',[]),('close-before','ci-before.py',[]),('close-after','ci-after.py',[]),('bfcache','ci-bfcache.py',[])]
@@ -24,7 +40,11 @@ extra="""
             preview(first); saved=storage(first); assert receipt(first) is None
             first.evaluate('''()=>{const original=Blob.prototype.arrayBuffer;let release;const wait=new Promise(r=>release=r);window.__ltBackupBarrier={entered:false,release};Blob.prototype.arrayBuffer=async function(){const bytes=await original.call(this);if(this.type==='application/pdf'){window.__ltBackupBarrier.entered=true;await wait;}return bytes;}}''')
             confirm(first)
-            first.wait_for_function('window.__ltBackupBarrier.entered',timeout=20000)
+            import time
+            deadline=time.monotonic()+20
+            while time.monotonic()<deadline and not first.evaluate("()=>!!window.__ltBackupBarrier?.entered"):
+                time.sleep(.05)
+            assert first.evaluate("()=>!!window.__ltBackupBarrier?.entered"), 'backup barrier not entered'
             first.locator('#lt-close').click()
             expect(first.locator('#lt-status')).to_contain_text('Cancelación solicitada')
             first.evaluate('window.__ltBackupBarrier.release()')
@@ -37,12 +57,14 @@ extra="""
             expect(first.locator('#lt-status')).to_contain_text('6 partidas añadidas',timeout=20000)
             first.locator('#lt-close').click()
             first.evaluate("historyMode='oficial';go('historial')")
+            first.locator('.v25-day-head').first.click()
             expect(first.locator('#app')).to_contain_text('Evento ficticio')
             expect(first.locator('#app')).to_contain_text('300')
             first.evaluate("statMode='oficial';statPane='general';go('estadisticas')")
             expect(first.locator('#app')).to_contain_text('Estadísticas')
             assert first.evaluate("aggregate('oficial').totals.join(',')")=='300,150,90'
-            first.evaluate("statPane='bolos';render()")
+            first.locator('#stats-pane-select').select_option('bolos')
+            expect(first.locator('#app')).to_contain_text('Mapa de derribo por bolo')
             # Original pin analysis contract and imported strike pin identity.
             assert first.evaluate("aggregate('oficial').games[0].rolls[0].pins.length")==10
             print('PASS UI history and statistics, scores and pins',flush=True)
@@ -66,9 +88,12 @@ extra="""
 marker='        else:\n            # Real browser quota'
 assert marker in c
 c=c.replace(marker,extra+'\n'+marker)
+c=c.replace("browser = getattr(pw, a.engine).launch()", "browser = getattr(pw, a.engine).launch(**({'channel':'chromium'} if a.engine=='chromium' and a.scenario=='ui-pdf' else {}))")
 (tests/'ci-extra.py').write_text(c)
 for script in tests.glob('ci-*.py'):compile(script.read_text(),str(script),'exec')
 failed=[]
+# Retest only the three failed harness scenarios in Chromium; preserve 8 PASS.
+cases=[case for case in cases if case[0] in ('bfcache','cancel-backup','ui-pdf')]
 for name,script,args in cases:
  print('BEGIN_SCENARIO',engine,name,flush=True)
  try:
