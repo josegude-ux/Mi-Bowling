@@ -21,9 +21,10 @@ def asyncjs(s,*args):return driver.execute_async_script("const done=arguments[ar
 def wait(s):return WebDriverWait(driver,25).until(lambda _:asyncjs(s) is True)
 def snap():return js("return Object.fromEntries(Object.keys(localStorage).filter(k=>k.startsWith('mi-bowling-')).sort().map(k=>[k,localStorage.getItem(k)]))")
 def checkcache(folder):
- m=json.loads((root/'tipo-cache.json').read_text()) if folder==cp3 else json.loads((root/'tipo-cp004'/(folder.name+'-manifest.json')).read_text())['cache']
- r=asyncjs("""async m=>{const name=(await caches.keys()).find(n=>n.startsWith('mi-bowling-release-')&&n.includes(arguments[0]||''));const names=await caches.keys(),results={};for(const n of names){const c=await caches.open(n);let count=0;for(const [key,h] of Object.entries(m)){const x=await c.match(new URL(key,location.href).href);if(x&&Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await x.arrayBuffer())),v=>v.toString(16).padStart(2,'0')).join('')===h)count++}results[n]=count}return results}""",m)
- log('CACHE_HASH_COUNTS',r);assert any(v==33 for v in r.values()),r
+ m={'release':'tipo-3311-cp003','cache':json.loads((root/'tipo-cache.json').read_text())} if folder==cp3 else json.loads((root/'tipo-cp004'/(folder.name+'-manifest.json')).read_text())
+ r=asyncjs("""async m=>{const n='mi-bowling-release-'+m.release+'-'+encodeURIComponent(new URL('./',location.href).href);const names=await caches.keys();if(!names.includes(n))return {name:n,count:0,names};const c=await caches.open(n);let count=0;for(const [key,h] of Object.entries(m.cache)){const x=await c.match(new URL(key,location.href).href);if(x&&Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await x.arrayBuffer())),v=>v.toString(16).padStart(2,'0')).join('')===h)count++}return {name:n,count,names}}""",m)
+ log('CACHE_HASH_COUNTS',r);assert r['count']==33,r
+
 def checkpdf():
  r=asyncjs("""async()=>{const f=await oilGet('LAB-P');return f?await f.text():null}""");assert r=='%PDF-1.4\n% synthetic native safari\n%%EOF\n',r
 try:

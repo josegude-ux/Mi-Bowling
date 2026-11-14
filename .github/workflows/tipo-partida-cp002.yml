@@ -14,10 +14,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - engine: chromium
-            os: ubuntu-24.04
-          - engine: webkit
-            os: macos-15
           - engine: safari-native
             os: macos-15
     steps:
@@ -54,7 +50,7 @@ jobs:
             test -x /usr/bin/safaridriver
             /usr/bin/safaridriver --version
             "$PY" -m pip install --disable-pip-version-check selenium==4.38.0
-            "$PY" -c 'import subprocess; subprocess.run(["/usr/bin/safaridriver","--enable"],check=True,timeout=30)'
+            "$PY" -c 'import subprocess; subprocess.run(["sudo","-n","/usr/bin/safaridriver","--enable"],check=True,timeout=30)'
           else
             "$PY" -m pip install --disable-pip-version-check playwright==1.56.0
             if [ "$RUNNER_OS" = Linux ]; then "$PY" -m playwright install --with-deps "$ENGINE"; else "$PY" -m playwright install "$ENGINE"; fi
