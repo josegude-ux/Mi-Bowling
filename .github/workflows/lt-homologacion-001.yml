@@ -1,4 +1,4 @@
-name: MI BOWLING | LT HOMOLOGACION 001
+name: MI BOWLING | LT HOMOLOGACION 001 CP009
 on:
   push:
     branches: [lab/lt-homologacion-20261114]
@@ -8,31 +8,32 @@ on:
 permissions:
   contents: read
 jobs:
-  browser:
-    name: LT CP005 real ${{ matrix.engine }}
+  lifecycle:
+    name: LT CP009 lifecycle ${{ matrix.engine }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 16
     strategy:
       fail-fast: false
       matrix:
-        engine: [webkit]
+        engine: [chromium, webkit]
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 0
-      - name: Materialize verified private-origin synthetic LAB
+      - name: Verify CP005 and apply exact isolated CP009 delta
         run: |
           set -euo pipefail
           git merge-base --is-ancestor d16b941a5889b52b1cd2b4bfb51e99b10b25887a HEAD
           git diff --exit-code d16b941a5889b52b1cd2b4bfb51e99b10b25887a HEAD -- app.js index.html sw.js catalogo-bolas/index.html
           python3 lab/lt-homologacion/prepare.py
-      - name: Install pinned test dependencies on ephemeral standard runner
+          python3 lab/lt-homologacion/apply-cp009.py
+      - name: Install test dependencies on ephemeral standard runner
         run: |
           python3 -m venv "$RUNNER_TEMP/lt-venv"
           "$RUNNER_TEMP/lt-venv/bin/pip" install --disable-pip-version-check playwright==1.56.0
           "$RUNNER_TEMP/lt-venv/bin/python" -m playwright install --with-deps ${{ matrix.engine }}
-      - name: Distinguish close lifecycle modes WebKit
+      - name: Verify affected lifecycle with real browser storage
         env:
           ENGINE: ${{ matrix.engine }}
         run: |
@@ -47,10 +48,4 @@ jobs:
             sleep 0.2
           done
           curl -fsS http://127.0.0.1:8767/ >/dev/null
-          set +e
-          for mode in normal script; do
-            timeout --kill-after=5s 45s "$PY" -u lab/lt-homologacion/diagnose-webkit-close-modes.py "$mode"
-            result=$?; echo "RESULT close-$mode $result"
-            if [ "$result" != 0 ]; then failed=1; fi
-          done
-          exit "${failed:-0}"
+          "$PY" -u lab/lt-homologacion/run-cp009.py
