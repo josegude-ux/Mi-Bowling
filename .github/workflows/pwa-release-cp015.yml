@@ -51,7 +51,7 @@ jobs:
           "$OPENSSL" verify -CAfile ca.pem -verify_hostname localhost leaf.pem
           sudo security add-trusted-cert -d -r trustRoot -p ssl -k /Library/Keychains/System.keychain ca.pem
           export CP017_SCHEME=https
-          if security verify-cert -c leaf.pem -c ca.pem -p ssl -s 127.0.0.1; then
+          if security verify-cert -c leaf.pem -c ca.pem -p ssl -s localhost; then
             echo 'CP017_TLS_SYSTEM_VERIFY PASS'
           else
             echo 'CP017_TLS_SYSTEM_VERIFY FAIL: separate loopback HTTP secure-context diagnostic only; no TLS exception'
