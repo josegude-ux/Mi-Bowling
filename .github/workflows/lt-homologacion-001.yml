@@ -1,0 +1,50 @@
+name: MI BOWLING | LT HOMOLOGACION 001
+on:
+  push:
+    branches: [lab/lt-homologacion-20261114]
+    paths:
+      - '.github/workflows/lt-homologacion-001.yml'
+      - 'lab/lt-homologacion/**'
+permissions:
+  contents: read
+jobs:
+  browser:
+    name: LT CP005 real ${{ matrix.engine }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Materialize verified private-origin synthetic LAB
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor d16b941a5889b52b1cd2b4bfb51e99b10b25887a HEAD
+          git diff --exit-code d16b941a5889b52b1cd2b4bfb51e99b10b25887a HEAD -- app.js index.html sw.js catalogo-bolas/index.html
+          python3 lab/lt-homologacion/prepare.py
+      - name: Install pinned test dependencies on ephemeral standard runner
+        run: |
+          python3 -m venv "$RUNNER_TEMP/lt-venv"
+          "$RUNNER_TEMP/lt-venv/bin/pip" install --disable-pip-version-check playwright==1.56.0
+          "$RUNNER_TEMP/lt-venv/bin/python" -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Execute real browser scenarios independently
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          set -euo pipefail
+          export LAB="$RUNNER_TEMP/lt-cp005"
+          PY="$RUNNER_TEMP/lt-venv/bin/python"
+          "$PY" "$LAB/serve_lab.py" > "$RUNNER_TEMP/lt-server.log" 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:8767/ >/dev/null; then break; fi
+            sleep 0.2
+          done
+          curl -fsS http://127.0.0.1:8767/ >/dev/null
+          "$PY" lab/lt-homologacion/run.py

@@ -1,0 +1,81 @@
+from pathlib import Path
+import os,sys,subprocess,traceback
+root=Path(os.environ['LAB']); engine=os.environ['ENGINE']
+tests=root/'tests'
+# Only adapt acceptance harnesses, not the CP005 application.
+a=(tests/'browser-authorized.py').read_text()
+a=a.replace(" page.close();second.reload", " print('PASS CP003 import, writer, SQLite, real IDB, scores and backup',flush=True)\n page.close();second.reload")
+a=a.replace(" # Real worker activation", " print('PASS CP003 reload, persisted receipt, duplicate preview',flush=True)\n # Real worker activation")
+(tests/'ci-core.py').write_text(a)
+b=(tests/'browser-cp004-authorized.py').read_text()
+for phase in ('before','after','bfcache'):
+ s=b.replace("for phase in ['before','after']:", "for phase in "+repr([] if phase=='bfcache' else [phase])+":")
+ if phase!='bfcache':s=s.split(' # Observe actual BFCache')[0]+' b.close()\n'
+ (tests/('ci-'+phase+'.py')).write_text(s)
+# Each scenario is a separate process; failures do not prevent collecting other evidence.
+cases=[('core','ci-core.py',[]),('close-before','ci-before.py',[]),('close-after','ci-after.py',[]),('bfcache','ci-bfcache.py',[])]
+cases += [(s,'browser-cp005-authorized.py',['--scenario',s]) for s in ('aux-before','aux-after','terminal-edit','cancel-preview','quota')]
+cases += [(s,'ci-extra.py',['--scenario',s]) for s in ('cancel-backup','ui-pdf')]
+# Extend only the harness. The original scripts are kept byte-exact.
+c=(tests/'browser-cp005-authorized.py').read_text()
+c=c.replace("'cancel-preview', 'quota']", "'cancel-preview', 'quota', 'cancel-backup', 'ui-pdf']")
+extra="""
+        elif a.scenario == 'cancel-backup':
+            preview(first); saved=storage(first); assert receipt(first) is None
+            first.evaluate('''()=>{const original=Blob.prototype.arrayBuffer;let release;const wait=new Promise(r=>release=r);window.__ltBackupBarrier={entered:false,release};Blob.prototype.arrayBuffer=async function(){const bytes=await original.call(this);if(this.type==='application/pdf'){window.__ltBackupBarrier.entered=true;await wait;}return bytes;}}''')
+            confirm(first)
+            first.wait_for_function('window.__ltBackupBarrier.entered',timeout=20000)
+            first.locator('#lt-close').click()
+            expect(first.locator('#lt-status')).to_contain_text('Cancelación solicitada')
+            first.evaluate('window.__ltBackupBarrier.release()')
+            expect(first.locator('#lt-status')).to_contain_text('Cancelado antes de escribir',timeout=20000)
+            assert receipt(first) is None and storage(first)==saved
+            first.locator('#lt-close').click(); first.reload(wait_until='commit'); ready(first)
+            assert receipt(first) is None and storage(first)==saved
+        elif a.scenario == 'ui-pdf':
+            preview(first); confirm(first)
+            expect(first.locator('#lt-status')).to_contain_text('6 partidas añadidas',timeout=20000)
+            first.locator('#lt-close').click()
+            first.evaluate("historyMode='oficial';go('historial')")
+            expect(first.locator('#app')).to_contain_text('Evento ficticio')
+            expect(first.locator('#app')).to_contain_text('300')
+            first.evaluate("statMode='oficial';statPane='general';go('estadisticas')")
+            expect(first.locator('#app')).to_contain_text('Estadísticas')
+            assert first.evaluate("aggregate('oficial').totals.join(',')")=='300,150,90'
+            first.evaluate("statPane='bolos';render()")
+            # Original pin analysis contract and imported strike pin identity.
+            assert first.evaluate("aggregate('oficial').games[0].rolls[0].pins.length")==10
+            print('PASS UI history and statistics, scores and pins',flush=True)
+            first.evaluate("selectedPatternId='LAB-CP006-PDF';go('patrones')")
+            with first.expect_download() as dl:
+                first.get_by_role('button',name='Descargar PDF',exact=True).click()
+            assert Path(dl.value.path()).read_bytes()==pdf.read_bytes()
+            print('PASS real PDF download byte equality',flush=True)
+            # PDF viewers differ by engine; never infer rendering from download.
+            try:
+                with first.expect_popup(timeout=8000) as pop:
+                    first.get_by_role('button',name='Ver PDF',exact=True).click()
+                viewer=pop.value
+                viewer.wait_for_timeout(1500)
+                shot=viewer.screenshot(timeout=8000)
+                print('PDF_VIEWER_SCREENSHOT_B64',base64.b64encode(shot).decode(),flush=True)
+                print('PENDING visual review: screenshot captured; no automatic visual PASS',flush=True)
+            except Exception as e:
+                print('PENDING PDF viewer:',type(e).__name__,str(e)[:200],flush=True)
+"""
+marker='        else:\n            # Real browser quota'
+assert marker in c
+c=c.replace(marker,extra+'\n'+marker)
+(tests/'ci-extra.py').write_text(c)
+for script in tests.glob('ci-*.py'):compile(script.read_text(),str(script),'exec')
+failed=[]
+for name,script,args in cases:
+ print('BEGIN_SCENARIO',engine,name,flush=True)
+ try:
+  r=subprocess.run([sys.executable,str(tests/script),'--authorized','--engine',engine,*args],timeout=150)
+  code=r.returncode
+ except subprocess.TimeoutExpired:code=124
+ print('END_SCENARIO',engine,name,'EXIT',code,flush=True)
+ if code:failed.append(name)
+print('SCENARIO_FAILURES',engine,','.join(failed),flush=True)
+sys.exit(bool(failed))
