@@ -89,7 +89,7 @@ with sync_playwright() as pw,tempfile.TemporaryDirectory(prefix='tipo-release-')
   pg.on('dialog',lambda d:d.accept())
   pg.locator('button[data-game="LAB-G"][data-type="oficial"]').click()
   assert pg.evaluate("aggregate('oficial').totals.join(',')")=='300'
-  after=snapshot(pg);assert json.loads(after['mi-bowling-analitica-v2'])['sessions'][0]['games']==json.loads(before['mi-bowling-analitica-v2'])['sessions'][0]['games'] or pg.evaluate("score(db.sessions[0].games[0])")==300
+  after=snapshot(pg);oldgame=json.loads(before['mi-bowling-analitica-v2'])['sessions'][0]['games'][0];newgame=json.loads(after['mi-bowling-analitica-v2'])['sessions'][0]['games'][0];assert newgame=={**oldgame,'includeStats':True};assert all(after[k]==v for k,v in before.items() if k!='mi-bowling-analitica-v2')
   checkpdf(pg);log('CLASSIFICATION_SMOKE_PASS')
  finally:
   if a.scenario!='bad-resource':ctx.close()

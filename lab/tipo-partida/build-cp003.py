@@ -6,7 +6,7 @@ sha=lambda b:hashlib.sha256(b).hexdigest()
 # tipo-base has just been reconstructed through CP002. Keep old app.js at its original URL.
 assert sha((base/'app.js').read_bytes())=='d5a57cae36fa8bb26c6b70c62a4b18f0841b904b808908aed9f2b404ef21591c'
 shutil.copytree(base,out)
-(base/'app.js').write_bytes((Path(os.environ['RUNNER_TEMP'])/'tipo-cp001/base/app.js').read_bytes())
+(base/'app.js').write_bytes(__import__('subprocess').check_output(['git','show','d16b941a5889b52b1cd2b4bfb51e99b10b25887a:app.js']))
 assert hashlib.sha1(b'blob '+str((base/'app.js').stat().st_size).encode()+b'\0'+(base/'app.js').read_bytes()).hexdigest()=='e653869f2def6cedba563c7c46529de8ef2bbe9e'
 version='3.3.11-tipo-partida';release='tipo-3311-cp003';js='app-tipo-3311-cp003.js';css='tipo-partida-3311-cp003.css'
 s=(out/'app.js').read_text();(out/'app.js').write_bytes((base/'app.js').read_bytes())
