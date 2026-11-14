@@ -1,0 +1,48 @@
+name: MI BOWLING | CP020 restauracion integral
+on:
+  push:
+    branches: [lab/tipo-partida-20261114]
+    paths: ['checks/cp020/**', '.github/workflows/proteccion-cp020.yml']
+permissions:
+  contents: read
+jobs:
+  browser:
+    name: CP020 real ${{ matrix.engine }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: chromium
+            os: ubuntu-24.04
+          - engine: safari-native
+            os: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Recover CP004 and CP018 exact then build CP020
+        run: |
+          set -euo pipefail
+          python3 checks/cp018/build.py
+          python3 -c "import hashlib,pathlib; assert hashlib.sha256(pathlib.Path('checks/cp020/payload.zip').read_bytes()).hexdigest()=='3151b8a767eaee71466794e3d089bcd97547068b0f1337278960598f90d34ceb'"
+          mkdir -p "$RUNNER_TEMP/cp020-payload"
+          unzip -q checks/cp020/payload.zip -d "$RUNNER_TEMP/cp020-payload"
+          python3 "$RUNNER_TEMP/cp020-payload/build-cp020.py" --base "$RUNNER_TEMP/cp018-check/candidate" --output "$RUNNER_TEMP/cp020-check" --modules "$RUNNER_TEMP/cp020-payload/modules" --source-manifest "$RUNNER_TEMP/cp020-payload/cp018-source-manifest.json"
+      - name: Existing browser prerequisites
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/cp020-venv"
+          "$RUNNER_TEMP/cp020-venv/bin/python" -m pip install --disable-pip-version-check selenium==4.38.0
+          if [ "$ENGINE" = safari-native ]; then
+            /usr/bin/safaridriver --version
+            sudo -n /usr/bin/safaridriver --enable
+          fi
+      - name: New restoration scenarios only
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: '"$RUNNER_TEMP/cp020-venv/bin/python" -u "$RUNNER_TEMP/cp020-payload/browser-restore.py" "$ENGINE"'
