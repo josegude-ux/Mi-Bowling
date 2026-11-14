@@ -7,7 +7,7 @@ script="""let release;const done=new Promise(r=>release=r);let writer=false;cons
 class Handler(BaseHTTPRequestHandler):
  def do_GET(self):
   if self.path=='/':
-   body='<!doctype html><meta charset=utf-8><button id="open" onclick="window.open(\\'/held\\',\\'_blank\\')">Open</button>'
+   body="""<!doctype html><meta charset=utf-8><button id="open" onclick="window.open('/held','_blank')">Open</button>"""
   elif self.path=='/held':
    body='<!doctype html><meta charset=utf-8><div id=ready>starting</div><button id=touch>Touch</button><button id=exit>Close</button><script type=module>'+script+'</script>'
   else:self.send_error(404);return
