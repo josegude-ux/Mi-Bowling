@@ -1,4 +1,4 @@
-name: MI BOWLING | CP015 PWA synthetic release lifecycle
+name: MI BOWLING | CP017 macOS HTTPS guard
 on:
   push:
     branches: [lab/pwa-release-cp015-20261113]
@@ -8,9 +8,9 @@ on:
 permissions:
   contents: read
 jobs:
-  lifecycle:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
+  guard-macos:
+    runs-on: macos-15
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,11 +19,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check isolated baseline and test synthetic app only
+      - name: WebKit real cache guard in private HTTPS loopback (synthetic data only)
+        shell: bash
         run: |
           set -euo pipefail
           git merge-base --is-ancestor d16b941a5889b52b1cd2b4bfb51e99b10b25887a HEAD
           git diff --exit-code d16b941a5889b52b1cd2b4bfb51e99b10b25887a HEAD -- app.js index.html sw.js catalogo-bolas/index.html
           npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps webkit
-          node lab/pwa-release-cp015/diagnose-offline-cp016.cjs
+          npx playwright install webkit
+          export CP017_TLS_DIR="$(mktemp -d)"
+          cd "$CP017_TLS_DIR"
+          trap 'if [ -f ca.pem ]; then sudo security delete-certificate -Z "$(openssl x509 -in ca.pem -noout -fingerprint -sha1 | cut -d= -f2 | tr -d :)" /Library/Keychains/System.keychain || true; fi; rm -rf "$CP017_TLS_DIR"' EXIT
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -keyout ca.key -out ca.pem -subj '/CN=CP017 Ephemeral Test CA' -addext 'basicConstraints=critical,CA:TRUE' -addext 'keyUsage=critical,keyCertSign,cRLSign'
+          openssl req -newkey rsa:2048 -nodes -keyout leaf.key -out leaf.csr -subj '/CN=127.0.0.1'
+          printf 'subjectAltName=IP:127.0.0.1\nbasicConstraints=CA:FALSE\nextendedKeyUsage=serverAuth\nkeyUsage=digitalSignature,keyEncipherment\n' > leaf.ext
+          openssl x509 -req -in leaf.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out leaf.pem -days 1 -extfile leaf.ext -sha256
+          sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ca.pem
+          cd "$GITHUB_WORKSPACE"
+          node lab/pwa-release-cp015/guard-macos-cp017.cjs
