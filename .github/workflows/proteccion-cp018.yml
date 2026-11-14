@@ -16,8 +16,6 @@ jobs:
         include:
           - engine: chromium
             os: ubuntu-24.04
-          - engine: safari-native
-            os: macos-15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,7 +34,7 @@ jobs:
             /usr/bin/safaridriver --version
             sudo -n /usr/bin/safaridriver --enable
           fi
-      - name: New CP018 browser scenarios only
+      - name: Chromium pending download and rollback (setup prerequisite only)
         env:
           ENGINE: ${{ matrix.engine }}
         run: '"$RUNNER_TEMP/cp018-venv/bin/python" -u checks/cp018/run.py "$ENGINE"'

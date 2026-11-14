@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 root=Path(os.environ['RUNNER_TEMP'])/'cp018-check';manifests=json.loads((root/'manifests.json').read_text());stage={'dir':root/'base'}
 class H(BaseHTTPRequestHandler):
  def do_GET(self):
@@ -19,7 +20,7 @@ server=ThreadingHTTPServer(('127.0.0.1',0),H);threading.Thread(target=server.ser
 engine=sys.argv[1];downloads=root/'downloads';downloads.mkdir()
 if engine=='safari-native':driver=webdriver.Safari()
 else:
- o=webdriver.ChromeOptions();o.add_argument('--headless=new');o.add_argument('--no-sandbox');o.add_argument('--disable-dev-shm-usage');o.add_argument('--window-size=390,844');o.add_experimental_option('prefs',{'download.default_directory':str(downloads),'download.prompt_for_download':False,'download.directory_upgrade':True});driver=webdriver.Chrome(options=o);driver.execute_cdp_cmd('Page.setDownloadBehavior',{'behavior':'allow','downloadPath':str(downloads)})
+ o=webdriver.ChromeOptions();o.add_argument('--headless=new');o.add_argument('--no-sandbox');o.add_argument('--disable-dev-shm-usage');o.add_argument('--window-size=390,844');o.set_capability('unhandledPromptBehavior','ignore');o.add_experimental_option('prefs',{'download.default_directory':str(downloads),'download.prompt_for_download':False,'download.directory_upgrade':True});driver=webdriver.Chrome(options=o);driver.execute_cdp_cmd('Page.setDownloadBehavior',{'behavior':'allow','downloadPath':str(downloads)})
 driver.set_page_load_timeout(25);driver.set_script_timeout(30)
 def log(k,v=True):print('CP018',engine,k,json.dumps(v,ensure_ascii=False,default=str),flush=True)
 def js(s,*a):return driver.execute_script(s,*a)
@@ -55,7 +56,11 @@ try:
  obj=aj("async()=>await MiBowlingBackup.snapshot()");assert obj['storage']==before and len(obj['pdfs'])==1;assert base64.b64decode(obj['pdfs'][0]['base64'])==pdf and obj['pdfs'][0]['sha256']==hashlib.sha256(pdf).hexdigest();assert snap()==before;log('REAL_IDB_AND_SNAPSHOT',{'keys':len(before),'pdf_sha256':obj['pdfs'][0]['sha256']})
  # Real download in Chromium. Safari native automation may restrict download location; keep it as explicit limitation.
  if engine=='chromium':
-  btn.click();WebDriverWait(driver,10).until(lambda d:d.switch_to.alert).accept()
+  # Real user-like scroll; the floating Nueva button obscured Selenium's automatic bottom alignment.
+  js("arguments[0].scrollIntoView({block:'center',inline:'nearest',behavior:'instant'});",btn)
+  hit=js("const b=arguments[0],r=b.getBoundingClientRect(),e=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return {visible:!!e&&(e===b||b.contains(e)),top:r.top,bottom:r.bottom,viewport:innerHeight};",btn)
+  log('DOWNLOAD_BUTTON_HIT_TEST',hit);assert hit['visible'],hit
+  btn.click();WebDriverWait(driver,10).until(EC.alert_is_present()).accept()
   def downloaded():
    return next(iter(downloads.glob('MI_BOWLING_COPIA_COMPLETA_*.json')),None)
   f=WebDriverWait(driver,20).until(lambda _:downloaded());d=json.loads(f.read_text());assert d['storage']==before and d['pdfs']==obj['pdfs'];log('REAL_FILE_DOWNLOAD',{'bytes':f.stat().st_size,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()})
