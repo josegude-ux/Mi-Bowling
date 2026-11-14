@@ -1,4 +1,4 @@
-name: MI BOWLING | Tipo partida CP003 release
+name: MI BOWLING | Tipo partida CP004 visual rollback Safari
 on:
   push:
     branches: [lab/tipo-partida-20261114]
@@ -14,7 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - engine: chromium
+            os: ubuntu-24.04
           - engine: webkit
+            os: macos-15
+          - engine: safari-native
             os: macos-15
     steps:
       - uses: actions/checkout@v4
@@ -38,34 +42,33 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           python3 lab/tipo-partida/apply-cp002.py
           python3 lab/tipo-partida/build-cp003.py
-      - name: Install test browsers on standard ephemeral runner
-        run: |
-          python3 -m venv "$RUNNER_TEMP/tipo-venv"
-          "$RUNNER_TEMP/tipo-venv/bin/pip" install --disable-pip-version-check playwright==1.56.0
-          if [ "$RUNNER_OS" = Linux ]; then
-            "$RUNNER_TEMP/tipo-venv/bin/python" -m playwright install --with-deps ${{ matrix.engine }}
-          else
-            "$RUNNER_TEMP/tipo-venv/bin/python" -m playwright install ${{ matrix.engine }}
-          fi
-      - name: "WebKit diagnostic: cache, guarded install and online upgrade"
+          python3 lab/tipo-partida/build-cp004.py
+      - name: Browser prerequisites
         env:
           ENGINE: ${{ matrix.engine }}
         run: |
           set -euo pipefail
-          failed=0
-          for scenario in upgrade; do
-            echo "BEGIN_RELEASE $ENGINE $scenario"
-            code=0
-            "$RUNNER_TEMP/tipo-venv/bin/python" -u lab/tipo-partida/diagnose-webkit-cp003.py "$ENGINE" "$scenario" || code=$?
-            echo "END_RELEASE $ENGINE $scenario $code"
-            if [ "$code" != 0 ]; then failed=1; fi
-          done
-          exit "$failed"
-      - name: Preserve synthetic responsive screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: tipo-cp003-${{ matrix.engine }}-screens
-          path: ${{ runner.temp }}/tipo-${{ matrix.engine }}-*.png
-          if-no-files-found: ignore
-          retention-days: 3
+          python3 -m venv "$RUNNER_TEMP/tipo-venv"
+          PY="$RUNNER_TEMP/tipo-venv/bin/python"
+          if [ "$ENGINE" = safari-native ]; then
+            test -x /usr/bin/safaridriver
+            /usr/bin/safaridriver --version
+            "$PY" -m pip install --disable-pip-version-check selenium==4.38.0
+            "$PY" -c 'import subprocess; subprocess.run(["/usr/bin/safaridriver","--enable"],check=True,timeout=30)'
+          else
+            "$PY" -m pip install --disable-pip-version-check playwright==1.56.0
+            if [ "$RUNNER_OS" = Linux ]; then "$PY" -m playwright install --with-deps "$ENGINE"; else "$PY" -m playwright install "$ENGINE"; fi
+          fi
+      - name: New affected scenarios only
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          set -euo pipefail
+          PY="$RUNNER_TEMP/tipo-venv/bin/python"
+          if [ "$ENGINE" = safari-native ]; then
+            "$PY" -u lab/tipo-partida/native-safari-cp004.py
+          elif [ "$ENGINE" = chromium ]; then
+            "$PY" -u lab/tipo-partida/browser-cp004.py "$ENGINE" rollback
+          else
+            "$PY" -u lab/tipo-partida/browser-cp004.py "$ENGINE" visual
+          fi
