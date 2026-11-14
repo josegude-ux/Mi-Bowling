@@ -33,7 +33,7 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/lt-venv"
           "$RUNNER_TEMP/lt-venv/bin/pip" install --disable-pip-version-check playwright==1.56.0
           "$RUNNER_TEMP/lt-venv/bin/python" -m playwright install --with-deps ${{ matrix.engine }}
-      - name: Verify WebKit PDF viewer and real offline (server stopped)
+      - name: Diagnose only quota reload and native PDF viewer
         env:
           ENGINE: ${{ matrix.engine }}
         run: |
@@ -49,4 +49,4 @@ jobs:
             sleep 0.2
           done
           curl -fsS http://127.0.0.1:8767/ >/dev/null
-          "$PY" -u lab/lt-homologacion/run-cp009-webkit-media-offline.py
+          "$PY" -u lab/lt-homologacion/run-cp009-webkit-quota-pdf.py
