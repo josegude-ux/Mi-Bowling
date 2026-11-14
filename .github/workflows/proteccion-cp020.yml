@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 checks/cp018/build.py
-          python3 -c "import hashlib,pathlib; assert hashlib.sha256(pathlib.Path('checks/cp020/payload.zip').read_bytes()).hexdigest()=='3151b8a767eaee71466794e3d089bcd97547068b0f1337278960598f90d34ceb'"
+          python3 -c "import hashlib,pathlib; assert hashlib.sha256(pathlib.Path('checks/cp020/payload.zip').read_bytes()).hexdigest()=='1174b9337c55ee2dbb801d38187cfc98c099fb60b6c62a245913f898c9e1974e'"
           mkdir -p "$RUNNER_TEMP/cp020-payload"
           unzip -q checks/cp020/payload.zip -d "$RUNNER_TEMP/cp020-payload"
           python3 "$RUNNER_TEMP/cp020-payload/build-cp020.py" --base "$RUNNER_TEMP/cp018-check/candidate" --output "$RUNNER_TEMP/cp020-check" --modules "$RUNNER_TEMP/cp020-payload/modules" --source-manifest "$RUNNER_TEMP/cp020-payload/cp018-source-manifest.json"
@@ -42,7 +42,7 @@ jobs:
             /usr/bin/safaridriver --version
             sudo -n /usr/bin/safaridriver --enable
           fi
-      - name: New restoration scenarios only
+      - name: Affected CP020 equality and recovery scenarios only
         env:
           ENGINE: ${{ matrix.engine }}
         run: '"$RUNNER_TEMP/cp020-venv/bin/python" -u "$RUNNER_TEMP/cp020-payload/browser-restore.py" "$ENGINE"'
