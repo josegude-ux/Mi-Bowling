@@ -1,0 +1,42 @@
+name: MI BOWLING | CP018 homologacion respaldo incremental
+on:
+  push:
+    branches: [lab/tipo-partida-20261114]
+    paths: ['checks/cp018/**', '.github/workflows/proteccion-cp018.yml']
+permissions:
+  contents: read
+jobs:
+  browser:
+    name: CP018 real ${{ matrix.engine }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: chromium
+            os: ubuntu-24.04
+          - engine: safari-native
+            os: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Recover exact CP004 and CP018 without deployment
+        run: python3 checks/cp018/build.py
+      - name: Browser prerequisites
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/cp018-venv"
+          "$RUNNER_TEMP/cp018-venv/bin/python" -m pip install --disable-pip-version-check selenium==4.38.0
+          if [ "$ENGINE" = safari-native ]; then
+            /usr/bin/safaridriver --version
+            sudo -n /usr/bin/safaridriver --enable
+          fi
+      - name: New CP018 browser scenarios only
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: '"$RUNNER_TEMP/cp018-venv/bin/python" -u checks/cp018/run.py "$ENGINE"'
