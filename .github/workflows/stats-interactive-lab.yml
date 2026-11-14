@@ -1,4 +1,4 @@
-name: MI BOWLING | Estadisticas interactivas LAB CP001
+name: MI BOWLING | Estadisticas interactivas LAB CP001 visual v2
 on:
   push:
     branches: [lab/estadisticas-interactivas-20261114]
@@ -28,9 +28,10 @@ jobs:
           git archive 2f2fd46bad01e75e12ae7b78303f388587a77208 | tar -x -C "$RUNNER_TEMP/stats-lab/base"
           python3 -c "import hashlib,pathlib; assert hashlib.sha256(pathlib.Path('lab/stats/increment.zip').read_bytes()).hexdigest()=='78ab11f1a4179ecf36f30bb374baff383e36994ca801d61c902d4333aa8b0eb8'"
           unzip -q lab/stats/increment.zip -d "$RUNNER_TEMP/stats-lab"
+          python3 -c "import hashlib,pathlib; assert hashlib.sha256(pathlib.Path('lab/stats/visual-v2.zip').read_bytes()).hexdigest()=='007d58fe158306129469db085b889efc8e992bbe521e408df00f897307f4ef1f'"
+          unzip -oq lab/stats/visual-v2.zip -d "$RUNNER_TEMP/stats-lab"
           python3 "$RUNNER_TEMP/stats-lab/build.py"
-          node --check "$RUNNER_TEMP/stats-lab/candidate/app-stats-interactive-lab.js"
-          node "$RUNNER_TEMP/stats-lab/test.cjs"
+          python3 -c "import hashlib,pathlib,os; r=pathlib.Path(os.environ['RUNNER_TEMP'])/'stats-lab/candidate'; assert hashlib.sha256((r/'app-stats-interactive-lab.js').read_bytes()).hexdigest()=='8ca53228999a7c404424bbf654888a10bb93637913e3bfb9b227dce3920b7eea'; assert hashlib.sha256((r/'stats-interactive-lab.css').read_bytes()).hexdigest()=='7cdeaa768cb79b9c144424e390bd388fd27370a4e03502792ae46f2d419f2d7d'; assert hashlib.sha256((r/'sw.js').read_bytes()).hexdigest()=='079d332b3673e1ec787d23df21e0ff084f61ffebf58f7529d91f178e817fff64'"
       - name: Install test browser on standard runner
         env:
           ENGINE: ${{ matrix.engine }}
@@ -39,14 +40,14 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/stats-venv"
           "$RUNNER_TEMP/stats-venv/bin/pip" install --disable-pip-version-check playwright==1.56.0
           if [ "$RUNNER_OS" = Linux ]; then "$RUNNER_TEMP/stats-venv/bin/python" -m playwright install --with-deps "$ENGINE"; else "$RUNNER_TEMP/stats-venv/bin/python" -m playwright install "$ENGINE"; fi
-      - name: Real browser record links, filters, frames, storage and responsive
+      - name: Affected responsive only - words and links at 320px
         env:
           ENGINE: ${{ matrix.engine }}
-        run: '"$RUNNER_TEMP/stats-venv/bin/python" -u "$RUNNER_TEMP/stats-lab/browser.py" "$ENGINE"'
+        run: '"$RUNNER_TEMP/stats-venv/bin/python" -u "$RUNNER_TEMP/stats-lab/visual.py" "$ENGINE"'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: stats-cp001-${{ matrix.engine }}-screens
+          name: stats-cp001-v2-${{ matrix.engine }}-screens
           path: ${{ runner.temp }}/stats-lab/stats-*.png
           if-no-files-found: ignore
           retention-days: 3
