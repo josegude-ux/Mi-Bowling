@@ -14,6 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - engine: chromium
+            os: ubuntu-24.04
           - engine: safari-native
             os: macos-15
     steps:
@@ -39,6 +41,7 @@ jobs:
           python3 lab/tipo-partida/apply-cp002.py
           python3 lab/tipo-partida/build-cp003.py
           python3 lab/tipo-partida/build-cp004.py
+          python3 lab/tipo-partida/build-rollback-production.py
       - name: Browser prerequisites
         env:
           ENGINE: ${{ matrix.engine }}
@@ -62,9 +65,9 @@ jobs:
           set -euo pipefail
           PY="$RUNNER_TEMP/tipo-venv/bin/python"
           if [ "$ENGINE" = safari-native ]; then
-            "$PY" -u lab/tipo-partida/native-safari-cp004.py
+            "$PY" -u lab/tipo-partida/native-production-transition.py
           elif [ "$ENGINE" = chromium ]; then
-            "$PY" -u lab/tipo-partida/browser-cp004.py "$ENGINE" rollback
+            "$PY" -u lab/tipo-partida/browser-production-transition.py "$ENGINE" rollback
           else
             "$PY" -u lab/tipo-partida/browser-cp004.py "$ENGINE" visual
           fi
