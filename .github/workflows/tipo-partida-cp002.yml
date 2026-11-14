@@ -47,7 +47,7 @@ jobs:
           else
             "$RUNNER_TEMP/tipo-venv/bin/python" -m playwright install ${{ matrix.engine }}
           fi
-      - name: WebKit diagnostic: cache, guarded install and online upgrade
+      - name: "WebKit diagnostic: cache, guarded install and online upgrade"
         env:
           ENGINE: ${{ matrix.engine }}
         run: |
