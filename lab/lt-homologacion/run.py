@@ -90,10 +90,42 @@ assert marker in c
 c=c.replace(marker,extra+'\n'+marker)
 c=c.replace("browser = getattr(pw, a.engine).launch()", "browser = getattr(pw, a.engine).launch(**({'channel':'chromium'} if a.engine=='chromium' and a.scenario=='ui-pdf' else {}))")
 (tests/'ci-extra.py').write_text(c)
+
+# CP015 established that WebKit's ephemeral context can reject a Blob IDB seed.
+# Use a fresh persistent temporary profile, and a File matching the application's upload path.
+if engine=='webkit':
+ helper="""import tempfile
+class Persistent:
+ def __init__(self,engine):
+  self.engine=engine;self.version='WebKit persistent / Playwright 1.56.0';self.items=[]
+ def new_context(self,**kwargs):
+  profile=tempfile.TemporaryDirectory(prefix='lt-webkit-')
+  ctx=self.engine.launch_persistent_context(profile.name,headless=True,service_workers='allow',**kwargs)
+  self.items.append((ctx,profile))
+  print('WEBKIT_PERSISTENT_PROFILE',ctx.pages[0].evaluate('navigator.userAgent'),flush=True)
+  return ctx
+ def close(self):
+  for ctx,profile in self.items:
+   try:ctx.close()
+   except Exception:pass
+   profile.cleanup()
+"""
+ originals=[(tests/'browser-cp005-authorized.py',tests/'ci-wk-cp005.py')]+[(p,p) for p in tests.glob('ci-*.py')]
+ for src,dest in originals:
+  s=src.read_text()
+  s=s.replace('with sync_playwright() as pw:',helper+'\nwith sync_playwright() as pw:')
+  s=s.replace("getattr(pw,a.engine).launch(**({'ignore_default_args':['--disable-back-forward-cache']} if a.engine=='chromium' else {}))","Persistent(pw.webkit)")
+  s=s.replace("getattr(pw, a.engine).launch(**({'channel':'chromium'} if a.engine=='chromium' and a.scenario=='ui-pdf' else {}))","Persistent(pw.webkit)")
+  s=s.replace("getattr(pw,a.engine).launch()","Persistent(pw.webkit)").replace("getattr(pw, a.engine).launch()","Persistent(pw.webkit)")
+  s=s.replace("new Blob(['%PDF-1.4","new File(['%PDF-1.4").replace("%%EOF'],{type:'application/pdf'})","%%EOF'],'ficticio.pdf',{type:'application/pdf'})")
+  s=s.replace("new Blob([bytes],{type:'application/pdf'})","new File([bytes],'patron-ficticio.pdf',{type:'application/pdf'})")
+  s=s.replace("new Blob([Uint8Array.from(atob(pdf),c=>c.charCodeAt(0))],{type:'application/pdf'})","new File([Uint8Array.from(atob(pdf),c=>c.charCodeAt(0))],'patron-ficticio.pdf',{type:'application/pdf'})")
+  dest.write_text(s)
+ cases=[(name,'ci-wk-cp005.py' if script=='browser-cp005-authorized.py' else script,args) for name,script,args in cases]
+
 for script in tests.glob('ci-*.py'):compile(script.read_text(),str(script),'exec')
 failed=[]
-# Retest only the three failed harness scenarios in Chromium; preserve 8 PASS.
-cases=[case for case in cases if case[0] in ('bfcache','cancel-backup','ui-pdf')]
+# All WebKit scenarios previously blocked at seeding or BFCache harness; no WebKit PASS repeated.
 for name,script,args in cases:
  print('BEGIN_SCENARIO',engine,name,flush=True)
  try:
