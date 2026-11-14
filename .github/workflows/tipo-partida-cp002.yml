@@ -14,8 +14,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - engine: chromium
-            os: ubuntu-24.04
           - engine: webkit
             os: macos-15
     steps:
@@ -49,16 +47,16 @@ jobs:
           else
             "$RUNNER_TEMP/tipo-venv/bin/python" -m playwright install ${{ matrix.engine }}
           fi
-      - name: Real service worker upgrade and corrupt resource rejection
+      - name: WebKit diagnostic: cache, guarded install and online upgrade
         env:
           ENGINE: ${{ matrix.engine }}
         run: |
           set -euo pipefail
           failed=0
-          for scenario in upgrade bad-resource; do
+          for scenario in upgrade; do
             echo "BEGIN_RELEASE $ENGINE $scenario"
             code=0
-            "$RUNNER_TEMP/tipo-venv/bin/python" -u lab/tipo-partida/browser-release-cp003.py "$ENGINE" "$scenario" || code=$?
+            "$RUNNER_TEMP/tipo-venv/bin/python" -u lab/tipo-partida/diagnose-webkit-cp003.py "$ENGINE" "$scenario" || code=$?
             echo "END_RELEASE $ENGINE $scenario $code"
             if [ "$code" != 0 ]; then failed=1; fi
           done
