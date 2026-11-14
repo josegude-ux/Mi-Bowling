@@ -1,0 +1,63 @@
+name: MI BOWLING | Tipo partida CP002
+on:
+  push:
+    branches: [lab/tipo-partida-20261114]
+    paths: ['lab/tipo-partida/**', '.github/workflows/tipo-partida-cp002.yml']
+permissions:
+  contents: read
+jobs:
+  browser:
+    name: Tipo partida real ${{ matrix.engine }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify exact CP001 and original main
+        run: |
+          set -euo pipefail
+          git diff --exit-code d16b941a5889b52b1cd2b4bfb51e99b10b25887a HEAD -- app.js index.html sw.js
+          mkdir -p "$RUNNER_TEMP/tipo-base" "$RUNNER_TEMP/tipo-cp001"
+          git archive d16b941a5889b52b1cd2b4bfb51e99b10b25887a | tar -x -C "$RUNNER_TEMP/tipo-base"
+          test "$(git hash-object "$RUNNER_TEMP/tipo-base/app.js")" = e653869f2def6cedba563c7c46529de8ef2bbe9e
+          echo "f84a7927ebbfcbb0fe6a962de59822d9ac8886fa6e9b005ee50c8726f77096cb  lab/tipo-partida/cp001.zip" | sha256sum -c -
+          unzip -q lab/tipo-partida/cp001.zip -d "$RUNNER_TEMP/tipo-cp001"
+          cd "$RUNNER_TEMP/tipo-cp001"
+          echo "1845ac1052e968c75bb5acc285ade8ab5fc26750536c04d07d26e3bba0e3bd40  manifest.sha256" | sha256sum -c -
+          sha256sum -c manifest.sha256
+          cd "$RUNNER_TEMP/tipo-base"
+          patch --batch --forward -p1 < "$RUNNER_TEMP/tipo-cp001/change-type.patch"
+          cmp app.js "$RUNNER_TEMP/tipo-cp001/app.js"
+      - name: Install test browsers on standard ephemeral runner
+        run: |
+          python3 -m venv "$RUNNER_TEMP/tipo-venv"
+          "$RUNNER_TEMP/tipo-venv/bin/pip" install --disable-pip-version-check playwright==1.56.0
+          "$RUNNER_TEMP/tipo-venv/bin/python" -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Real browser classification, storage and durability
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8774 --bind 127.0.0.1 --directory "$RUNNER_TEMP/tipo-base" > "$RUNNER_TEMP/tipo-http.log" 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:8774/ >/dev/null; then break; fi
+            sleep .2
+          done
+          curl -fsS http://127.0.0.1:8774/ >/dev/null
+          failed=0
+          for scenario in classification whole league quota-primary quota-selection; do
+            echo "BEGIN_TIPO $ENGINE $scenario"
+            code=0
+            timeout --kill-after=5s 100s "$RUNNER_TEMP/tipo-venv/bin/python" -u lab/tipo-partida/browser.py "$ENGINE" "$scenario" || code=$?
+            echo "END_TIPO $ENGINE $scenario $code"
+            if [ "$code" != 0 ]; then failed=1; fi
+          done
+          exit "$failed"
