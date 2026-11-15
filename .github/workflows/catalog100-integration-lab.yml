@@ -1,29 +1,51 @@
-name: MI BOWLING | Catalogo 100 integracion LAB
+name: MI BOWLING | Catalogo100 integracion CP001 pruebas afectadas
 on:
   push:
     branches: [lab/catalog100-integracion-20261115]
 permissions:
   contents: read
 jobs:
-  recover:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
+  browser:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: chromium
+            os: ubuntu-24.04
+          - engine: webkit
+            os: macos-15
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Archive public source at exact commits, without private photos or user data
+      - name: Reconstruct exact code-only candidate on base
         run: |
           set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/recovery/base" "$RUNNER_TEMP/recovery/pr53" "$RUNNER_TEMP/recovery/pr58"
-          git archive 19fc0a8d3644d99ccdafdb4779e3b22be26ef827 | tar -x -C "$RUNNER_TEMP/recovery/base"
-          git archive 550b635cccf470edc5ee4fda3cba54b41ab02ead catalogo-bolas/enrichment20.js catalogo-bolas/AUDITORIA-FICHAS-20-004.md catalogo-bolas/PROCEDIMIENTO-PERMISOS-IMAGENES.md | tar -x -C "$RUNNER_TEMP/recovery/pr53"
-          git archive 859a25960e99a1ee7a9dbf82f117dee5bc66f48e app.js arsenal-view-lab.js catalogo100-mis-bolas-bridge.js catalogo100-variant-policy.js tests/catalogo100-arsenal-bridge-lab.cjs tests/catalogo100-variant-review-lab.cjs | tar -x -C "$RUNNER_TEMP/recovery/pr58"
-          git ls-tree -r 19fc0a8d3644d99ccdafdb4779e3b22be26ef827 > "$RUNNER_TEMP/recovery/base-git-tree.txt"
+          mkdir -p "$RUNNER_TEMP/catalog-integration-browser"
+          git archive 19fc0a8d3644d99ccdafdb4779e3b22be26ef827 | tar -x -C "$RUNNER_TEMP/catalog-integration-browser"
+          python3 -c "import hashlib,pathlib; assert hashlib.sha256(pathlib.Path('lab/catalog-integration/code-only-lab.zip').read_bytes()).hexdigest()=='a37d4cdb1397ec414f5f7d8746e5fde96e73d86a10b5cbd3b0cf8faa6a7230b4'"
+          unzip -oq lab/catalog-integration/code-only-lab.zip -d "$RUNNER_TEMP/catalog-integration-browser"
+          node --check "$RUNNER_TEMP/catalog-integration-browser/releases/catalog100-integracion-cp001/app.js"
+      - name: Standard test browsers
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          python3 -m venv "$RUNNER_TEMP/catalog-venv"
+          "$RUNNER_TEMP/catalog-venv/bin/pip" install --disable-pip-version-check playwright==1.56.0
+          if [ "$RUNNER_OS" = Linux ]; then "$RUNNER_TEMP/catalog-venv/bin/python" -m playwright install --with-deps "$ENGINE"; else "$RUNNER_TEMP/catalog-venv/bin/python" -m playwright install "$ENGINE"; fi
+      - name: Only new integration with synthetic photo adapter and data
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          export EXPECTED_APP=$(python3 -c "import hashlib,pathlib,os;print(hashlib.sha256((pathlib.Path(os.environ['RUNNER_TEMP'])/'catalog-integration-browser/releases/catalog100-integracion-cp001/app.js').read_bytes()).hexdigest())")
+          "$RUNNER_TEMP/catalog-venv/bin/python" -u lab/catalog-integration/browser.py "$ENGINE"
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: catalog100-exact-public-source
-          path: ${{ runner.temp }}/recovery
-          include-hidden-files: true
+          name: catalog-integration-${{ matrix.engine }}-synthetic-screens
+          path: ${{ runner.temp }}/catalog-integration-browser/catalog-*.png
+          if-no-files-found: ignore
           retention-days: 3
