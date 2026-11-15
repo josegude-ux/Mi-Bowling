@@ -26,7 +26,7 @@ assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'
 assert(app.includes("const APP_VERSION='3.3.10-catalogo'"),'Versión funcional inalterada');
 assert(html.indexOf('official-calendar-2026-2027.js?v=338fgb1')<html.indexOf('app.js?v=3310cat1'),'Calendario carga antes de aplicación');
 assert(sw.includes("'./official-calendar-2026-2027.js?v=338fgb1'"),'Datos disponibles offline');
-assert(sw.includes("mi-bowling-analitica-v3-3-10-catalogo-cp035"),'Nueva caché aislada');
+assert(sw.includes("mi-bowling-analitica-v3-3-10-ui-cp036"),'Nueva caché aislada');
 assert(css.includes('.calendar-dot-gallego')&&css.includes('.calendar-dot-nacional'),'Colores independientes');
 const begin=app.indexOf('let calendarMonth='),end=app.indexOf('let newMode=',begin);
 assert(begin>0&&end>begin);
