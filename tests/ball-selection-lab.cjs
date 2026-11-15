@@ -22,6 +22,8 @@ const fixture={version:2,hand:'diestro',balls:[
  {id:'lab-c',brand:'Marca LAB',model:'Gamma',weight:'14 lb',kind:'Reactiva',notes:'',photo:'',retired:true}
 ],patterns:[],sessions:[{id:'lab-historica',type:'entrenamiento',date:'2026-01-01',title:'Histórica ficticia',venue:'LAB',notes:'',pattern:'',patternId:'',currentBallId:'lab-b',currentLine:{approach:'20',arrow:'15',breakpoint:'8'},lane:1,games:[{id:'lab-juego',pair:[1,2],startLane:1,includeStats:true,segments:[],rolls:[oldRoll]}]}]};
 const getData=page=>page.evaluate(()=>({db:JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')),picks:JSON.parse(localStorage.getItem('mi-bowling-ball-selection-v1')||'{}')}));
+const openBalls=page=>page.evaluate(()=>go('bolas'));
+const openNew=page=>page.evaluate(()=>go('nueva'));
 async function ensureExtras(page){
  const node=page.locator('details.registry-v4-extra');
  if((await node.getAttribute('open'))===null)await node.locator('summary').click();
@@ -39,7 +41,7 @@ async function officialScenario(browser,engine,origin){
   await page.goto(origin,{waitUntil:'load'});
   await page.evaluate(db=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db)),sample);
   await page.reload({waitUntil:'load'});
-  await page.getByRole('button',{name:'Nueva',exact:true}).click();
+  await openNew(page);
   await page.locator('#s-type').selectOption('oficial');
   await page.locator('#s-date').fill('2026-11-21');
   await page.locator('#s-venue').fill('Bolera oficial sintética');
@@ -151,7 +153,7 @@ async function deletionAndMalformedSelectionScenario(browser,engine,origin){
   await page.evaluate(()=>localStorage.setItem('mi-bowling-ball-selection-v1','{invalid json'));
   await page.reload({waitUntil:'load'});
   assert.equal(await page.evaluate(()=>selectedBallsFor('__next__')),null,'Selección malformada se ignora');
-  await page.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(page);
   assert.equal(await page.locator('.ball-session-toggle input:checked').count(),0,'JSON dañado no marca bolas');
   await page.evaluate(()=>localStorage.setItem('mi-bowling-ball-selection-v1',
    JSON.stringify({__next__:['lab-b','lab-b','lab-c','lab-inexistente',42]})));
@@ -246,8 +248,8 @@ async function parallelTabsSelectionScenario(browser,engine,origin){
   },fixture);
   await second.goto(origin,{waitUntil:'load'});
   await first.reload({waitUntil:'load'});
-  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
-  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(first);
+  await openBalls(second);
   await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').check();
   assert.deepEqual((await getData(first)).picks.__next__,['lab-a'],'Pestaña A selecciona Alpha');
   await second.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').check();
@@ -257,19 +259,19 @@ async function parallelTabsSelectionScenario(browser,engine,origin){
   assert.deepEqual(data.db.balls,fixture.balls,'Dos pestañas no alteran fichas de bola');
   assert.equal(data.db.sessions.length,1,'Dos pestañas no crean sesiones ficticias');
   await first.reload({waitUntil:'load'});
-  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(first);
   assert.equal(await first.locator('.ball-session-toggle input:checked').count(),2,'Ambas marcas persisten tras recargar A');
   await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').uncheck();
   data=await getData(first);
   assert.deepEqual(data.picks.__next__,['lab-b'],'Desmarcar Alpha no borra Beta de la otra pestaña');
   await second.reload({waitUntil:'load'});
-  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(second);
   assert.equal(await second.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').isChecked(),true,
    'La selección final Beta queda disponible en la segunda pestaña');
   // La pestaña A conserva el formulario sin re-render mientras B cambia el check.
   // Al crear sesión debe prevalecer el conjunto vigente, no una opción obsoleta.
   await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').check();
-  await first.getByRole('button',{name:'Nueva',exact:true}).click();
+  await openNew(first);
   await first.locator('#s-ball').selectOption('lab-a');
   await first.locator('#s-venue').fill('Bolera LAB entre pestañas');
   await first.locator('#s-title').fill('Sesión ficticia con selección cambiada');
@@ -419,7 +421,7 @@ async function crossTabRestoreClearsSelectionsScenario(browser,engine,origin){
   },{data:before,picks:scopes});
   await second.goto(origin,{waitUntil:'load'});
   await first.reload({waitUntil:'load'});
-  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(second);
   assert.equal(await second.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').isChecked(),true,
    'Pestaña B muestra selección Alpha antes de restauración');
   // Una restauración cancelada no debe alterar selecciones en ninguna pestaña.
@@ -447,7 +449,7 @@ async function crossTabRestoreClearsSelectionsScenario(browser,engine,origin){
   assert.equal(a.db.sessions.length,1,'Solo queda la sesión de la copia restaurada');
   assert.equal(a.db.sessions[0].games[0].rolls[0].ballId,'lab-b','Copia restaura bola de tiro histórico');
   assert.deepEqual(a.db.balls,fixture.balls,'Restauración no altera atributos de bolas');
-  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(first);
   assert.equal(await first.locator('.ball-card').filter({hasText:'Beta'}).locator('.ball-session-toggle input').isChecked(),true,
    'A ve la nueva elección Beta desde la otra pestaña');
   assert.equal(await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').isChecked(),false,
@@ -472,8 +474,8 @@ async function crossTabRetirementStalePickerScenario(browser,engine,origin){
   },fixture);
   await second.goto(origin,{waitUntil:'load'});
   await first.reload({waitUntil:'load'});
-  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
-  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(first);
+  await openBalls(second);
   const alpha=page=>page.locator('.ball-card').filter({hasText:'Alpha'});
   await first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').check();
   await second.waitForFunction(()=>[...document.querySelectorAll('.ball-card')].some(el=>el.textContent.includes('Alpha')&&el.querySelector('.ball-session-toggle input')?.checked),null,{timeout:10000});
@@ -516,7 +518,7 @@ async function crossTabRestoreReplacesCatalogScenario(browser,engine,origin){
   },fixture);
   await second.goto(origin,{waitUntil:'load'});
   await first.reload({waitUntil:'load'});
-  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(first);
   const alpha=first.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input');
   await alpha.check();
   assert.deepEqual((await getData(first)).picks.__next__,['lab-a'],'A marca Alpha del catálogo antiguo');
@@ -535,7 +537,7 @@ async function crossTabRestoreReplacesCatalogScenario(browser,engine,origin){
   });
   assert.equal(await first.locator('.ball-card').filter({hasText:'Alpha'}).count(),1,
    'A conserva la vista obsoleta y no recarga el catálogo por sí sola');
-  await second.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(second);
   await second.locator('.ball-card').filter({hasText:'Delta'}).locator('.ball-session-toggle input').check();
   let afterDelta=await getData(second);
   assert.deepEqual(afterDelta.picks.__next__,['lab-d'],'B marca Delta en el nuevo catálogo');
@@ -548,7 +550,7 @@ async function crossTabRestoreReplacesCatalogScenario(browser,engine,origin){
   assert.equal(await second.locator('.ball-card').filter({hasText:'Delta'}).locator('.ball-session-toggle input').isChecked(),true,
    'B conserva Delta marcada');
   await first.reload({waitUntil:'load'});
-  await first.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(first);
   assert.equal(await first.locator('.ball-card').filter({hasText:'Alpha'}).count(),0,'Tras recarga A ya no muestra Alpha');
   assert.equal(await first.locator('.ball-card').filter({hasText:'Delta'}).locator('.ball-session-toggle input').isChecked(),true,
    'Tras recarga A muestra la única bola válida seleccionada');
@@ -566,7 +568,7 @@ async function run(browser,engine,width,origin){
   await page.goto(origin,{waitUntil:'load'});
   await page.evaluate(db=>localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(db)),fixture);
   await page.reload({waitUntil:'load'});
-  await page.getByRole('button',{name:'Mis bolas',exact:true}).click();
+  await openBalls(page);
   assert.equal(await page.locator('.ball-card').count(),3,'Arsenal original completo');
   assert.equal(await page.locator('.ball-session-toggle input').count(),2,'Solo bolas activas seleccionables');
   await page.locator('.ball-card').filter({hasText:'Alpha'}).locator('.ball-session-toggle input').check();
@@ -574,7 +576,7 @@ async function run(browser,engine,width,origin){
   assert.deepEqual(data.db.balls,fixture.balls,'Marcar no cambia la ficha ni crea campos');
   assert.equal(data.db.sessions.length,1,'No crea partidas antes de comenzar');
   assert.deepEqual(data.picks.__next__,['lab-a'],'Selección de próxima sesión');
-  await page.getByRole('button',{name:'Nueva',exact:true}).click();
+  await openNew(page);
   assert.deepEqual(await page.locator('#s-ball option').allTextContents(),['Sin asignar','Marca LAB Alpha'],'Selector filtrado por check');
   await page.locator('#s-venue').fill('Bolera LAB de prueba');
   await page.locator('#s-title').fill('Sesión que no debe perderse');
