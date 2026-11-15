@@ -554,13 +554,16 @@ function filterArsenalCatalog(term){
   const match=norm(card.dataset.search).includes(norm(arsenalCatalogQuery));
   card.style.display=match?'':'none';if(match)visible++;
  });
- const count=$('arsenal-catalog-count');if(count)count.textContent=visible+' de 10 modelos';
+ const count=$('arsenal-catalog-count');if(count)count.textContent=visible+' de '+document.querySelectorAll('.arsenal-model[data-search]').length+' modelos';
  const empty=$('arsenal-catalog-noresults');if(empty)empty.hidden=visible!==0;
 }
 function registerBallFromCatalog(profileId){
  const lib=window.MiBowlingArsenal;
- const profile=lib?.profiles.find(p=>p.id===profileId);
- if(!profile)return alert('Modelo no disponible en el catálogo.');
+ const historic=lib?.profiles.find(p=>p.id===profileId);
+ const official=window.MiBowlingOfficialBallCatalog?.models.find(p=>p.id===profileId);
+ const profile=historic||official;
+ if(!profile)return alert('Modelo no disponible en el catálogo local.');
+ const normalize=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
  // Prevenir sobrescrituras de otra pestaña: no guardar datos locales obsoletos.
  let stored;
  try{const raw=localStorage.getItem(KEY);stored=raw?JSON.parse(raw):null}
@@ -571,10 +574,12 @@ function registerBallFromCatalog(profileId){
    return alert('Tus datos han cambiado en otra pestaña. Recarga MI BOWLING antes de añadir para no sobrescribirlos.');
   }
  }
- if(db.balls.some(b=>lib.find(b)?.id===profile.id)){
+ if(db.balls.some(b=>(historic&&lib.find(b)?.id===profile.id)||
+  (normalize(b.brand)===normalize(profile.brand)&&normalize(b.model)===normalize(profile.model)))){
   render();return;
  }
- const ball={id:uid(),brand:profile.brand,model:profile.model,weight:'',kind:'Reactiva',notes:'',photo:'',retired:false};
+ // Solo registrar campos identificados; los datos técnicos desconocidos no se deducen.
+ const ball={id:uid(),brand:profile.brand,model:profile.model,weight:'',kind:historic?'Reactiva':'',notes:'',photo:'',retired:false};
  db.balls.push(ball);
  save();
  if(saveError){db.balls.pop();render();return}

@@ -1,0 +1,774 @@
+'use strict';
+/* Mi Bowling · versión analítica local. Sin dependencias ni cuentas. */
+const APP_VERSION='3.3.11-tipo-partida';
+const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1';
+const PINS=[1,2,3,4,5,6,7,8,9,10], RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,9);
+const p100=(a,b)=>b?`${Math.round(100*a/b)}%`:'—';
+const fmt=v=>Number(v).toLocaleString('es-ES',{maximumFractionDigits:1,minimumFractionDigits:1});
+const today=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const normalPair=x=>{let n=parseInt(x,10);if(!Number.isInteger(n)||n<1||n>999)return null;return n%2===0?[n-1,n]:[n,n+1]};
+const intLane=x=>{const n=parseInt(x,10);return Number.isInteger(n)&&n>0&&n<1000?n:null};
+const cleanLine=o=>({approach:String(o?.approach??''),arrow:String(o?.arrow??''),breakpoint:String(o?.breakpoint??'')});
+const emptyDB=()=>({version:2,hand:'diestro',balls:[],patterns:[],sessions:[]});
+function migrate(data){const o=emptyDB();if(!data||typeof data!=='object')return o;o.hand=data.hand==='zurdo'?'zurdo':'diestro';o.balls=Array.isArray(data.balls)?data.balls.filter(b=>b&&b.id):[];o.patterns=Array.isArray(data.patterns)?data.patterns.filter(p=>p&&p.id).map(p=>({...p})):[];
+ o.sessions=(Array.isArray(data.sessions)?data.sessions:[]).filter(s=>s&&Array.isArray(s.games)).map(s=>({
+ id:s.id||uid(),type:s.type==='oficial'?'oficial':'entrenamiento',date:s.date||today(),title:s.title||'',venue:s.venue||'',notes:s.notes||'',pattern:s.pattern||'',patternId:s.patternId||'',patternNotes:s.patternNotes||'',competition:s.competition||'',leagueOther:!!s.leagueOther,leaguePlayer:s.leaguePlayer||'',goal:s.type==='oficial'?null:(s.goal&&typeof s.goal==='object'?{kind:String(s.goal.kind||''),target:Number(s.goal.target)||0}:null),
+ currentBallId:s.currentBallId||'',currentLine:cleanLine(s.currentLine),lane:intLane(s.lane)||null,
+ games:s.games.map(g=>({id:g.id||uid(),pair:Array.isArray(g.pair)&&g.pair.length===2?g.pair.map(Number):null,startLane:intLane(g.startLane)||null,
+ includeStats:g.includeStats!==false,segments:Array.isArray(g.segments)?g.segments.filter(e=>e&&e.pair&&e.fromFrame).map(e=>({fromFrame:+e.fromFrame,pair:e.pair.map(Number),startLane:+e.startLane})):[],
+ rolls:(g.rolls||[]).map(r=>({frame:+r.frame,ball:+r.ball,pins:Array.isArray(r.pins)?r.pins.map(Number).filter(p=>PINS.includes(p)):[],ballId:r.ballId||'',line:cleanLine(r.line),lane:intLane(r.lane)||null,pair:Array.isArray(r.pair)?r.pair:null,foul:!!r.foul,createdAt:r.createdAt||null}))}))
+ }));return o}
+let selectedPatternId='',patternMode='entrenamiento';
+let registryDetailsOpen=false,registryHistoryOpen=false;
+let ligaGame=0,ligaMatch=0,ligaSelected=0;
+const LIGA_KEY='mi-bowling-liga-v1';
+const ligaBlank=()=>({id:uid(),date:today(),rival:'Equipo rival',myTeam:'Mi equipo',match:1,players:Array.from({length:12},(_,i)=>({name:(i<6?'Jugador ':'Rival ')+(i%6+1),team:i<6?'own':'rival',trio:(i%6)<3?1:2,frames:Array.from({length:2},()=>Array.from({length:10},()=>({a:null,b:null,c:null,monitor:null,kind:''}))),startFrame:1}))});
+let ligaData;try{ligaData=JSON.parse(localStorage.getItem(LIGA_KEY)||'null')}catch(e){}
+if(!ligaData||!Array.isArray(ligaData.matches))ligaData={matches:[ligaBlank()]};
+const ligaCurrent=()=>ligaData.matches[ligaMatch]||ligaData.matches[0];
+function ligaSave(){try{localStorage.setItem(LIGA_KEY,JSON.stringify(ligaData))}catch(e){alert('No se pudo guardar la Liga. Exporta una copia y revisa el espacio.')}}
+
+let ligaReturn=null;
+let db;
+try { db=migrate(JSON.parse(localStorage.getItem(KEY)||localStorage.getItem(OLDKEY)||'null')); }catch {db=emptyDB()}
+let pinSubtab='derribos',statsPeriod='all',quickLayout='standard',comboKind='normal',compSessionId='',tab='inicio',activeId=null,selection=[],statMode='entrenamiento',statPane='general',historyMode='entrenamiento',ballEditingId=null,editPair=false,showNext=false,noticeText='',statsBallId='',expanded={};
+let saveError=false;
+let updateAvailable=false;try{quickLayout=localStorage.getItem('mi-bowling-quick-layout')||'standard'}catch(e){}
+let swRegistration=null;
+let updateCheckStarted=false;
+function updateStatus(msg,showButton=false){const state=$('update-state'),button=$('apply-update');if(state)state.textContent=msg;if(button)button.style.display=showButton?'':'none'}
+async function checkForUpdates(manual=false){if(!('serviceWorker' in navigator)||!location.protocol.startsWith('http')){if(manual)updateStatus('Actualización automática disponible al publicar en HTTPS.');return}try{const reg=swRegistration||await navigator.serviceWorker.ready;swRegistration=reg;await reg.update();if(reg.waiting){updateAvailable=true;updateStatus('Nueva versión preparada. Cierra todas las ventanas de MI BOWLING y vuelve a abrir para actualizar sin interrumpir una partida.',true)}else if(updateAvailable){updateStatus('Nueva versión descargada. Pulsa Actualizar ahora.',true)}else if(manual){updateStatus('Comprobación realizada. Si hay cambios, se descargarán automáticamente.')}}catch(e){if(manual)updateStatus('No se pudo comprobar. Revisa tu conexión e inténtalo otra vez.')}}
+function applyUpdate(){if(!updateAvailable)return;if(swRegistration?.waiting){updateStatus('Cierra todas las ventanas de MI BOWLING y vuelve a abrir. Tus datos permanecen en este dispositivo.',true);return}window.location.reload()}
+
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));saveError=false}catch(err){saveError=true;alert('No se ha podido guardar. Exporta una copia de seguridad y revisa el espacio del dispositivo.')}}
+
+/* CATÁLOGO Y ARSENAL F1 LAB: selección operativa; no modifica db/balls/sessions. */
+const BALL_SELECTION_KEY='mi-bowling-ball-selection-v1';
+const BALL_SELECTION_NEXT='__next__';
+let ballPickTarget=BALL_SELECTION_NEXT,ballPickReturn='inicio',ballPickPins=null,ballPickerOpening=false,ballPickNewSessionDraft=null;
+function readBallSelections(){
+ try{const value=JSON.parse(localStorage.getItem(BALL_SELECTION_KEY)||'{}');
+ return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}
+ catch{return {}}
+}
+let ballSelections=readBallSelections(),ballSelectionSaveError=false;
+function latestBallSelections(){
+ // Combinar con la copia local más reciente; si hubo fallo de cuota, conservar memoria.
+ if(!ballSelectionSaveError)ballSelections=readBallSelections();
+ return ballSelections;
+}
+function cleanSelectedBallIds(ids){
+ if(!Array.isArray(ids))return [];
+ // El catálogo persistido es la fuente vigente entre pestañas: una restauración
+ // puede sustituir IDs y una retirada puede volver obsoleta la copia en memoria.
+ // Si el almacenamiento no es legible, se mantiene el comportamiento local previo.
+ let activeCatalog=db.balls;
+ try{
+  const stored=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(Array.isArray(stored?.balls))activeCatalog=stored.balls;
+ }catch{}
+ return [...new Set(ids)].filter(id=>typeof id==='string'&&activeCatalog.some(b=>b&&b.id===id&&!b.retired));
+}
+function selectedBallsFor(key){
+ const current=latestBallSelections();
+ return Object.prototype.hasOwnProperty.call(current,key)?cleanSelectedBallIds(current[key]):null;
+}
+function persistBallSelections(next){
+ ballSelections=next;
+ try{localStorage.setItem(BALL_SELECTION_KEY,JSON.stringify(next));ballSelectionSaveError=false}
+ catch{ballSelectionSaveError=true;alert('No se pudo guardar la selección para la próxima apertura. Podrás seguir jugando durante esta sesión.')}
+}
+// Los cambios de otra pestaña se reflejan sin reemplazar borradores ni tiradas en curso.
+window.addEventListener('storage',event=>{
+ if(event.key!==BALL_SELECTION_KEY||ballSelectionSaveError)return;
+ ballSelections=readBallSelections();
+ if(tab==='bolas'&&!ballEditingId)render();
+});
+function toggleSelectedBall(id,checked){
+ if(!db.balls.some(b=>b.id===id&&!b.retired))return;
+ const current=latestBallSelections();
+ const chosen=new Set(Object.prototype.hasOwnProperty.call(current,ballPickTarget)?cleanSelectedBallIds(current[ballPickTarget]):[]);
+ if(checked)chosen.add(id);else chosen.delete(id);
+ persistBallSelections({...current,[ballPickTarget]:cleanSelectedBallIds([...chosen])});
+ render();
+}
+function captureNewSessionDraft(){
+ const form=$('newSessionForm');
+ if(!form)return null;
+ return Array.from(form.querySelectorAll('input,select,textarea')).filter(el=>el.type!=='file'&&(el.id||el.name)).map(el=>({
+  id:el.id,name:el.name,value:el.value,checked:el.type==='checkbox'||el.type==='radio'?el.checked:null
+ }));
+}
+function restoreNewSessionDraft(draft){
+ if(!draft||!$('newSessionForm'))return;
+ const form=$('newSessionForm');
+ function restoreOne(item){
+  const el=item.id?form.querySelector('[id="'+item.id+'"]'):Array.from(form.elements).find(e=>e.name===item.name);
+  if(!el||el.type==='file'||el.disabled)return;
+  if(el.tagName==='SELECT'){
+   if(Array.from(el.options).some(o=>o.value===item.value))el.value=item.value;
+  }else if(item.checked!==null){el.checked=item.checked}
+  else el.value=item.value;
+ }
+ draft.filter(x=>x.name!=='startLane').forEach(restoreOne);
+ if($('lane-pair'))updatePairHint();
+ draft.filter(x=>x.name==='startLane').forEach(restoreOne);
+ if($('s-patternId'))patternPreview($('s-patternId').value);
+}
+function openBallPickerFor(sessionId='',returnTo='inicio'){
+ ballPickTarget=sessionId&&db.sessions.some(s=>s.id===sessionId)?sessionId:BALL_SELECTION_NEXT;
+ ballPickReturn=returnTo;ballPickPins=returnTo==='registro'?[...selection]:null;
+ ballPickNewSessionDraft=returnTo==='nueva'?captureNewSessionDraft():null;
+ ballEditingId=null;ballPickerOpening=true;go('bolas');ballPickerOpening=false;
+}
+function closeBallPicker(){
+ const back=ballPickReturn,pins=ballPickPins,draft=ballPickNewSessionDraft;
+ ballPickPins=null;ballPickNewSessionDraft=null;go(back);
+ if(back==='nueva')restoreNewSessionDraft(draft);
+ if(back==='registro'&&pins){selection=pins;render()}
+}
+function transferBallSelectionToSession(id){
+ const current=latestBallSelections();
+ const picked=Object.prototype.hasOwnProperty.call(current,BALL_SELECTION_NEXT)?cleanSelectedBallIds(current[BALL_SELECTION_NEXT]):null;
+ if(picked===null)return;
+ const next={...current,[id]:picked};delete next[BALL_SELECTION_NEXT];
+ persistBallSelections(next);
+}
+function removeRetiredBallFromSelections(id){
+ const next={...latestBallSelections()};
+ let changed=false;
+ for(const [scope,ids] of Object.entries(next)){
+  if(!Array.isArray(ids)||!ids.includes(id))continue;
+  next[scope]=ids.filter(ballId=>ballId!==id);
+  changed=true;
+ }
+ if(changed)persistBallSelections(next);
+}
+function session(){return db.sessions.find(s=>s.id===activeId)||null}
+function game(s){return s?.games[s.games.length-1]}
+function rollsIn(g,f){return(g?.rolls||[]).filter(r=>r.frame===f)}
+function next(g){for(let f=1;f<=10;f++){
+ const a=rollsIn(g,f), x=a[0]?.pins.length??0,y=a[1]?.pins.length??0;
+ if(f<10){if(!a.length)return{frame:f,ball:1,available:[...PINS]};if(x===10)continue;if(a.length===1)return{frame:f,ball:2,available:PINS.filter(p=>!a[0].pins.includes(p))};continue}
+ if(!a.length)return{frame:10,ball:1,available:[...PINS]};
+ if(a.length===1)return{frame:10,ball:2,available:x===10?[...PINS]:PINS.filter(p=>!a[0].pins.includes(p))};
+ if(a.length===2){if(x===10)return{frame:10,ball:3,available:y===10?[...PINS]:PINS.filter(p=>!a[1].pins.includes(p))};if(x+y===10)return{frame:10,ball:3,available:[...PINS]}}
+ return{done:true}}
+ return{done:true}}
+const complete=g=>next(g).done;
+function frameScores(g){const a=(g?.rolls||[]).map(r=>r.pins.length);let scores=[],pos=0,sum=0;
+ for(let f=1;f<=10;f++) {const fr=rollsIn(g,f);if(!fr.length){scores.push(null);continue}let v=null,first=fr[0].pins.length,second=fr[1]?.pins.length??0;
+  if(f===10){if(complete(g))v=fr.reduce((s,r)=>s+r.pins.length,0)}
+  else if(first===10){if(a.length>=pos+3)v=10+a[pos+1]+a[pos+2]}
+  else if(fr.length===2){if(first+second===10){if(a.length>=pos+3)v=10+a[pos+2]}else v=first+second}
+  if(v===null)scores.push(null);else{sum+=v;scores.push(sum)}pos+=fr.length;
+ }return scores}
+const score=g=>{const a=frameScores(g);return [...a].reverse().find(x=>x!==null)??0};
+function currentLane(g,frame){const seg=(g.segments||[]).filter(a=>a.fromFrame<=frame).sort((a,b)=>b.fromFrame-a.fromFrame)[0];
+ if(seg&&seg.pair&&seg.pair.length===2){const start=seg.pair.includes(seg.startLane)?seg.startLane:seg.pair[0];return {pair:seg.pair,lane:seg.pair[(seg.pair.indexOf(start)+(frame-seg.fromFrame))%2]}}
+ if(g.pair&&g.pair.length===2){const start=g.pair.includes(g.startLane)?g.startLane:g.pair[0];return{pair:g.pair,lane:g.pair[(g.pair.indexOf(start)+frame-1)%2]}}
+ return{pair:null,lane:g.startLane||null}}
+function newGame(s,prev){const lastRoll=prev?.rolls?.at(-1);const pair=prev?.segments?.at(-1)?.pair||prev?.pair||null;const nextStart=pair&&lastRoll?.lane?pair.find(x=>x!==lastRoll.lane)||pair[0]:pair?.[0]||null;
+ return{id:uid(),includeStats:true,rolls:[],pair:pair?[...pair]:null,startLane:pair?nextStart:(prev?.startLane||s.lane||null),segments:[]}}
+function aggregate(type,ballFilter=''){const sessions=db.sessions.filter(s=>s.type===type&&!s.leagueOther&&!pendingClassification(s));const games=sessions.flatMap(s=>s.games.filter(complete).map(g=>({...g,_session:s}))).filter(g=>(type!=='entrenamiento'||g.includeStats!==false)&&(!ballFilter||g.rolls.some(r=>r.ballId===ballFilter)));
+ const allGames=sessions.flatMap(s=>s.games);const counted=games.filter(g=>complete(g));const eligibleRolls=counted.flatMap(g=>g.rolls.map(r=>({...r,_game:g}))).filter(r=>!ballFilter||r.ballId===ballFilter);
+ const first=eligibleRolls.filter(r=>{if(r.ball===1)return true;if(r.frame!==10)return false;const fr=rollsIn(r._game,10),x=fr[0]?.pins.length||0,y=fr[1]?.pins.length||0;return r.ball===2&&x===10||r.ball===3&&(x===10&&y===10||x<10&&x+y===10)});
+ const strikes=first.filter(r=>r.pins.length===10);let opportunities=[];
+ for(const g of counted)for(let f=1;f<=10;f++){const fr=rollsIn(g,f),a=fr[0],b=fr[1];if(!a||a.pins.length===10||!b||ballFilter&&b.ballId!==ballFilter)continue;const left=PINS.filter(p=>!a.pins.includes(p));opportunities.push({left,second:b.pins,converted:left.every(p=>b.pins.includes(p)),gameId:g.id,ballId:b.ballId,lane:b.lane,pair:b.pair})}
+ const totals=games.map(g=>score(g));return{sessions,games,counted,allGames,rolls:eligibleRolls,first,strikes,opportunities,spare:opportunities.filter(a=>a.converted).length,avg:totals.length?totals.reduce((a,b)=>a+b,0)/totals.length:0,totals};}
+function cleanGame(g){if(!complete(g))return false;for(let f=1;f<=10;f++){const fr=rollsIn(g,f);if(!fr.length)return false;if(fr[0].pins.length===10)continue;if(fr.length<2||fr[0].pins.length+fr[1].pins.length!==10)return false;}return true}
+function pocketStats(a){const flank=db.hand==='zurdo'?2:3;const throws=a.games.flatMap(g=>Array.from({length:10},(_,i)=>rollsIn(g,i+1)[0]).filter(Boolean)).filter(r=>!r.foul&&(!statsBallId||r.ballId===statsBallId));return{hit:throws.filter(r=>r.pins.includes(1)&&r.pins.includes(flank)).length,total:throws.length,flank}}
+function shareSessionImage(){const s=session();if(!s)return;const cvs=document.createElement('canvas');cvs.width=1200;const games=s.games;cvs.height=310+games.length*270;const c=cvs.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cvs.width,cvs.height);c.fillStyle='#063950';c.fillRect(0,0,1200,158);c.fillStyle='white';c.font='bold 45px system-ui';c.fillText('Mi Bowling',44,65);c.font='25px system-ui';c.fillText(`${s.date}  ·  ${s.venue||'Bolera'}  ·  ${classificationLabel(s)}`,44,118);let y=230;for(let k=0;k<games.length;k++){const g=games[k],scores=frameScores(g);c.fillStyle='#102e48';c.font='bold 27px system-ui';c.fillText(`Partida ${k+1}`,40,y);c.fillText(complete(g)?String(score(g)):'Incompleta',1020,y);y+=25;for(let f=1;f<=10;f++){let x=40+(f-1)*112;c.fillStyle='#e8f4f7';c.fillRect(x,y,108,126);c.fillStyle='#173d57';c.font='20px system-ui';c.fillText(String(f),x+10,y+27);c.font='bold 25px system-ui';c.fillText(frameLabel(g,f),x+10,y+67);c.font='bold 22px system-ui';c.fillText(String(scores[f-1]??'–'),x+10,y+109)}y+=199}cvs.toBlob(async blob=>{if(!blob)return;const file=new File([blob],'Mi_Bowling_'+s.date+'.png',{type:'image/png'});if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'Mi Bowling · '+s.date});return}catch(e){if(e.name==='AbortError')return}}const url=URL.createObjectURL(blob),el=document.createElement('a');el.href=url;el.download=file.name;el.click();setTimeout(()=>URL.revokeObjectURL(url),2000)},'image/png')}
+function changeHand(value){db.hand=value==='zurdo'?'zurdo':'diestro';save();render()}
+function nav(){const names=[['inicio','⌂','Inicio'],['historial','▤','Partidas'],['nueva','+','Nueva'],['estadisticas','▥','Estadísticas'],['calendario','<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="M8 14h2M14 14h2M8 18h2"/></svg>','Calendario']];$('bottom-nav').innerHTML=names.map(([t,i,v])=>`<button type="button" aria-label="${v}" class="${tab===t||tab==='registro'&&t==='nueva'?'active':''} ${t==='nueva'?'fab':''}" onclick="go('${t}')"><span class="nav-icon">${i}</span>${v}</button>`).join('')}
+function go(t){if(t==='bolas')arsenalPanel='list';if(t==='bolas'&&!ballPickerOpening){ballPickTarget=BALL_SELECTION_NEXT;ballPickReturn='inicio';ballPickPins=null;}tab=t;editPair=false;showNext=false;noticeText='';selection=[];render();window.scrollTo({top:0,behavior:'instant'})}
+function render(){document.body.classList.toggle('home-screen',tab==='inicio');document.body.classList.toggle('registry-screen',tab==='registro');nav();$('app').innerHTML=tab==='inicio'?home():tab==='nueva'?newSessionView():tab==='registro'?registry():tab==='historial'?history():tab==='detalle'?detail():tab==='estadisticas'?stats():tab==='bolas'?ballsView():tab==='calendario'?calendarView():tab==='patrones'?patternsView():tab==='liga'?ligaView():settings();if(tab==='estadisticas')renderCharts();if(tab==='liga')ligaShowFrame();if(tab==='nueva')updateSessionFields();if(tab==='registro'){const strip=document.querySelector('.score-strip'),curr=strip?.querySelector('.frame-cell.current');if(curr)strip.scrollLeft=Math.max(0,curr.offsetLeft-strip.offsetLeft-strip.clientWidth/2+curr.clientWidth/2)}}
+function head(title,sub,extra=''){return `<div class="section-head"><div><h1>${esc(title)}</h1>${sub?`<p>${esc(sub)}</p>`:''}</div>${extra}</div>`}
+function metrics(a){return [{icon:'◉',label:'Media',value:a.games.length?fmt(a.avg):'—'},{icon:'▥',label:'Partidas',value:a.games.length},{icon:'♛',label:'Mejor partida',value:a.games.length?Math.max(...a.totals):'—'},{icon:'✦',label:'Strikes',value:p100(a.strikes.length,a.first.length)},{icon:'✓',label:'Spare',value:p100(a.spare,a.opportunities.length)}]}
+function tile(icon,label,value,detail=''){return `<div class="stat-tile"><div class="label"><span>${icon}</span> ${label}</div><div class="value">${value}</div>${detail?`<div class="detail">${detail}</div>`:''}</div>`}
+function premiumStat(icon,label,val,click='',small=''){return `<button type="button" class="premium-stat" ${click?`onclick="${click}"`:''} ${click?'':'disabled'}><span class="premium-stat-icon">${icon}</span><span class="premium-stat-text"><span class="premium-label">${label}</span><strong>${val}</strong>${small?`<small>${small}</small>`:''}</span></button>`}
+function premiumBars(a){let vals=a.totals.slice(-20);if(!vals.length)return `<div class="premium-empty-chart">Registra partidas de entrenamiento para ver tu evolución.</div>`;const max=300;return `<div class="premium-bars" aria-label="Puntuaciones de las últimas ${vals.length} partidas de entrenamiento">${vals.map((v,i)=>`<div class="premium-bar" title="Partida ${i+1}: ${v} puntos" style="height:${Math.max(5,v/max*100)}%"></div>`).join('')}</div>`}
+function home(){
+ const t=aggregate('entrenamiento'),o=aggregate('oficial');
+ return [
+  '<section class="bowling-home" aria-label="Inicio de Mi Bowling">',
+  '<header class="bowling-home-header">',
+   '<button type="button" class="bowling-home-brand" data-target="inicio" onclick="go(this.dataset.target)" aria-label="Ir al inicio"><span class="bowling-home-mark" aria-hidden="true"><img src="./icon-192.png?v=338icon1" alt="" width="58" height="58"></span><span class="bowling-home-wordmark"><span>MI <strong>BOWLING</strong></span><small>ANALÍTICA</small></span></button>',
+   '<span class="bowling-home-device"><span aria-hidden="true" class="bowling-home-status-dot"></span>En tu dispositivo</span>',
+   '<button type="button" class="bowling-home-settings" data-target="ajustes" onclick="go(this.dataset.target)" aria-label="Ajustes"><span aria-hidden="true">⚙</span><small>Ajustes</small></button>',
+  '</header>',
+  '<div class="bowling-home-intro"><div><span class="bowling-home-kicker">BIENVENIDO A MI BOWLING</span><h1>Tu juego, bajo control</h1><p>Registra, consulta y analiza tus partidas.</p></div></div>',
+  '<nav class="bowling-home-menu" aria-label="Menú principal">',
+   '<button type="button" class="bowling-home-module bowling-home-module-red" data-target="nueva" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true"><img src="./icon-registro-3d.svg" alt="" width="64" height="64" loading="eager" decoding="async"></span><strong>Registrar partida</strong><span class="bowling-home-module-desc">Entrenamientos y competiciones, lanzamiento a lanzamiento.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
+   '<button type="button" class="bowling-home-module bowling-home-module-blue" data-target="historial" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true"><img src="./icon-partidas-3d.svg" alt="" width="64" height="64" loading="eager" decoding="async"></span><strong>Consultar partidas</strong><span class="bowling-home-module-desc">Revisa tus jornadas, resultados y registros anteriores.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
+   '<button type="button" class="bowling-home-module bowling-home-module-gold" data-target="estadisticas" onclick="go(this.dataset.target)"><span class="bowling-home-module-content"><span class="bowling-home-module-icon" aria-hidden="true"><img src="./icon-estadisticas-3d.svg" alt="" width="64" height="64" loading="eager" decoding="async"></span><strong>Analizar estadísticas</strong><span class="bowling-home-module-desc">Descubre tu evolución y compara tus puntuaciones.</span><span class="bowling-home-module-arrow" aria-hidden="true">→</span></span></button>',
+  '</nav>',
+  '<section class="bowling-home-stats" aria-label="Resumen de resultados"><h2>Tu rendimiento</h2><div class="bowling-home-stat-grid">',
+   '<div><span>Media entrenamiento</span><strong>'+(t.games.length?fmt(t.avg):'—')+'</strong><small>'+t.allGames.filter(complete).length+' partidas completadas</small></div>',
+   '<div><span>Media oficial</span><strong>'+(o.games.length?fmt(o.avg):'—')+'</strong><small>'+o.games.length+' partidas</small></div>',
+  '</div></section>',
+  '<footer class="bowling-home-footer">Datos almacenados en este dispositivo · Versión '+esc(APP_VERSION)+'</footer>',
+ '</section>'
+ ].join('');
+}
+
+let calendarMonth=today().slice(0,7),calendarSelected=today(),calendarScope='todos';
+function officialCalendarEvents(){
+ return Array.isArray(globalThis.BOWLING_OFFICIAL_CALENDAR_2026_27)?globalThis.BOWLING_OFFICIAL_CALENDAR_2026_27:[];
+}
+function calendarEventOnDay(event,day){return event.start<=day&&event.end>=day;}
+function calendarOfficialInMonth(month){
+ const [year,m]=month.split('-').map(Number);
+ const last=month+'-'+String(new Date(Date.UTC(year,m,0)).getUTCDate()).padStart(2,'0');
+ return officialCalendarEvents().filter(event=>event.start<=last&&event.end>=month+'-01');
+}
+function setCalendarScope(value){
+ if(!['todos','gallego','nacional','personal'].includes(value))return;
+ calendarScope=value;render();
+}
+function changeCalendarMonth(delta){
+ const parts=calendarMonth.split('-').map(Number);
+ const d=new Date(Date.UTC(parts[0],parts[1]-1+delta,1));
+ calendarMonth=d.toISOString().slice(0,7);
+ calendarSelected='';
+ render();
+}
+function chooseCalendarDay(value){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(value)||value.slice(0,7)!==calendarMonth)return;
+ calendarSelected=value;
+ render();
+}
+function calendarView(){
+ const [year,month]=calendarMonth.split('-').map(Number);
+ const daysInMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
+ const first=(new Date(Date.UTC(year,month-1,1)).getUTCDay()+6)%7;
+ const monthLabel=new Date(Date.UTC(year,month-1,1)).toLocaleDateString('es-ES',{month:'long',year:'numeric',timeZone:'UTC'});
+ const records=db.sessions.filter(s=>typeof s.date==='string'&&s.date.slice(0,7)===calendarMonth);
+ const monthCompetitions=calendarOfficialInMonth(calendarMonth);
+ const filteredCompetitions=calendarScope==='personal'?[]:monthCompetitions.filter(e=>calendarScope==='todos'||e.category===calendarScope);
+ const showPersonal=calendarScope==='todos'||calendarScope==='personal';
+ const dateCounts=new Map();
+ for(const s of records)dateCounts.set(s.date,(dateCounts.get(s.date)||0)+1);
+ const selected=calendarSelected&&calendarSelected.slice(0,7)===calendarMonth?calendarSelected:'';
+ const selectedEvents=selected&&showPersonal?records.filter(s=>s.date===selected):[];
+ const selectedCompetitions=selected?filteredCompetitions.filter(event=>calendarEventOnDay(event,selected)):[];
+ const gallego=monthCompetitions.filter(e=>e.category==='gallego').length,nacional=monthCompetitions.filter(e=>e.category==='nacional').length;
+ let html=head('Calendario','Consulta tus partidas y las competiciones gallegas y nacionales de la temporada 2026-2027.');
+ html+='<section class="calendar-panel" aria-label="Calendario de partidas y competiciones">';
+ html+='<div class="calendar-monthbar"><button type="button" class="calendar-chevron" aria-label="Mes anterior" onclick="changeCalendarMonth(-1)">‹</button><h2>'+esc(monthLabel.charAt(0).toUpperCase()+monthLabel.slice(1))+'</h2><button type="button" class="calendar-chevron" aria-label="Mes siguiente" onclick="changeCalendarMonth(1)">›</button></div>';
+ html+='<div class="calendar-summary">'+records.length+' sesión(es) registrada(s) este mes</div>';
+ html+='<p class="calendar-competition-summary">'+gallego+' gallegas · '+nacional+' nacionales · calendario provisional 2026-2027</p>';
+ html+='<div class="calendar-filters" role="group" aria-label="Mostrar calendario">';
+ for(const [value,label] of [['todos','Todos'],['gallego','Gallego'],['nacional','Nacional'],['personal','Mis partidas']]){
+  html+='<button type="button" class="calendar-filter'+(calendarScope===value?' active':'')+'" aria-pressed="'+(calendarScope===value?'true':'false')+'" onclick="setCalendarScope(\''+value+'\')">'+label+'</button>';
+ }
+ html+='</div>';
+ html+='<div class="calendar-legend" aria-label="Leyenda"><span><i class="calendar-dot-gallego"></i> Gallego</span><span><i class="calendar-dot-nacional"></i> Nacional</span><span><i class="calendar-dot-personal"></i> Mis partidas</span></div>';
+ html+='<div class="calendar-weekdays">'+['L','M','X','J','V','S','D'].map(x=>'<span>'+x+'</span>').join('')+'</div><div class="calendar-grid">';
+ for(let i=0;i<first;i++)html+='<span class="calendar-pad" aria-hidden="true"></span>';
+ for(let day=1;day<=daysInMonth;day++){
+  const date=calendarMonth+'-'+String(day).padStart(2,'0');
+  const personal=showPersonal?(dateCounts.get(date)||0):0;
+  const official=filteredCompetitions.filter(e=>calendarEventOnDay(e,date));
+  const categories=[...new Set(official.map(e=>e.category))];
+  const total=personal+official.length;
+  const cls='calendar-day'+(date===selected?' selected':'')+(date===today()?' today':'')+(total?' has-events':'');
+  const details=[personal?personal+' partida(s)':'',official.length?official.length+' competición(es)':''].filter(Boolean).join(', ');
+  const label=day+' de '+monthLabel+(details?', '+details:' sin eventos');
+  const marks=(personal?'<i class="calendar-dot-personal" aria-hidden="true"></i>':'')+categories.map(c=>'<i class="calendar-dot-'+c+'" aria-hidden="true"></i>').join('');
+  html+='<button type="button" class="'+cls+'" onclick="chooseCalendarDay('+esc(JSON.stringify(date))+')" aria-label="'+esc(label)+'" aria-pressed="'+(date===selected?'true':'false')+'"><span>'+day+'</span>'+(marks?'<span class="calendar-markers">'+marks+'</span>':'')+'</button>';
+ }
+ html+='</div></section>';
+ html+='<section class="calendar-agenda" aria-label="Partidas y competiciones del día seleccionado"><h2>'+(selected?'Agenda del '+esc(selected.split('-').reverse().join('/')):'Selecciona un día')+'</h2>';
+ if(!selected)html+='<p class="calendar-empty">Toca un día para consultar partidas o competiciones.</p>';
+ else if(!selectedEvents.length&&!selectedCompetitions.length)html+='<p class="calendar-empty">No hay eventos de esta categoría en la fecha seleccionada.</p>';
+ for(const session of selectedEvents){
+  const games=Array.isArray(session.games)?session.games:[],finished=games.filter(complete).length;
+  const label=session.title||(session.type==='oficial'?'Competición':'Entrenamiento');
+  html+='<article class="calendar-session"><div><strong>'+esc(label)+'</strong><small>'+esc(session.venue||'Bolera sin indicar')+' · '+games.length+' partida(s) · '+finished+' completa(s)</small></div><button class="btn outline" type="button" onclick="openCalendarSession('+esc(JSON.stringify(String(session.id)))+')">Abrir</button></article>';
+ }
+ for(const event of selectedCompetitions){
+  const where=event.venue||'Sede no indicada en el PDF';
+  const span=event.start===event.end?event.start.split('-').reverse().join('/'):(event.start.split('-').reverse().join('/')+' – '+event.end.split('-').reverse().join('/'));
+  html+='<article class="calendar-official '+(event.category==='gallego'?'calendar-official-gallego':'calendar-official-nacional')+'"><div><span class="calendar-category">'+(event.category==='gallego'?'Gallego':'Nacional')+'</span><strong>'+esc(event.title)+'</strong><small>'+esc(span)+' · '+esc(where)+'</small></div><span class="calendar-provisional">Provisional</span></article>';
+ }
+ html+='</section>';
+ html+='<p class="calendar-source">Fuente: Federación Galega de Bolos · calendario provisional de 17/07/2026. Las fechas pueden cambiar. No son inscripciones ni partidos creados en tu historial.</p>';
+ html+='<div class="calendar-actions"><button type="button" class="btn outline" onclick="go(\'nueva\')">+ Nueva partida</button><button type="button" class="btn outline" onclick="go(\'bolas\')">Mis bolas</button></div>';
+ return html;
+}
+function openCalendarSession(id){
+ if(!db.sessions.some(s=>s.id===id))return;
+ activeId=id;
+ go('detalle');
+}
+
+let newMode='entrenamiento';let competitionFormat='habitual';function startWith(type){newMode=type;go('nueva')}
+function chooseSessionType(v){newMode=v;updateSessionFields()}
+function chooseCompetitionFormat(v){competitionFormat=v;updateSessionFields()}
+function launchLeagueFromNew(){ligaGame=0;ligaSelected=0;go('liga')}
+function newSessionView(){return `${head('Empezar partida','')}
+ <div class="card"><form id="newSessionForm" onsubmit="createSession(event)"><label class="field" for="s-type">Modalidad</label><select id="s-type" name="type" class="input" onchange="chooseSessionType(this.value)"><option value="entrenamiento" ${newMode==='entrenamiento'?'selected':''}>👣 Entrenamiento</option><option value="oficial" ${newMode==='oficial'?'selected':''}>🎳 Competición oficial</option></select>
+ <div id="competition-format"></div><div id="normal-session-fields"><div class="form-grid"><div><label class="field" for="s-date">Fecha</label><input id="s-date" type="date" class="input" required name="date" value="${today()}"></div><div><label class="field" for="s-venue">Bolera</label><input id="s-venue" class="input" name="venue" placeholder="Nombre de bolera"></div></div>
+ <label class="field" for="s-title">Nombre de sesión / competición</label><input id="s-title" class="input" name="title" placeholder="Ej. Liga, jornada 3; práctica de spares">
+ <label class="field">Patrón de aceitado</label><select id="s-patternId" class="input" name="patternId" onchange="patternPreview(this.value)"><option value="">Sin patrón asignado</option>${db.patterns.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}${p.length?' · '+esc(p.length)+' ft':''}</option>`).join('')}</select><div id="pattern-last"></div><button type="button" class="btn outline mt12" onclick="go('patrones')">＋ Biblioteca de patrones / PDF</button>
+ <div id="training-goals"></div><div id="session-lanes"></div><label class="field" for="s-notes">Notas</label><textarea class="input note" id="s-notes" name="notes" placeholder="Sensaciones, objetivo de sesión..."></textarea>
+ <label class="field" for="s-ball">Bola inicial (puedes cambiarla en cada lanzamiento)</label><button type="button" class="btn outline block mt12" onclick="openBallPickerFor('','nueva')">☑ Elegir bolas para esta sesión</button><p class="hint">Las bolas marcadas estarán disponibles. Puedes jugar sin asignar una bola.</p>${ballSelect('s-ball','ballId','')}
+ <button class="btn primary big block mt16" type="submit">Comenzar sesión →</button></div></form></div>
+ <div class="card"><div class="hint">🔒 Los entrenamientos no modifican las estadísticas oficiales. Una competición mantiene el par y la pista de cada tiro.</div></div>`}
+function updateSessionFields(){const cf=$('competition-format');if(cf)cf.innerHTML=newMode==='oficial'?`<div class="card" style="background:#f4fafb;margin:12px 0"><h3>Formato de competición</h3><label class="field" for="competition-format-choice">¿Qué vas a registrar?</label><select id="competition-format-choice" class="input" onchange="chooseCompetitionFormat(this.value)"><option value="habitual" ${competitionFormat==='habitual'?'selected':''}>Competición oficial habitual · Mi partida</option><option value="liga" ${competitionFormat==='liga'?'selected':''}>🏆 Liga Nacional · Marcador por tripletas</option></select>${competitionFormat==='liga'?`<p class="hint">Controla a los 12 jugadores, los cuadros y las sumas de las dos tripletas. Los datos de prueba ya introducidos se conservan.</p><button type="button" class="btn primary block" onclick="launchLeagueFromNew()">Abrir marcador de Liga Nacional →</button>`:''}</div>`:'';const nf=$('normal-session-fields');if(nf)nf.style.display=newMode==='oficial'&&competitionFormat==='liga'?'none':'';const goal=$('training-goals');if(goal)goal.innerHTML=newMode==='entrenamiento'?`<div class="card" style="background:#f4fafb"><h3>Objetivo del entrenamiento (opcional)</h3><label class="field">Trabajar</label><select class="input" name="goalKind"><option value="">Sin objetivo</option><option value="pocket">Pocket 1–3 / 1–2</option><option value="strike">Strikes</option><option value="single">Spare de bolo suelto</option><option value="clean">Partidas limpias (Clean Game)</option></select><label class="field">Meta porcentual</label><input class="input" name="goalTarget" type="number" min="1" max="100" value="80"></div>`:'';const o=$('session-lanes');if(!o)return;o.innerHTML=`<div class="card" style="background:#f4fafb;margin:13px 0 7px"><h3>${newMode==='oficial'?'Par de pistas inicial':'Pistas del entrenamiento (opcional)'}</h3><div class="form-grid"><div><label class="field">Primera pista del par</label><input class="input" type="number" id="lane-pair" name="pair" min="1" max="998" step="1" placeholder="Ej. 5" oninput="updatePairHint()"></div><div><label class="field">Segunda pista del par</label><input class="input" id="lane-second" type="number" placeholder="Ej. 6" readonly></div><div><label class="field">Pista de salida</label><select class="input" id="lane-start" name="startLane"><option value="">Selecciona el par</option></select></div></div><p class="hint" id="pair-hint">Introduce la primera pista del par (ej. 5 para pistas 5 y 6). Puedes dejarlo vacío.</p></div>`}
+function updatePairHint(){const pair=normalPair($('lane-pair')?.value),o=$('lane-start');if(!o)return;const second=$('lane-second');if(second)second.value=pair?pair[1]:'';o.innerHTML='<option value="">'+(pair?'Selecciona':'Selecciona el par')+'</option>'+(pair?pair.map(n=>`<option value="${n}">Pista ${n}</option>`).join(''):'');$('pair-hint').textContent=pair?`Par ${pair[0]}–${pair[1]}. Cada frame cambiará de pista automáticamente.`:'Puedes dejarlo vacío y añadirlo más tarde.'}
+function ballSelect(id,name,selected){
+ const scope=id==='s-ball'?BALL_SELECTION_NEXT:session()?.id;
+ const chosen=scope?selectedBallsFor(scope):null;
+ return `<select class="input" id="${id}" name="${name}"><option value="">Sin asignar</option>${db.balls.filter(b=>chosen===null?(!b.retired||b.id===selected):chosen.includes(b.id)).map(b=>`<option value="${esc(b.id)}" ${selected===b.id?'selected':''}>${esc(b.brand+' '+b.model)}</option>`).join('')}</select>`;
+}
+function createSession(e){e.preventDefault();if(newMode==='oficial'&&competitionFormat==='liga'){launchLeagueFromNew();return}const f=new FormData(e.currentTarget);const typ=f.get('type');const pair=normalPair(f.get('pair')),start=pair?(intLane(f.get('startLane'))||pair[0]):null;
+ if(pair&&!pair.includes(start))return alert('La pista inicial debe pertenecer al par elegido.');
+ const requestedBallId=String(f.get('ballId')||''),allowedBalls=selectedBallsFor(BALL_SELECTION_NEXT);
+ const initialBallId=allowedBalls!==null&&!allowedBalls.includes(requestedBallId)?'':requestedBallId;
+ const s={id:uid(),type:typ,date:String(f.get('date')),title:String(f.get('title')||'').trim(),venue:String(f.get('venue')||'').trim(),pattern:db.patterns.find(p=>p.id===f.get('patternId'))?.name||'',patternId:String(f.get('patternId')||''),patternNotes:'',goal:typ==='entrenamiento'&&String(f.get('goalKind')||'')?{kind:String(f.get('goalKind')),target:Math.max(1,Math.min(100,Number(f.get('goalTarget'))||80))}:null,notes:String(f.get('notes')||'').trim(),currentBallId:initialBallId,currentLine:cleanLine({}),lane:start,games:[{id:uid(),includeStats:true,pair,startLane:start,segments:[],rolls:[]}]};
+ db.sessions.push(s);activeId=s.id;save();transferBallSelectionToSession(s.id);go('registro')}
+function openSession(id){if(!db.sessions.some(s=>s.id===id))return;activeId=id;go('registro')}
+// Split: el bolo 1 debe haber caído y los bolos restantes forman grupos separados.
+const PIN_XY={7:[0,0],8:[2,0],9:[4,0],10:[6,0],4:[1,1],5:[3,1],6:[5,1],2:[2,2],3:[4,2],1:[3,3]};
+function isSplit(standing){if(standing.length<2||standing.includes(1))return false;const rem=new Set(standing),seen=new Set(),stack=[standing[0]];seen.add(standing[0]);while(stack.length){const a=stack.pop();for(const b of rem){const dx=PIN_XY[a][0]-PIN_XY[b][0],dy=PIN_XY[a][1]-PIN_XY[b][1];if(!seen.has(b)&&dx*dx+dy*dy<=2){seen.add(b);stack.push(b)}}}return seen.size!==standing.length}
+function isSplitFirst(g,f){const a=rollsIn(g,f)[0];return !!a&&a.pins.length<10&&isSplit(PINS.filter(p=>!a.pins.includes(p)))}
+function toggleGameStats(id,checked){const s=session();if(!s||s.type!=='entrenamiento'||pendingClassification(s))return;const g=s.games.find(x=>x.id===id);if(!g)return;g.includeStats=checked;save();render()}
+function foulRoll(){const s=session();if(!s)return;const n=next(game(s));if(n.done)return;selection=[...n.available];recordRoll(true)}
+function fastRoll(allStanding){const s=session();if(!s)return;const n=next(game(s));if(n.done)return;selection=allStanding?[...n.available]:[];recordRoll()}
+function frameLabel(g,f){const a=rollsIn(g,f);return a.map((r,i)=>{let n=r.pins.length;if(r.foul)return 'F';if(n===10&&(i===0||f===10))return'X';if(i===1&&a[0]?.pins.length<10&&a[0].pins.length+n===10)return'/';if(f===10&&i===2&&a[0]?.pins.length===10&&a[1]?.pins.length<10&&a[1].pins.length+n===10)return'/';return n===0?'–':n}).join(' ')}
+function scoreStrip(g,n){const scores=frameScores(g);return `<div class="score-strip">${Array.from({length:10},(_,i)=>{const f=i+1,fr=rollsIn(g,f),split=isSplitFirst(g,f);const marks=fr.map((r,j)=>{const count=r.pins.length;let mark=r.foul?'F':count===10&&(j===0||f===10)?'X':j===1&&fr[0]?.pins.length<10&&fr[0].pins.length+count===10?'/':f===10&&j===2&&fr[0]?.pins.length===10&&fr[1]?.pins.length<10&&fr[1].pins.length+count===10?'/':count===0?'–':count;return `<span class="score-mark ${mark==='X'?'strike-mark':''} ${j===0&&split?'split-mark':''}">${mark}</span>`}).join('');return `<div class="frame-cell ${n?.frame===f?'current':''}"><span>${f}</span><b class="score-marks">${marks||'·'}</b><strong>${scores[i]??'·'}</strong></div>`}).join('')}</div>`}
+function rackUI(available){return `<div class="pin-layout">${RACK.map(row=>`<div class="pin-row">${row.map(p=>`<button type="button" aria-label="Bolo ${p}: ${!available.includes(p)?'no disponible':selection.includes(p)?'en pie':'derribado'}" aria-pressed="${selection.includes(p)}" ${!available.includes(p)?'disabled':''} onclick="togglePin(${p})" class="pin ${!available.includes(p)?'unavailable':selection.includes(p)?'selected':''}">${p}</button>`).join('')}</div>`).join('')}</div>`}
+function laneBoardNum(value){
+ const raw=String(value??'').trim();
+ if(!/^\d{1,2}$/.test(raw))return null;
+ const n=Number(raw);
+ return Number.isInteger(n)&&n>=1&&n<=39?n:null;
+}
+
+function laneX(board,hand){
+ return 76+((hand==='zurdo'?board-0.5:39.5-board)/39)*368;
+}
+
+function laneVisualSvg(s){
+ const hand=db.hand==='zurdo'?'zurdo':'diestro';
+ const fields=[{key:'approach',name:'Posición inicial',y:625,color:'#22c58b'},{key:'arrow',name:'Flechas',y:462,color:'#37b7ff'},{key:'breakpoint',name:'Breakpoint',y:245,color:'#ffb343'}];
+ const positions=fields.map(f=>({...f,board:laneBoardNum(s.currentLine[f.key])}));
+ const stripes=Array.from({length:39},(_,i)=>`<rect x="${(76+i*368/39).toFixed(2)}" y="72" width="${(368/39+.2).toFixed(2)}" height="593" fill="${i%2?'#e5af6c':'#f3c68a'}" opacity="${i%4===0?.82:.69}"/>`).join('');
+ const arrows=[5,10,15,20,25,30,35].map((n,i)=>{const x=laneX(n,'diestro');return `<path d="M${x.toFixed(1)} 455 l-5 15 h10 z" fill="#345978" opacity="${i===3?.85:.55}"/>`}).join('');
+ const pinPositions=[[0,0],[-10,-17],[10,-17],[-20,-34],[0,-34],[20,-34],[-30,-51],[-10,-51],[10,-51],[30,-51]].map(([dx,dy])=>`<g transform="translate(${260+dx*1.45} ${158+dy*1.0})"><ellipse cx="0" cy="3" rx="6" ry="8" fill="#d8e8f2" opacity=".6"/><ellipse cx="0" cy="0" rx="4.5" ry="9" fill="#fff" stroke="#d4e4f0" stroke-width="1"/><rect x="-3.4" y="-1" width="6.8" height="2.5" rx="1" fill="#d53c45"/></g>`).join('');
+ const valid=positions.filter(f=>f.board!==null);
+ const path=valid.length>=2?`<path d="M${valid.map((f,i)=>`${i===0?'':'L'}${laneX(f.board,hand).toFixed(1)},${f.y}`).join(' ')}" fill="none" stroke="#c8f4ff" stroke-width="7" opacity=".22" stroke-linejoin="round"/><path d="M${valid.map((f,i)=>`${i===0?'':'L'}${laneX(f.board,hand).toFixed(1)},${f.y}`).join(' ')}" fill="none" stroke="#14b7f1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`:'';
+ const guides=positions.map(f=>`<g><line x1="76" y1="${f.y}" x2="444" y2="${f.y}" stroke="${f.color}" stroke-width="1.5" opacity=".7" stroke-dasharray="7 6"/><text x="12" y="${f.y-10}" fill="#e5edf5" font-size="12" font-weight="750">${f.key==='approach'?'SALIDA':f.key==='arrow'?'FLECHAS':'BREAK'}</text></g>`).join('');
+ const pins=pinPositions;
+ const markers=positions.map(f=>f.board===null?'':`<g pointer-events="none"><circle cx="${laneX(f.board,hand)}" cy="${f.y}" r="17" fill="${f.color}" opacity=".21"/><circle cx="${laneX(f.board,hand)}" cy="${f.y}" r="9" fill="${f.color}" stroke="#fff" stroke-width="3"/><rect x="${Math.max(84,Math.min(391,laneX(f.board,hand)-23)).toFixed(1)}" y="${f.y-34}" width="46" height="19" rx="9" fill="#0d3353" stroke="${f.color}"/><text x="${Math.max(84,Math.min(391,laneX(f.board,hand)-23))+23}" y="${f.y-20.5}" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">${f.board}</text></g>`).join('');
+ const zones=positions.map(f=>`<rect class="lane-hit-area" data-lane-key="${f.key}" x="76" y="${f.y-(f.key==='breakpoint'?44:43)}" width="368" height="${f.key==='approach'?63:86}" fill="#fff" fill-opacity=".002" role="button" tabindex="0" aria-label="Seleccionar tabla en ${f.name}" onclick="laneSelect(event,'${f.key}')" onkeydown="laneKeyboard(event,'${f.key}')"/>`).join('');
+ return `<svg class="lane-graphic" viewBox="0 0 520 700" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Pista esquemática vista desde arriba. Toca una zona para seleccionar la tabla.">
+ <defs><linearGradient id="mb-lane-border" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#133956"/><stop offset=".5" stop-color="#386786"/><stop offset="1" stop-color="#133956"/></linearGradient></defs>
+ <rect width="520" height="700" fill="#0e2a47" rx="15"/>
+ <rect x="54" y="60" width="412" height="614" fill="#081a30" rx="10"/>
+ <rect x="67" y="68" width="386" height="601" fill="url(#mb-lane-border)" rx="6"/>
+ ${stripes}
+ <rect x="76" y="72" width="368" height="593" fill="#f0c58e" opacity=".12"/>
+ <rect x="70" y="72" width="6" height="593" fill="#0e334e"/><rect x="444" y="72" width="6" height="593" fill="#0e334e"/>
+ <line x1="76" y1="576" x2="444" y2="576" stroke="#123c63" stroke-width="5"/>
+ <text x="260" y="692" text-anchor="middle" fill="#b7d7ec" font-size="12" font-weight="700">VISTA CENITAL · ${hand==='zurdo'?'ZURDO':'DIESTRO'} · TABLAS 1–39</text>
+ ${arrows}${pins}${guides}${path}${markers}${zones}
+ </svg>`;
+}
+
+function laneVisual(s){
+ const hand=db.hand==='zurdo'?'zurdo':'diestro';
+ const labels=[['approach','Posición inicial','#22c58b'],['arrow','Flechas','#37b7ff'],['breakpoint','Breakpoint','#ffb343']];
+ const rows=labels.map(([k,label,color])=>{
+  const num=laneBoardNum(s.currentLine[k]);
+  return `<div class="lane-control-row" data-lane-row="${k}"><span class="lane-control-indicator" style="background:${color}"></span><span class="lane-control-name">${label}<small>${num===null?'Sin seleccionar':'Tabla '+num}</small></span><button type="button" class="lane-control-nudge" onclick="laneNudge('${k}',-1)" aria-label="${label}: reducir una tabla">−</button><button type="button" class="lane-control-nudge" onclick="laneNudge('${k}',1)" aria-label="${label}: aumentar una tabla">+</button></div>`;
+ }).join('');
+ return `<section class="lane-visual" aria-label="Registro visual de la línea de juego"><div class="lane-visual-title"><div><h3>Pista interactiva · vista superior</h3><p>Elige la tabla tocando la pista o ajusta con + y −.</p></div><span class="lane-visual-tag">39 tablas · ${hand==='zurdo'?'zurdo':'diestro'}</span></div><div id="lane-visual-live" class="lane-visual-layout"><div class="lane-visual-scene">${laneVisualSvg(s)}</div><div class="lane-visual-sidebar"><div class="lane-visual-help">Selecciona el punto de <strong>salida</strong>, las <strong>flechas</strong> y el <strong>breakpoint</strong>. Los valores se guardan para el siguiente lanzamiento.</div>${rows}<p class="lane-visual-caption">Representación esquemática, no simulación física 3D. Puedes introducir valores manualmente debajo.</p></div></div></section>`;
+}
+
+function laneSync(){
+ const el=$('lane-visual-live'),s=session();
+ if(!el||!s)return;
+ const scene=el.querySelector('.lane-visual-scene');
+ if(scene)scene.innerHTML=laneVisualSvg(s);
+ for(const key of ['approach','arrow','breakpoint']){
+  const label=el.querySelector('[data-lane-row="'+key+'"] .lane-control-name small');
+  if(label){const value=laneBoardNum(s.currentLine[key]);label.textContent=value===null?'Sin seleccionar':'Tabla '+value;}
+ }
+}
+
+function laneSelect(event,key){
+ const s=session();
+ if(!s||!['approach','arrow','breakpoint'].includes(key))return;
+ const box=event.currentTarget.getBoundingClientRect();
+ if(!box.width)return;
+ const ratio=Math.max(0,Math.min(1,(event.clientX-box.left)/box.width));
+ const number=1+Math.round((db.hand==='zurdo'?ratio:1-ratio)*38);
+ s.currentLine[key]=String(number);
+ const input=$(key);if(input)input.value=String(number);
+ save();laneSync();
+}
+
+function laneNudge(key,step){
+ const s=session();
+ if(!s||!['approach','arrow','breakpoint'].includes(key))return;
+ const before=laneBoardNum(s.currentLine[key])??20;
+ const number=Math.max(1,Math.min(39,before+(step<0?-1:1)));
+ s.currentLine[key]=String(number);
+ const input=$(key);if(input)input.value=String(number);
+ save();laneSync();
+}
+
+function laneKeyboard(event,key){
+ if(event.key==='ArrowLeft'||event.key==='ArrowRight'){
+  event.preventDefault();
+  const direction=event.key==='ArrowLeft'?(db.hand==='zurdo'?-1:1):(db.hand==='zurdo'?1:-1);
+  laneNudge(key,direction);
+  const updated=$('lane-visual-live')?.querySelector('.lane-hit-area[data-lane-key="'+key+'"]');
+  if(updated)updated.focus();
+ }else if(event.key==='Enter'||event.key===' '){
+  event.preventDefault();
+  const n=laneBoardNum(session()?.currentLine?.[key])??20;
+  const input=$(key);if(input){input.focus();input.select();}
+ }
+}
+
+function registryFrameMissedPins(g,frame){
+ const fr=rollsIn(g,frame);
+ if(fr.length<2||!fr[0]||fr[0].pins.length===10)return null;
+ // La segunda tirada debe haber terminado el frame: en el 10º puede haber un bonus.
+ if(frame===10&&(fr.length!==2||fr[0].pins.length+fr[1].pins.length===10))return null;
+ const hit=new Set([...fr[0].pins,...fr[1].pins]);
+ return PINS.filter(pin=>!hit.has(pin));
+}
+function registryPinMini(g){
+ return `<div class="registry-v4-pin-history" aria-label="Detalle por frame: negro tras primera o derribado en segunda; rojo en pie después de segunda">${Array.from({length:10},(_,i)=>{
+  const frame=i+1,fr=rollsIn(g,frame),first=fr[0],second=fr[1];
+    const remainingFirst=first?PINS.filter(pin=>!first.pins.includes(pin)):[];
+    const knockedSecond=second?remainingFirst.filter(pin=>second.pins.includes(pin)):[];
+    const missed=second?registryFrameMissedPins(g,frame):null;
+    const black=second?knockedSecond:remainingFirst;
+    const red=second&&missed?missed:[];
+  const closed=frame===10?complete(g):!!fr[0]&&(fr[0].pins.length===10||fr.length>=2);
+  const status=!first?'sin comenzar':!second&&first.pins.length<10?remainingFirst.length+' en pie tras la primera':second?(red.length+' en pie y '+knockedSecond.length+' derribado(s) en la segunda'):'strike';
+  const rows=RACK.map(row=>`<span class="registry-v4-mini-row">${row.map(pin=>`<i data-pin="${pin}" aria-hidden="true" class="registry-v4-mini-dot ${black.includes(pin)?'standing':red.includes(pin)?'missed':first?'fallen':'unplayed'}"></i>`).join('')}</span>`).join('');
+  return `<span class="registry-v4-mini-frame" title="Frame ${frame}: ${status}" aria-label="Frame ${frame}: ${status}">${rows}</span>`;
+ }).join('')}</div>`;
+}
+
+function registry(){const s=session();if(!s)return `<div class="card"><h2>Ninguna sesión abierta</h2><button class="btn primary" onclick="go('nueva')">Crear sesión</button></div>`;const g=game(s),n=next(g),lane=n.done?currentLane(g,10):currentLane(g,n.frame),completed=s.games.filter(complete).length;return `<section class="registry-v4">${head(s.title|| (s.type==='oficial'?'Competición oficial':'Entrenamiento'),`Partida ${s.games.length} · ${s.date}`,`<button class="btn outline" onclick="ligaReturn?ligaBack():go('historial')">${ligaReturn?'← Volver a Liga':'Salir'}</button>`)}
+ <div class="row wrap mb12"><span class="pill ${s.type==='oficial'?'orange':''}">${classificationLabel(s)}</span><span class="pill gray">${lane.pair?`Par ${lane.pair.join('–')} · Pista ${lane.lane}`:lane.lane?`Pista ${lane.lane}`:'Pista no indicada'}</span></div>
+
+ 
+  <div class="card compact-score registry-v4-score"><div class="card-head"><h2>Marcador · Partida ${s.games.length}</h2><span class="pill">${complete(g)?score(g):'Parcial '+score(g)} pts</span></div>${scoreStrip(g,n)}${registryPinMini(g)}<p class="registry-v4-mini-legend"><span><i class="registry-v4-legend-black" aria-hidden="true"></i> Negro: en pie tras la 1.ª / derribados en la 2.ª.</span><span><i class="registry-v4-legend-red" aria-hidden="true"></i> Rojo: en pie tras la 2.ª.</span></p><div class="score-actions-row mt12">${lane.pair?`<span class="hint">${n.done?'Última pista':`Frame ${n.frame} ·`} ${lane.lane?`Pista ${lane.lane}`:'Sin pista'}. Alternancia por frame.</span>`:''}<div class="score-action-buttons"><button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button><button type="button" class="btn outline" onclick="undoRoll()" ${g.rolls.length?'':'disabled'} aria-label="Deshacer último lanzamiento">↶ Deshacer último lanzamiento</button></div></div></div>
+${editPair?pairEditor(s,g,n):''}
+${n.done?finishedGame(s,g,completed):`<div class="card registry-v4-roll"><div class="game-heading"><div><h1>Frame ${n.frame} · Tirada ${n.ball}</h1></div><span class="pill">${selection.length} en pie</span></div>
+<p class="registry-v4-pin-caption">Toca los <strong>bolos que quedan en pie</strong>.<small>Si no marcas ninguno, anotarás todos derribados.</small></p><div class="registry-v4-rack-wrap">${rackUI(n.available)}</div>
+ <button class="btn primary big block mt12 registry-v4-record" onclick="recordRoll()" id="quick-record">${selection.length===0?(n.available.length===10?'✕ Strike':'✓ Derribados todos'):`Registrar ${n.available.length-selection.length} derribados →`}</button>
+ ${quickLayout==='large'?'':''}<p class="registry-v4-quick-caption">Atajos: «Todos en pie», «Todos derribados» y «Falta» registran directamente la tirada.</p><div class="actions mt12 v25-actions registry-v4-quick ${quickLayout==='compact'?'quick-compact':quickLayout==='large'?'quick-large':''}" data-quickbar><button class="btn" onclick="fastRoll(true)">Todos en pie</button><button class="btn" onclick="fastRoll(false)">Todos derribados</button><button class="btn foul-btn" onclick="foulRoll()">Falta</button><button type="button" class="btn" onclick="selection=[];render()">Limpiar</button></div>
+ ${s.type==='entrenamiento'&&!pendingClassification(s)?`<label class="switch stats-checkbox"><input type="checkbox" ${g.includeStats!==false?'checked':''} onchange="toggleGameStats('${g.id}',this.checked)"> Incluir esta partida en estadísticas</label>`:''}
+
+ <details class="registry-v4-extra" ${registryDetailsOpen?'open':''} ontoggle="registryDetailsOpen=this.open"><summary><b>🎳 Bola y línea de juego</b><small>Posición · flechas · breakpoint</small></summary><div class="card" style="margin:17px 0 12px;background:#f5fbfc"><div class="card-head"><h3>🎳 Bola utilizada</h3><button class="textlink" onclick="openBallPickerFor(${esc(JSON.stringify(s.id))},'registro')">Cambiar selección →</button></div>${ballSelect('roll-ball','ballId',s.currentBallId).replace('<select ','<select onchange="changeBall(this.value)" ')}
+ ${laneVisual(s)}
+ <button type="button" class="btn outline mt12" onclick="openBallAdvisorFor(${esc(JSON.stringify(s.id))})">🎳 Asistente de competición</button>
+ <div class="row" style="margin-top:10px"><h3 style="margin:0">Línea de juego</h3><span class="hint">Se recuerda para el siguiente tiro</span></div><div class="form-grid line-grid"><div><label class="field" for="approach">Approach · tabla</label><input id="approach" inputmode="decimal" class="input" placeholder="Ej. 25" value="${esc(s.currentLine.approach)}" onchange="changeLine('approach',this.value)"></div><div><label class="field" for="arrow">Flecha · tabla</label><input id="arrow" inputmode="decimal" class="input" placeholder="Ej. 15" value="${esc(s.currentLine.arrow)}" onchange="changeLine('arrow',this.value)"></div><div><label class="field" for="breakpoint">Breakpoint</label><input id="breakpoint" inputmode="decimal" class="input" placeholder="Opcional" value="${esc(s.currentLine.breakpoint)}" onchange="changeLine('breakpoint',this.value)"></div></div></div>
+ </details></div>`}
+ <details class="registry-v4-history" ${registryHistoryOpen?'open':''} ontoggle="registryHistoryOpen=this.open"><summary>Historial de lanzamientos · ${g.rolls.length} tiradas</summary>${rollLog(g)}</details></section>`}
+function changeBall(id){const s=session();if(!s)return;s.currentBallId=id;save()}
+function changeLine(k,v){const s=session();if(!s)return;if(!['approach','arrow','breakpoint'].includes(k))return;s.currentLine[k]=v.trim();save();laneSync()}
+function pairEditor(s,g,n){const from=n.done?11:rollsIn(g,n.frame).length?n.frame+1:n.frame;return `<div class="card" style="background:#eff9fa"><div class="card-head"><h2>⇄ Cambio de par</h2><button class="btn" onclick="editPair=false;render()">Cerrar</button></div>${from>10?`<p class="hint">Esta partida terminó. Elige el nuevo par al iniciar la siguiente.</p>`:`<p class="hint">Se aplicará desde el frame <b>${from}</b>, manteniendo intactas las pistas anteriores. Si ya has empezado un frame, se hará efectivo en el siguiente.</p><div class="form-grid"><div><label class="field">Nueva primera pista del par</label><input class="input" id="new-pair" inputmode="numeric" type="number" min="1" placeholder="Ej. 9" oninput="pairChangeHint()"></div><div><label class="field">Empiezo en la pista</label><select class="input" id="new-pair-start"><option value="">Indica el par</option></select></div></div><p class="hint" id="new-pair-note"></p><button class="btn primary block" onclick="changePair(${from})">Confirmar cambio de par</button>`}</div>`}
+function pairChangeHint(){let p=normalPair($('new-pair')?.value);$('new-pair-start').innerHTML=p?p.map(x=>`<option value="${x}">Pista ${x}</option>`).join(''):'<option value="">Indica el par</option>';}
+function changePair(frame){const s=session(),g=game(s),p=normalPair($('new-pair').value),start=intLane($('new-pair-start').value);if(!p||!p.includes(start))return alert('Introduce un par válido y la pista donde empiezas.');g.segments=(g.segments||[]).filter(x=>x.fromFrame<frame);g.segments.push({fromFrame:frame,pair:p,startLane:start});save();editPair=false;render()}
+function togglePin(pin){const s=session(),n=next(game(s));if(n.done||!n.available.includes(pin))return;selection=selection.includes(pin)?selection.filter(x=>x!==pin):[...selection,pin];render()}
+function recordRoll(isFoul=false){const s=session();if(!s)return;const g=game(s),n=next(g);if(n.done)return;if(selection.some(p=>!n.available.includes(p)))return alert('Has seleccionado algún bolo que ya estaba derribado.');
+ const requestedBall=$('roll-ball')?.value||'';
+ const selectedForSession=selectedBallsFor(s.id);
+ const chosen=selectedForSession!==null&&!selectedForSession.includes(requestedBall)?'':requestedBall;
+ if(chosen&&!db.balls.some(x=>x.id===chosen))return alert('La bola ya no existe en el catálogo.');s.currentBallId=chosen;
+ for(const k of ['approach','arrow','breakpoint'])if($(k))s.currentLine[k]=$(k).value.trim();
+ const where=currentLane(g,n.frame);g.rolls.push({frame:n.frame,ball:n.ball,pins:n.available.filter(p=>!selection.includes(p)).sort((a,b)=>a-b),ballId:chosen,line:cleanLine(s.currentLine),lane:where.lane,pair:where.pair?[...where.pair]:null,foul:!!isFoul,createdAt:new Date().toISOString()});selection=[];save();render()}
+function undoRoll(){const s=session(),g=game(s);if(!g.rolls.length)return;if(!confirm('¿Eliminar el último lanzamiento?'))return;g.rolls.pop();selection=[];save();render()}
+function rewindRoll(index){const g=game(session());if(!confirm(`¿Volver a la tirada ${index+1}? Se eliminará esa tirada y todas las posteriores de esta partida para que puedas corregir los bolos.`))return;const r=g.rolls[index];if(r){const s=session(),oldBall=r.ballId||'',chosen=selectedBallsFor(s.id);s.currentBallId=chosen!==null&&!chosen.includes(oldBall)?'':oldBall;s.currentLine=cleanLine(r.line);}g.rolls=g.rolls.slice(0,index);selection=[];save();render()}
+function rollLog(g){return `<div class="card"><div class="card-head"><h2>Historial de lanzamientos</h2><span class="pill gray">${g.rolls.length} tiradas</span></div>${g.rolls.length?`<div class="roll-log">${g.rolls.map((r,i)=>{const b=db.balls.find(b=>b.id===r.ballId);return `<div class="list-item"><div><div class="item-title">F${r.frame} · T${r.ball} · ${r.pins.length} bolos ${r.pins.length===10?'✕':''}</div><div class="item-subtitle">${r.pins.length?r.pins.join(' · '):'Ninguno'}${r.lane?' · Pista '+r.lane:''}${b?' · '+esc(b.model):''}${r.line?.approach?' · Salida '+esc(r.line.approach):''}${r.line?.arrow?' · Flechas '+esc(r.line.arrow):''}${r.line?.breakpoint?' · Break '+esc(r.line.breakpoint):''}</div></div><button class="btn outline" onclick="rewindRoll(${i})" title="Corregir esta tirada">↶</button></div>`}).reverse().join('')}</div>`:'<p class="hint">Los tiros aparecerán aquí a medida que los registres.</p>'}</div>`}
+function finishedGame(s,g,completed){return `<div class="card" style="text-align:center"><div style="font-size:33px">🎳</div><h2>Partida terminada</h2><div style="font-size:53px;font-weight:830;color:var(--teal2)">${score(g)}</div><p class="muted">Puntuación sin hándicap · ${completed} partida(s) completas en esta sesión.</p><div class="actions">${ligaReturn?'<button class="btn primary" onclick="ligaBack()">✓ Guardar y volver a Liga</button>':'<button class="btn primary" onclick="showNext=!showNext;render()">＋ Siguiente partida</button><button class="btn outline" onclick="go(\'historial\')">Guardar y salir</button>'}</div>${showNext?nextGameForm(s,g):''}</div>`}
+function nextGameForm(s,g){const w=currentLane(g,10);const p=w.pair;const suggested=p?.find(x=>x!==w.lane)||p?.[0];return `<div class="card" style="text-align:left;margin:14px 0 0;background:#f3fafb"><h3>Configurar siguiente partida</h3><p class="hint">Puedes continuar en el mismo par o indicar otro. Esto no altera las partidas anteriores.</p>${g.pair?`<div class="form-grid"><div><label class="field">Par siguiente (primera pista)</label><input class="input" type="number" id="next-pair" placeholder="Ej. 9" value="${p?.[0]||''}" oninput="fillNextPair()"></div><div><label class="field">Pista de salida</label><select class="input" id="next-start">${p?p.map(v=>`<option value="${v}" ${v===suggested?'selected':''}>Pista ${v}</option>`).join(''):'<option value="">Sin pista</option>'}</select></div></div>`:`<label class="field">Pista (opcional)</label><input id="next-lane" class="input" type="number" value="${g.startLane||''}">`}<button class="btn primary block mt12" onclick="addGame()">Empezar siguiente partida →</button></div>`}
+function fillNextPair(){const pair=normalPair($('next-pair')?.value);$('next-start').innerHTML=pair?pair.map(x=>`<option value="${x}">Pista ${x}</option>`).join(''):'<option value="">Sin pista</option>'}
+function addGame(){const s=session(),prev=game(s);if(!complete(prev))return alert('Termina la partida primero.');const g=newGame(s,prev);
+ if(g.pair){const entered=$('next-pair')?.value||'',p=entered?normalPair(entered):null;if(entered&&!p)return alert('Par inválido');g.pair=p;g.startLane=p?(intLane($('next-start')?.value)||p[0]):null;if(p&&!p.includes(g.startLane))return alert('La pista inicial no pertenece al par indicado.')}else g.startLane=intLane($('next-lane')?.value)||null;
+ s.games.push(g);save();selection=[];showNext=false;render()}
+let historyOpenDay='';
+// LAB: clasificación explícita por partida, sin cambiar el formato v2.
+const LT_PENDING_NOTE='Tipo de jornada no confirmado en la copia de origen. Se muestra provisionalmente en Entrenamientos por compatibilidad y no se incluye en las estadísticas de entrenamiento hasta que se confirme su clasificación.';
+function pendingClassification(s){return s?.type==='entrenamiento'&&String(s.title||'').endsWith(' [Tipo pendiente]')&&String(s.notes||'').split('\n').includes(LT_PENDING_NOTE)}
+function classificationMode(s){return pendingClassification(s)?'pendiente':s.type}
+function classificationLabel(s){return pendingClassification(s)?'Pendiente de clasificar':s.type==='oficial'?'Competición':'Entrenamiento'}
+function classificationLocked(s,league=liga32){return !!(s.leagueOther||s.leaguePlayer||league?.matches?.some(m=>m.players?.some(p=>Object.values(p.links||{}).some(l=>l?.sessionId===s.id))))}
+function classificationPlan(source,sessionId,gameId,type,idFactory,league){
+ if(!['entrenamiento','oficial'].includes(type))throw Error('Tipo no válido.');
+ const s=source.sessions.find(x=>x.id===sessionId);if(!s)throw Error('La jornada ya no existe.');
+ if(classificationLocked(s,league))throw Error('La jornada está vinculada a Liga. No se puede cambiar su tipo aquí.');
+ const selected=gameId?s.games.filter(g=>g.id===gameId):s.games;
+ if(!selected.length||(gameId&&selected.length!==1))throw Error('La partida ya no existe o su ID está duplicado.');
+ const pending=pendingClassification(s);if(!pending&&s.type===type)return null;
+ const split=selected.length!==s.games.length;
+ const id=split?idFactory():s.id;if(split&&(!id||source.sessions.some(x=>x.id===id)))throw Error('Identificador de jornada no válido.');
+ const result=JSON.parse(JSON.stringify(source)),index=result.sessions.findIndex(x=>x.id===sessionId),original=result.sessions[index];
+ const wanted=new Set(selected.map(g=>g.id));const moved=original.games.filter(g=>wanted.has(g.id));
+ const dest={...original,id,type,games:moved};
+ if(pending){dest.title=dest.title.slice(0,-' [Tipo pendiente]'.length);dest.notes=dest.notes.split('\n').filter(n=>n!==LT_PENDING_NOTE).join('\n');dest.notes+=(dest.notes?'\n':'')+'Tipo confirmado manualmente: '+(type==='oficial'?'Competición':'Entrenamiento')+'.';for(const g of moved)g.includeStats=!!complete(g)}
+ // Los objetivos de entrenamiento no son aplicables a competición. Conservar su valor como nota.
+ if(type==='oficial'&&dest.goal){dest.notes+=(dest.notes?'\n':'')+'Objetivo anterior de entrenamiento: '+JSON.stringify(dest.goal);dest.goal=null}
+ if(split){original.games=original.games.filter(g=>!wanted.has(g.id));result.sessions.splice(index+1,0,dest)}else result.sessions[index]=dest;
+ return {db:result,id,split,pending,count:moved.length};
+}
+// Consultar también la Liga persistida: otra pestaña puede haber creado un vínculo.
+function classificationLeagueSnapshot(){
+ const raw=localStorage.getItem(LIGA32_KEY);let league=null;
+ if(raw!==null){league=JSON.parse(raw);if(!league||!Array.isArray(league.matches))throw Error('No se puede verificar el estado guardado de Liga.');}
+ return {raw,league};
+}
+function classificationControls(s,g=null){
+ try{if(classificationLocked(s)||classificationLocked(s,classificationLeagueSnapshot().league))return '<p class="hint">Tipo protegido: partida vinculada a Liga.</p>';}
+ catch{return '<p class="hint">Tipo protegido: no se puede verificar el estado guardado de Liga.</p>';}
+ const sid=esc(s.id),gid=esc(g?.id||''),pending=pendingClassification(s),label=g?'Cambiar tipo':'Cambiar tipo de toda la jornada';
+ return `<div class="mt12"><button type="button" class="btn outline" aria-expanded="false" onclick="const p=this.nextElementSibling;p.hidden=!p.hidden;this.setAttribute('aria-expanded',String(!p.hidden))">${label}</button><div hidden class="mt12"><p class="hint">Tipo actual: ${classificationLabel(s)}. No se modifican los lanzamientos.</p><div class="actions">${['entrenamiento','oficial'].filter(t=>pending||t!==s.type).map(t=>`<button type="button" class="btn outline" data-session="${sid}" data-game="${gid}" data-type="${t}" onclick="applyClassification(this.dataset.session,this.dataset.game,this.dataset.type)">${t==='oficial'?'Competición':'Entrenamiento'}</button>`).join('')}</div></div></div>`;
+}
+function applyClassification(sessionId,gameId,type){
+ let plan,primaryAttempted=false;const source=db.sessions.find(s=>s.id===sessionId);
+ try{if(!source)return;plan=classificationPlan(db,sessionId,gameId,type,uid,liga32);if(!plan)return;}catch(e){return alert(e.message)}
+ const description=type==='oficial'?'Competición':'Entrenamiento';
+ if(!confirm(`¿Cambiar ${plan.count===1?'esta partida':plan.count+' partidas'} a ${description}? ${plan.split?'Se separará de la jornada original. ':''}Se conservarán los lanzamientos y la puntuación. Las estadísticas se recalcularán.`))return;
+ try{
+  if(saveError)throw Error('Hay cambios de guardado pendientes. Exporta una copia y revisa el espacio.');
+  const leagueSnapshot=classificationLeagueSnapshot();
+  if(classificationLocked(source,liga32)||classificationLocked(source,leagueSnapshot.league))throw Error('La jornada está vinculada a Liga. No se puede cambiar su tipo aquí.');
+  const raw=localStorage.getItem(KEY),legacy=localStorage.getItem(OLDKEY);
+  if(JSON.stringify(migrate(JSON.parse(raw||legacy||'null')))!==JSON.stringify(db))throw Error('Los datos guardados han cambiado. Recarga antes de modificar el tipo.');
+  // Copiar la selección operativa al nuevo ID sin tocar el ámbito original. Si falla, no iniciar la escritura principal.
+  if(plan.split){if(ballSelectionSaveError)throw Error('Hay una selección de bolas pendiente de guardar.');const selections=latestBallSelections();if(Object.prototype.hasOwnProperty.call(selections,sessionId)){
+   const nextSelections={...selections,[plan.id]:[...selections[sessionId]]};const encoded=JSON.stringify(nextSelections);
+   localStorage.setItem(BALL_SELECTION_KEY,encoded);if(localStorage.getItem(BALL_SELECTION_KEY)!==encoded)throw Error('No se pudo verificar la selección de bolas.');ballSelections=nextSelections;ballSelectionSaveError=false;
+  }}
+  if(localStorage.getItem(KEY)!==raw||localStorage.getItem(OLDKEY)!==legacy)throw Error('El historial cambió durante la operación. Recarga antes de continuar.');
+  if(localStorage.getItem(LIGA32_KEY)!==leagueSnapshot.raw)throw Error('El estado guardado de Liga cambió durante la operación. Recarga antes de continuar.');
+  const encoded=JSON.stringify(plan.db);primaryAttempted=true;localStorage.setItem(KEY,encoded);if(localStorage.getItem(KEY)!==encoded)throw Error('No se pudo verificar el guardado.');
+  db=plan.db;saveError=false;
+ }catch(e){if(primaryAttempted)saveError=true;return alert('No se pudo confirmar el cambio de tipo. '+e.message+' No repitas el cambio sin cerrar y volver a abrir la aplicación y comprobar el historial. Conserva tu copia de seguridad.')}
+ if(tab==='detalle'){activeId=plan.id;historyMode=type;historyOpenDay=type+source.date;}
+ else if(!plan.split){historyMode=type;historyOpenDay=type+source.date;}
+ else {if(activeId===sessionId&&gameId&&source.games.at(-1)?.id===gameId)activeId=plan.id;historyOpenDay=classificationMode(source)+source.date;}
+ render();
+}
+
+function history(){const rows=[...db.sessions].filter(s=>classificationMode(s)===historyMode).sort((a,b)=>b.date.localeCompare(a.date));let groups={};for(const s of rows)(groups[s.date]??=[]).push(s);return `${head('Historial','')}<div class="seg mb16"><button class="${historyMode==='entrenamiento'?'active':''}" onclick="historyMode='entrenamiento';historyOpenDay='';render()">👣 Entrenamientos</button><button class="${historyMode==='oficial'?'active':''}" onclick="historyMode='oficial';historyOpenDay='';render()">🏅 Competiciones</button><button class="${historyMode==='pendiente'?'active':''}" onclick="historyMode='pendiente';historyOpenDay='';render()">Pendientes</button></div>${Object.entries(groups).map(([date,ss])=>{const key=historyMode+date,open=historyOpenDay===key,count=ss.reduce((n,s)=>n+s.games.length,0),venues=[...new Set(ss.map(s=>s.venue).filter(Boolean))].join(' · ')||'Bolera sin indicar';return `<div class="card v25-day"><button class="v25-day-head" onclick="historyOpenDay=${open?"''":`'${key}'`};render()"><span class="v25-day-icon">${historyMode==='pendiente'?'?':historyMode==='entrenamiento'?'👣':'🏅'}</span><span><strong>${esc(date)}</strong><small>${count} partidas · ${esc(venues)}</small></span><b>${open?'⌃':'⌄'}</b></button>${open?ss.map(s=>`<div class="v25-day-session"><strong>${esc(s.title|| (s.type==='oficial'?'Competición':'Entrenamiento'))}</strong><small>${s.games.length} partidas · ${classificationLabel(s)}</small>${classificationControls(s)}${s.games.map((g,i)=>`<div><div class="v25-day-game"><span>Partida ${i+1}</span><b>${complete(g)?score(g):'En curso'}</b></div>${classificationControls(s,g)}</div>`).join('')}<div class="actions"><button class="btn primary" onclick="openSession('${s.id}')">${s.games.some(g=>!complete(g))?'Continuar':'Abrir'}</button><button class="btn outline" onclick="activeId='${s.id}';go('detalle')">Informe</button><button class="btn warn" onclick="deleteSession('${s.id}')">Eliminar</button></div></div>`).join(''):''}</div>`}).join('')||'<div class="card empty">Sin jornadas registradas</div>'}`}
+function deleteSession(id){const s=db.sessions.find(x=>x.id===id);if(!s)return;if(!confirm(`¿Borrar ${s.title||'esta sesión'} y TODOS sus lanzamientos? No se puede deshacer.`))return;db.sessions=db.sessions.filter(x=>x.id!==id);const current=latestBallSelections();if(Object.prototype.hasOwnProperty.call(current,id)){const selections={...current};delete selections[id];persistBallSelections(selections)}if(activeId===id)activeId=null;save();render()}
+function detail(){const s=session();if(!s)return go('historial');return `${head(s.title||'Sesión',`${s.date} · ${s.venue||'Bolera sin especificar'}`,`<button class="btn outline" onclick="go('historial')">Volver</button>`)}
+ <div class="card"><div class="row"><span class="pill ${s.type==='oficial'?'orange':''}">${classificationLabel(s)}</span><span class="hint">${s.games.filter(complete).length} completas${s.goal?' · Objetivo: '+esc(s.goal.kind):''}</span></div>${s.pattern?`<p class="hint">Patrón: ${esc(s.pattern)} · <button class="btn outline" onclick="selectedPatternId='${esc(s.patternId)}';go('patrones')">Consultar patrón</button></p><label class="field">Observaciones sobre aceite / reacción</label><textarea class="input note" id="oil-session-note" onchange="savePatternNote('${s.id}',this.value)">${esc(s.patternNotes||'')}</textarea>`:''}${s.notes?`<p>${esc(s.notes)}</p>`:''}${classificationControls(s)}</div>
+ ${s.games.map((g,i)=>`<div class="card"><div class="card-head"><h2>Partida ${i+1}</h2><span class="pill">${complete(g)?score(g)+' pts':'En curso'}</span></div>${s.type==='entrenamiento'&&!pendingClassification(s)?`<label class="switch stats-checkbox"><input type="checkbox" ${g.includeStats!==false?'checked':''} onchange="toggleGameStats('${g.id}',this.checked)"> Incluir en estadísticas</label>`:''}${classificationControls(s,g)}${scoreStrip(g,{frame:null})}
+ <div class="table-scroll mt12"><table><thead><tr><th>Frame</th><th>Pista</th><th>Tiradas</th><th>Acumulado</th></tr></thead><tbody>${Array.from({length:10},(_,j)=>{let lane=rollsIn(g,j+1)[0]?.lane||currentLane(g,j+1).lane;return `<tr><td>${j+1}</td><td>${lane||'—'}</td><td>${frameLabel(g,j+1)||'—'}</td><td>${frameScores(g)[j]??'—'}</td></tr>`}).join('')}</tbody></table></div><details class="mt12"><summary>Ver lanzamientos y bolas</summary>${g.rolls.map(r=>{let b=db.balls.find(x=>x.id===r.ballId);return `<p class="hint">F${r.frame}, L${r.ball}: ${r.pins.length} bolos (${r.pins.join(', ')||'0'}) · Pista ${r.lane||'—'} · ${esc(b?.model||'Bola sin asignar')} · Línea ${esc(r.line?.approach||'—')} → ${esc(r.line?.arrow||'—')}</p>`}).join('')}</details></div>`).join('')}
+ ${s.type==='entrenamiento'&&s.goal?goalReport(s):''}<div class="card v25-report"><h2>Informe de jornada</h2><div class="dashboard-grid">${tile('▤','Partidas',s.games.filter(complete).length)}${tile('◎','Media',(()=>{let x=s.games.filter(g=>complete(g)&&(s.type!=='entrenamiento'||g.includeStats!==false));return x.length?fmt(x.reduce((v,g)=>v+score(g),0)/x.length):'—'})())}${tile('✕','Strikes',s.games.flatMap(g=>g.rolls).filter(r=>r.pins.length===10&&r.ball===1).length)}${tile('F','Faltas',s.games.flatMap(g=>g.rolls).filter(r=>r.foul).length)}</div><div class="actions mt12"><button class="btn primary" onclick="shareSessionImage()">Compartir marcador (imagen)</button><button class="btn outline" onclick="window.print()">Imprimir / PDF</button></div></div><button class="btn primary block" onclick="openSession('${s.id}')">Volver al registro</button>`}
+function stats(){const a=periodAggregate(aggregate(statMode,statsBallId)),m=metrics(a);return `${head('Estadísticas','Análisis independiente para cada modalidad.')}
+ <div class="row wrap mb12"><span class="hint">Material y rendimiento de tu arsenal</span><button type="button" class="textlink" onclick="openBallPickerFor('','estadisticas')">Ver mis bolas →</button></div>
+ <div class="seg mb16"><button class="${statMode==='entrenamiento'?'active':''}" onclick="statMode='entrenamiento';statsBallId='';render()">👣 Entrenamientos</button><button class="${statMode==='oficial'?'active':''}" onclick="statMode='oficial';statsBallId='';render()">🎳 Competición oficial</button></div>
+ <div class="card"><div class="row wrap"><span class="pill">${statMode==='entrenamiento'?'Entrenamientos':'Competiciones oficiales'}</span><div><label class="visually-hidden" for="stats-ball">Filtrar por bola</label><select class="input" id="stats-ball" onchange="statsBallId=this.value;render()"><option value="">Todas las bolas</option>${db.balls.map(b=>`<option value="${esc(b.id)}" ${statsBallId===b.id?'selected':''}>${esc(b.brand+' '+b.model)}</option>`).join('')}</select></div></div>
+ <div class="dashboard-grid mt16">${m.map(x=>tile(x.icon,x.label,x.value)).join('')}${tile('↗','Partidas 200+',a.totals.filter(v=>v>=200).length)}${tile('◎','Pocket 1–'+pocketStats(a).flank,p100(pocketStats(a).hit,pocketStats(a).total),pocketStats(a).hit+' / '+pocketStats(a).total)}${tile('✓','Clean Games',a.games.filter(cleanGame).length,p100(a.games.filter(cleanGame).length,a.games.length)+' partidas limpias')}</div>
+ ${statsBallId?`<p class="warning-box">La media de las partidas corresponde a juegos en los que se usó esta bola, aunque también se hayan usado otras bolas. Las estadísticas por lanzamiento se atribuyen exclusivamente a la bola seleccionada.</p>`:''}
+ </div><div class="card"><label class="field" for="stats-pane-select">Apartado de estadísticas</label><select id="stats-pane-select" class="input" onchange="statPane=this.value;render()">${[['general','Resumen general'],['bolos','Análisis por bolo'],['spares','Spares'],['tecnica','Técnica / pistas'],['boleras','Boleras y pistas'],['frames','Por frame'],['combinaciones','Combinaciones'],['periodos','Periodos'],['campeonatos','Campeonatos']].map(([k,l])=>`<option value="${k}" ${statPane===k?'selected':''}>${l}</option>`).join('')}</select></div>
+ ${statPane==='general'?statsGeneral(a):statPane==='bolos'?pinAnalysisCombined(a):statPane==='spares'?statsSpares(a):statPane==='boleras'?venueLaneAnalysis(a):statPane==='frames'?frameAnalysis(a):statPane==='combinaciones'?combinationAnalysis(a):statPane==='periodos'?periodAnalysis(a):statPane==='campeonatos'?competitionAnalysis(a):statsTechnical(a)}`}
+function periodKey(date,period){if(period==='month')return date.slice(0,7);if(period==='quarter'){const m=Number(date.slice(5,7));return date.slice(0,4)+'-T'+Math.ceil(m/3)}if(period==='year')return date.slice(0,4);return 'Total'}
+function periodAggregate(a){if(statsPeriod==='all')return a;let now=today(),key=periodKey(now,statsPeriod);const ids=new Set(a.games.filter(g=>periodKey(g._session.date,statsPeriod)===key).map(g=>g.id));const games=a.games.filter(g=>ids.has(g.id));const rolls=a.rolls.filter(r=>ids.has(r._game.id));const first=a.first.filter(r=>ids.has(r._game.id));const opportunities=a.opportunities.filter(o=>!o.gameId||ids.has(o.gameId));const totals=games.map(score);return {...a,games,rolls,first,strikes:first.filter(r=>r.pins.length===10),opportunities,spare:opportunities.filter(o=>o.converted).length,totals,avg:totals.length?totals.reduce((x,y)=>x+y,0)/totals.length:0}}
+function frameAnalysis(a){let rows=Array.from({length:10},(_,i)=>{const f=i+1,rs=a.games.map(g=>rollsIn(g,f)).filter(x=>x.length);const total=rs.length;const strikes=rs.filter(x=>x[0].pins.length===10).length;const open=rs.filter(x=>x[0].pins.length!==10&&(x[0].pins.length+(x[1]?.pins.length||0)<10)).length;return{f,total,strikes,open,avg:total?rs.reduce((sum,r)=>sum+r[0].pins.length,0)/total:0}});return `<div class="card"><h2>Estadísticas por frame</h2><div class="table-scroll"><table><thead><tr><th>Frame</th><th>Partidas</th><th>1.ª bola</th><th>Strikes</th><th>Abiertos</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.f}</td><td>${r.total}</td><td>${r.total?fmt(r.avg):'—'}</td><td>${p100(r.strikes,r.total)}</td><td>${p100(r.open,r.total)}</td></tr>`).join('')}</tbody></table></div></div>`}
+function combinationAnalysis(a){const groups={};for(const o of a.opportunities){if(o.left.length<2)continue;const key=o.left.join('-');let g=groups[key]||(groups[key]={count:0,converted:0,split:isSplit(o.left)});g.count++;if(o.converted)g.converted++}const rows=Object.entries(groups).filter(([k,v])=>comboKind==='all'||(comboKind==='splits'?v.split:!v.split)).sort((x,y)=>y[1].count-x[1].count);return `<div class="card"><h2>Combinaciones de spares</h2><div class="seg mb16"><button class="${comboKind==='normal'?'active':''}" onclick="comboKind='normal';render()">Normales</button><button class="${comboKind==='splits'?'active':''}" onclick="comboKind='splits';render()">Splits</button><button class="${comboKind==='all'?'active':''}" onclick="comboKind='all';render()">Todas</button></div><div class="table-scroll"><table><thead><tr><th>Bolos restantes</th><th>Intentos</th><th>Convertidos</th><th>%</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td><strong>${k}</strong>${v.split?' · Split':''}</td><td>${v.count}</td><td>${v.converted}</td><td>${p100(v.converted,v.count)}</td></tr>`).join('')||'<tr><td colspan="4">Sin combinaciones registradas</td></tr>'}</tbody></table></div></div>`}
+function periodAnalysis(a){const groups={};for(const g of a.games){const k=g._session.date.slice(0,7),x=groups[k]||(groups[k]={scores:[],games:[]});x.scores.push(score(g));x.games.push(g)}return `<div class="card"><h2>Evolución por periodos</h2><div class="seg tabs-scroll mb16">${[['all','Todo'],['month','Mes'],['quarter','Trimestre'],['year','Año']].map(([v,l])=>`<button class="${statsPeriod===v?'active':''}" onclick="statsPeriod='${v}';render()">${l}</button>`).join('')}</div><div class="table-scroll"><table><thead><tr><th>Mes</th><th>Partidas</th><th>Media</th><th>Strikes*</th><th>Clean</th></tr></thead><tbody>${Object.entries(groups).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,v])=>{let first=v.games.flatMap(g=>Array.from({length:10},(_,i)=>rollsIn(g,i+1)[0]).filter(Boolean));return `<tr><td>${k}</td><td>${v.games.length}</td><td>${fmt(v.scores.reduce((a,b)=>a+b,0)/v.scores.length)}</td><td>${p100(first.filter(r=>r.pins.length===10).length,first.length)}</td><td>${v.games.filter(cleanGame).length}</td></tr>`}).join('')||'<tr><td colspan="5">Sin partidas</td></tr>'}</tbody></table></div><p class="hint">*Primeras bolas de cada frame.</p></div>`}
+function competitionAnalysis(a){if(statMode!=='oficial')return `<div class="card empty">Este apartado corresponde exclusivamente a competiciones oficiales.</div>`;const ss=a.sessions.filter(s=>s.type==='oficial');let chosen=ss.find(s=>s.id===compSessionId)||ss[0];if(!chosen)return '<div class="card empty">Sin competiciones registradas.</div>';const games=chosen.games.filter(complete),total=games.map(score),avg=total.length?total.reduce((x,y)=>x+y,0)/total.length:0;const byPair={};for(let i=0;i<games.length;i++){const g=games[i],pairs=new Set(g.rolls.map(r=>r.pair?.join('–')).filter(Boolean));for(const p of pairs){let o=byPair[p]||(byPair[p]={frames:0,strikes:0});for(let f=1;f<=10;f++){let r=rollsIn(g,f)[0];if(r&&r.pair?.join('–')===p){o.frames++;if(r.pins.length===10)o.strikes++}}}}return `<div class="card"><h2>Competiciones oficiales</h2><select class="input" onchange="compSessionId=this.value;render()">${ss.map(s=>`<option value="${s.id}" ${s.id===chosen.id?'selected':''}>${esc(s.date+' · '+(s.title||s.venue||'Competición'))}</option>`).join('')}</select><div class="dashboard-grid mt16">${tile('▤','Partidas',games.length)}${tile('◎','Media',games.length?fmt(avg):'—')}${tile('★','Mejor',games.length?Math.max(...total):'—')}</div><h3>Puntuaciones por partida</h3>${games.map((g,i)=>`<div class="list-item"><b>Partida ${i+1}</b><strong>${score(g)}</strong></div>`).join('')}<h3>Rendimiento por par</h3>${Object.entries(byPair).map(([pair,v])=>`<div class="list-item"><span>Par ${pair} · ${v.frames} frames</span><b>${p100(v.strikes,v.frames)} strikes</b></div>`).join('')||'<p class="hint">Sin pares registrados</p>'}</div>`}
+
+function goalReport(s){const gs=s.games.filter(g=>complete(g)&&g.includeStats!==false),kind=s.goal.kind,target=s.goal.target;let hits=0,total=0;for(const g of gs){const first=Array.from({length:10},(_,i)=>rollsIn(g,i+1)[0]).filter(Boolean);if(kind==='strike'){total+=first.length;hits+=first.filter(r=>r.pins.length===10).length}else if(kind==='pocket'){const flank=db.hand==='zurdo'?2:3;total+=first.length;hits+=first.filter(r=>!r.foul&&r.pins.includes(1)&&r.pins.includes(flank)).length}else if(kind==='clean'){total++;if(cleanGame(g))hits++}else if(kind==='single'){for(let i=1;i<=10;i++){const fr=rollsIn(g,i),a=fr[0],b=fr[1];if(!a||a.pins.length===10||!b||a.foul)continue;const left=PINS.filter(p=>!a.pins.includes(p));if(left.length===1){total++;if(!b.foul&&b.pins.includes(left[0]))hits++}}}}
+ const names={pocket:'Pocket',strike:'Strikes',single:'Spare de bolo suelto',clean:'Clean Games'},pct=total?Math.round(hits/total*100):null;return `<div class="card"><h2>Objetivo de entrenamiento · ${esc(names[kind]||kind)}</h2><div class="dashboard-grid">${tile('◎','Meta',target+'%')}${tile('✓','Resultado',pct===null?'—':pct+'%',hits+' / '+total)}${tile('▥','Estado',pct===null?'Sin intentos':pct>=target?'Conseguido':'En progreso')}</div><p class="hint">Solo se consideran partidas completas e incluidas en estadísticas.</p></div>`}
+function venueLaneAnalysis(a){const byVenue=new Map(),byLane=new Map();for(const g of a.games){const venue=(g._session.venue||'Sin indicar').trim(),v=byVenue.get(venue)||{games:0,pts:0,max:0,first:0,strikes:0};v.games++;const points=score(g);v.pts+=points;v.max=Math.max(v.max,points);byVenue.set(venue,v);for(let frame=1;frame<=10;frame++){const fr=rollsIn(g,frame),r=fr[0];if(!r)continue;v.first++;if(!r.foul&&r.pins.length===10)v.strikes++;const key=r.lane?venue+' · pista '+r.lane:venue+' · sin pista';const l=byLane.get(key)||{first:0,strikes:0,pins:0,spares:0,opps:0};l.first++;l.pins+=r.foul?0:r.pins.length;if(!r.foul&&r.pins.length===10)l.strikes++;const b=fr[1];if(r.pins.length<10&&b){l.opps++;if(!b.foul&&r.pins.length+b.pins.length===10)l.spares++}byLane.set(key,l)}}const row=(entries,fn)=>entries.length?entries.map(fn).join(''):'<tr><td colspan="5">Sin datos registrados</td></tr>';return `<div class="card"><h2>Rendimiento por bolera</h2><div class="table-scroll"><table><thead><tr><th>Bolera</th><th>Partidas</th><th>Media</th><th>Mejor</th><th>Strikes</th></tr></thead><tbody>${row([...byVenue.entries()].sort((x,y)=>y[1].games-x[1].games),([name,v])=>`<tr><td>${esc(name)}</td><td>${v.games}</td><td>${fmt(v.pts/v.games)}</td><td>${v.max}</td><td>${p100(v.strikes,v.first)}</td></tr>`)}</tbody></table></div></div><div class="card"><h2>Rendimiento por pista</h2><p class="hint">La media de bolos en primer tiro y los porcentajes se atribuyen a la pista exacta. La puntuación de una partida alternada no se atribuye a una sola pista.</p><div class="table-scroll"><table><thead><tr><th>Bolera · pista</th><th>Frames</th><th>1.ª bola</th><th>Strikes</th><th>Spares</th></tr></thead><tbody>${row([...byLane.entries()].sort((x,y)=>y[1].first-x[1].first),([name,v])=>`<tr><td>${esc(name)}</td><td>${v.first}</td><td>${fmt(v.pins/v.first)}</td><td>${p100(v.strikes,v.first)}</td><td>${p100(v.spares,v.opps)}</td></tr>`)}</tbody></table></div></div>`}
+function pinAnalysisCombined(a){return `<div class="seg mb16"><button class="${pinSubtab==='derribos'?'active':''}" onclick="pinSubtab='derribos';render()">Derribos</button><button class="${pinSubtab==='sueltos'?'active':''}" onclick="pinSubtab='sueltos';render()">Bolos problemáticos</button></div>${pinSubtab==='derribos'?statsPins(a):problemPins(a)}`}
+function statsGeneral(a){const totals=a.totals;return `<div class="card"><h2>Evolución de puntuaciones</h2><p class="hint">Últimas ${Math.min(25,totals.length)} partidas completas</p>${totals.length?'<div id="trend-chart" class="line-chart" aria-label="Gráfico de puntuaciones"></div>':'<div class="empty">El gráfico aparecerá al terminar partidas.</div>'}</div><div class="card"><h2>Distribución de puntuaciones</h2>${totals.length?`<div class="progress-grid">${[[0,99],[100,149],[150,199],[200,249],[250,300]].map(([min,max])=>{let n=totals.filter(x=>x>=min&&x<=max).length;return `<div class="progress-row"><span>${min}–${max}</span><div class="progress"><i style="width:${Math.round(n/totals.length*100)}%"></i></div><b>${n}</b></div>`}).join('')}</div>`:'<p class="hint">Sin partidas completas.</p>'}</div>`}
+function pinHits(a,p){const chances=a.first.filter(r=>r.pins.length>=0);return{attempts:chances.length,hit:chances.filter(r=>r.pins.includes(p)).length}}
+function statsPins(a){const data=PINS.map(p=>pinHits(a,p));return `<div class="card"><h2>Mapa de derribo por bolo</h2><p class="hint">Porcentaje de primeros tiros con rack completo en los que cae cada bolo. Se incluyen las tiradas de bonificación con rack completo del décimo frame.</p>
+ <div class="pin-map">${RACK.map(row=>`<div class="pin-row">${row.map(p=>{let v=data[p-1],q=v.attempts?Math.round(100*v.hit/v.attempts):null;return `<div class="pin-perf"><span class="map-circle" style="background:${q===null?'#eaf2f5':q>=90?'#c1ebe8':q>=75?'#d3e6fb':q>=55?'#ffe9bc':'#ffd0d3'}">${p}</span><b>${q===null?'—':q+'%'}</b></div>`}).join('')}</div>`).join('')}</div></div>
+ <div class="card"><h2>Estadísticas individuales</h2><div class="table-scroll"><table><thead><tr><th>Bolo</th><th>Derribado</th><th>Tiros con rack completo</th><th>%</th></tr></thead><tbody>${data.map((v,i)=>`<tr><td><b>${i+1}</b></td><td>${v.hit}</td><td>${v.attempts}</td><td><b>${p100(v.hit,v.attempts)}</b></td></tr>`).join('')}</tbody></table></div></div>`}
+function statsSpares(a){let group={};for(const x of a.opportunities){const key=x.left.join('-'),g=group[key]||(group[key]={n:0,hit:0});g.n++;if(x.converted)g.hit++}let bySingle=PINS.map(p=>{let opp=a.opportunities.filter(o=>o.left.length===1&&o.left[0]===p);return{pin:p,attempts:opp.length,hit:opp.filter(o=>o.converted).length}});
+ return `<div class="card"><h2>Conversión de spares</h2><div class="dashboard-grid">${tile('✓','Convertidos',a.spare)}${tile('◎','Oportunidades',a.opportunities.length)}${tile('%','Porcentaje',p100(a.spare,a.opportunities.length))}</div><p class="hint">Se considera conversión cuando se derriban todos los bolos restantes en el segundo lanzamiento del frame. La bola utilizada en el segundo tiro es la responsable del spare.</p></div>
+ <div class="card"><h2>Spare de bolo único</h2><div class="table-scroll"><table><thead><tr><th>Bolo</th><th>Intentos</th><th>Convertidos</th><th>%</th></tr></thead><tbody>${bySingle.map(v=>`<tr><td><b>${v.pin}</b></td><td>${v.attempts}</td><td>${v.hit}</td><td>${p100(v.hit,v.attempts)}</td></tr>`).join('')}</tbody></table></div></div>
+ <div class="card"><h2>Combinaciones que más quedan</h2>${Object.entries(group).sort((a,b)=>b[1].n-a[1].n).slice(0,12).map(([key,v])=>`<div class="list-item"><div><div class="item-title">${esc(key.replaceAll('-', ' · '))}</div><div class="item-subtitle">${v.n} veces · ${v.hit} convertidas</div></div><b>${p100(v.hit,v.n)}</b></div>`).join('')||'<p class="hint">Aún no hay suficientes lanzamientos registrados.</p>'}</div>`}
+function problemPins(a){const bySingle=PINS.map(pin=>{let x=a.opportunities.filter(o=>o.left.length===1&&o.left[0]===pin);return{pin,attempts:x.length,hit:x.filter(o=>o.converted).length}});return `<div class="card"><h2>Bolos problemáticos</h2><div class="v25-rack">${RACK.map(row=>`<div class="v25-ring-row">${row.map(pin=>{const r=bySingle[pin-1],pct=r.attempts?Math.round(r.hit/r.attempts*100):null,color=pct===null?'#cddce2':pct<50?'#f05b56':pct<70?'#f69d41':pct<85?'#efc539':'#25b98d';return `<div class="v25-ring ${pct===0?'zero-hit':''}" style="--pct:${pct??0}%;--ring:${color}"><div class="v25-ring-inside"><strong>${pin}</strong><b>${pct===null?'—':pct+'%'}</b><small>${r.hit}/${r.attempts}</small></div></div>`}).join('')}</div>`).join('')}</div><div class="v25-ring-legend">🔴 &lt;50% &nbsp; 🟠 50–69% &nbsp; 🟡 70–84% &nbsp; 🟢 ≥85%</div></div>`}
+function statsTechnical(a){let lanes={},pairs={},balls={},lines={};for(const r of a.rolls){let lane=r.lane?String(r.lane):'Sin pista',pair=r.pair?.join('–')||'Sin par',id=r.ballId||'Sin asignar',line=[r.line?.approach||'—',r.line?.arrow||'—',r.line?.breakpoint||'—'].join(' → ');
+ for(const [obj,k] of [[lanes,lane],[pairs,pair],[balls,id],[lines,line]]){let o=obj[k]||(obj[k]={throws:0,pins:0,strikes:0,full:0});o.throws++;o.pins+=r.pins.length;if(r.ball===1){o.full++;if(r.pins.length===10)o.strikes++}}}
+ const table=(obj,label,nameFn)=>{const rows=Object.entries(obj).sort((a,b)=>b[1].throws-a[1].throws);return `<div class="card"><h2>${label}</h2>${rows.length?`<div class="table-scroll"><table><thead><tr><th>${label}</th><th>Tiradas</th><th>Bolos</th><th>% strikes*</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${esc(nameFn(k))}</td><td>${v.throws}</td><td>${v.pins}</td><td>${p100(v.strikes,v.full)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">Sin información.</p>'}</div>`};
+ return `<p class="hint">Cada lanzamiento conserva la bola, la pista y las tablas de su línea. Las métricas de tiradas no son medias de partida.</p>${table(balls,'Bolas',k=>{const b=db.balls.find(b=>b.id===k);return b?b.brand+' '+b.model:k})}${table(lanes,'Pistas',k=>k)}${statMode==='oficial'?table(pairs,'Pares',k=>k):''}${table(lines,'Líneas (salida → flecha → breakpoint)',k=>k)}<p class="hint">*El porcentaje se calcula sobre primeras tiradas de frame registradas con esa bola y línea.</p>`}
+function renderCharts(){if(statPane!=='general')return;const a=aggregate(statMode,statsBallId).totals.slice(-25);const el=$('trend-chart');if(!el||!a.length)return;const w=660,h=180,pad=31;let point=(v,i)=>`${pad+i*(w-2*pad)/Math.max(1,a.length-1)},${h-pad-(v/300)*(h-pad*2)}`;let coords=a.map(point);const circles=coords.map((xy,i)=>{const[x,y]=xy.split(',');return `<circle cx="${x}" cy="${y}" r="4.4" fill="#0996a3"><title>Partida ${i+1}: ${a[i]}</title></circle>`}).join('');el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" aria-label="Evolución de las últimas ${a.length} partidas" role="img" width="100%"><g stroke="#e0eaf0" stroke-width="1">${[0,100,200,300].map(v=>{let y=h-pad-(v/300)*(h-pad*2);return `<line x1="${pad}" x2="${w-pad}" y1="${y}" y2="${y}"/><text x="${pad-9}" y="${y+4}" font-size="11" text-anchor="end" fill="#7994a3" stroke="none">${v}</text>`}).join('')}</g><polyline points="${coords.join(' ')}" stroke="#0093a5" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${circles}</svg>`}
+/* ANALISIS ARSENAL R1 LAB: interfaz y motor consultivo, sin cambiar db.version ni bolas. */
+let arsenalPanel='list',arsenalDetailId='',arsenalIssue='pocket',arsenalCatalogQuery='';
+function setArsenalPanel(panel,id=''){arsenalPanel=panel;arsenalDetailId=id;if(panel==='catalog')ballEditingId=null;render()}
+function filterArsenalCatalog(term){
+ arsenalCatalogQuery=String(term||'').slice(0,100);
+ const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+ let visible=0;
+ document.querySelectorAll('.arsenal-model[data-search]').forEach(card=>{
+  const match=norm(card.dataset.search).includes(norm(arsenalCatalogQuery));
+  card.style.display=match?'':'none';if(match)visible++;
+ });
+ const count=$('arsenal-catalog-count');if(count)count.textContent=visible+' de '+document.querySelectorAll('.arsenal-model[data-search]').length+' modelos';
+ const empty=$('arsenal-catalog-noresults');if(empty)empty.hidden=visible!==0;
+}
+function registerBallFromCatalog(profileId){
+ const lib=window.MiBowlingArsenal;
+ const historic=lib?.profiles.find(p=>p.id===profileId);
+ const official=window.MiBowlingOfficialBallCatalog?.models.find(p=>p.id===profileId);
+ const profile=historic||official;
+ if(!profile)return alert('Modelo no disponible en el catálogo local.');
+ const normalize=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+ // Prevenir sobrescrituras de otra pestaña: no guardar datos locales obsoletos.
+ let stored;
+ try{const raw=localStorage.getItem(KEY);stored=raw?JSON.parse(raw):null}
+ catch{return alert('No es posible verificar el catálogo local. Recarga antes de añadir.')}
+ if(stored){
+  const latest=migrate(stored);
+  if(JSON.stringify(latest)!==JSON.stringify(db)){
+   return alert('Tus datos han cambiado en otra pestaña. Recarga MI BOWLING antes de añadir para no sobrescribirlos.');
+  }
+ }
+ if(db.balls.some(b=>(historic&&lib.find(b)?.id===profile.id)||
+  (normalize(b.brand)===normalize(profile.brand)&&normalize(b.model)===normalize(profile.model)))){
+  render();return;
+ }
+ // Solo registrar campos identificados; los datos técnicos desconocidos no se deducen.
+ const ball={id:uid(),brand:profile.brand,model:profile.model,weight:'',kind:historic?'Reactiva':'',notes:'',photo:'',retired:false};
+ db.balls.push(ball);
+ save();
+ if(saveError){db.balls.pop();render();return}
+ render();
+}
+function setArsenalIssue(problem){if(window.MiBowlingArsenal?.problems[problem])arsenalIssue=problem;render()}
+function openBallAdvisorFor(sessionId){openBallPickerFor(sessionId,'registro');setArsenalPanel('assistant')}
+function arsenalInsightView(){
+ if(!window.MiBowlingArsenalView)return '<div class="card">Análisis temporalmente no disponible.</div>';
+ const scope=ballPickTarget===BALL_SELECTION_NEXT?'la próxima sesión':'esta sesión';
+ return window.MiBowlingArsenalView.render({mode:arsenalPanel,detailId:arsenalDetailId,issue:arsenalIssue,balls:db.balls,ids:selectedBallsFor(ballPickTarget)||[],scope,returnTo:ballPickReturn,catalogQuery:arsenalCatalogQuery,escape:esc});
+}
+function ballsView(){
+ if(arsenalPanel!=='list')return arsenalInsightView();
+ const chosen=selectedBallsFor(ballPickTarget)||[];
+ const sessionScope=ballPickTarget===BALL_SELECTION_NEXT?'la próxima sesión':'esta sesión';
+ const cards=db.balls.map(b=>{const photo=b.photo?`<img src="${esc(b.photo)}" alt="Fotografía de ${esc(b.model)}">`:'<span>🎳</span>';
+ return `<div class="ball-card ${b.retired?'retired':''}"><div class="ball-art">${photo}</div><div class="ball-name">${esc(b.model)}</div><div class="ball-brand">${esc(b.brand)} · ${esc(b.weight||'Peso no indicado')}${b.retired?' · Retirada':''}</div><p class="hint">${esc(b.kind||'Tipo no indicado')}${b.notes?' · '+esc(b.notes):''}</p>${!b.retired?'<label class="ball-session-toggle"><input type="checkbox" aria-label="Usar '+esc(b.model)+' en '+sessionScope+'" '+(chosen.includes(b.id)?'checked ':'')+'onchange="toggleSelectedBall('+esc(JSON.stringify(b.id))+',this.checked)"> Usar en '+sessionScope+'</label>':'<span class="hint">Retirada: no disponible para nuevas selecciones.</span>'}<div class="actions"><button type="button" class="btn outline" onclick="setArsenalPanel('detail',${esc(JSON.stringify(b.id))})">Análisis</button><button class="btn outline" onclick="ballEditingId='${b.id}';render()">Editar</button><button class="btn" onclick="retireBall('${b.id}')">${b.retired?'Activar':'Retirar'}</button></div></div>`
+ }).join('');
+ const empty=`<div class="card empty">Elige un modelo del catálogo o registra una bola manualmente.<div class="mt16"><button class="btn primary" onclick="ballEditingId='nuevo';render()">Añadir una bola</button></div></div>`;
+ return `${head('Mis bolas','Material y rendimiento asociado a cada lanzamiento.',`<button class="btn primary" onclick="setArsenalPanel('catalog')">⌕ Catálogo</button><button class="btn outline" onclick="ballEditingId='nuevo';render()">＋ Manual</button>`)}
+ ${`<div class="card ball-pick-toolbar"><strong>Selección para ${sessionScope}</strong><p class="hint">${chosen.length} bola(s) marcada(s). Desmarcar no retira ninguna bola ni cambia las estadísticas.</p><button type="button" class="btn outline block" onclick="closeBallPicker()">← ${ballPickReturn==='registro'?'Volver al lanzamiento':ballPickReturn==='nueva'?'Volver a empezar partida':ballPickReturn==='estadisticas'?'Volver al análisis':'Volver al inicio'}</button><div class="actions mt12 arsenal-nav-actions"><button type="button" class="btn outline" onclick="setArsenalPanel('catalog')">Buscar y añadir del catálogo</button><button type="button" class="btn outline" onclick="setArsenalPanel('compare')">Comparar marcadas</button><button type="button" class="btn outline" onclick="setArsenalPanel('assistant')">Asistente de competición</button></div></div>`}${ballEditingId?ballForm():''}${db.balls.length?`<div class="balls-grid">${cards}</div>`:empty}
+ <div class="card"><p class="hint">Retirar una bola no borra sus estadísticas históricas. Si cambias de bola durante una partida, se registrará en el lanzamiento correspondiente.</p></div>`
+}
+function ballForm(){const b=db.balls.find(x=>x.id===ballEditingId)||{},isNew=ballEditingId==='nuevo';return `<div class="card"><div class="card-head"><h2>${isNew?'Nueva bola':'Editar bola'}</h2><button class="btn outline" onclick="ballEditingId=null;render()">Cancelar</button></div>
+ <form onsubmit="saveBall(event)"><div class="form-grid"><div><label class="field">Marca</label><input class="input" name="brand" required placeholder="Ej. Storm" value="${esc(b.brand||'')}"></div><div><label class="field">Modelo</label><input class="input" name="model" required placeholder="Ej. Phaze II" value="${esc(b.model||'')}"></div><div><label class="field">Peso</label><input class="input" name="weight" placeholder="Ej. 15 lb" value="${esc(b.weight||'')}"></div><div><label class="field">Tipo</label><select class="input" name="kind">${['Reactiva','Uretano','Poliéster / Spare','Otro'].map(v=>`<option ${b.kind===v?'selected':''}>${v}</option>`).join('')}</select></div></div>
+ <label class="field">Notas (opcional)</label><input class="input" name="notes" value="${esc(b.notes||'')}" placeholder="Ej. Taladro: 45 × 4 × 35; superficie, uso..."><label class="field">Fotografía (opcional)</label><input class="input" type="file" id="ball-photo" accept="image/*"><div class="hint">La foto se reduce de tamaño y se guarda solo en tu dispositivo.</div>
+ <button type="submit" class="btn primary block mt16">${isNew?'Guardar nueva bola':'Guardar cambios'}</button></form></div>`}
+async function saveBall(e){e.preventDefault();const form=e.currentTarget,data=new FormData(form);const id=ballEditingId==='nuevo'?uid():ballEditingId;let old=db.balls.find(b=>b.id===id)||{id,retired:false,photo:''};let photo=old.photo;const file=$('ball-photo').files[0];if(file){try{photo=await scaledImage(file)}catch(err){return alert('No se pudo procesar la imagen. Prueba con una foto JPG o PNG.')}}
+ const b={...old,id,brand:String(data.get('brand')).trim(),model:String(data.get('model')).trim(),weight:String(data.get('weight')).trim(),kind:String(data.get('kind')),notes:String(data.get('notes')).trim(),photo};if(!b.brand||!b.model)return;
+ const i=db.balls.findIndex(x=>x.id===id);if(i>=0)db.balls[i]=b;else db.balls.push(b);ballEditingId=null;save();render()}
+async function scaledImage(file){if(file.size>20*1024*1024)throw Error('Imagen demasiado grande');const url=URL.createObjectURL(file);try{const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});const canvas=document.createElement('canvas');const max=320,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));canvas.width=Math.round(img.naturalWidth*scale);canvas.height=Math.round(img.naturalHeight*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/jpeg',.74)}finally{URL.revokeObjectURL(url)}}
+function retireBall(id){const b=db.balls.find(x=>x.id===id);if(!b)return;b.retired=!b.retired;if(b.retired)removeRetiredBallFromSelections(id);save();render()}
+function settings(){return `${head('Ajustes y copias','')}<div class="card"><h2>Registro rápido</h2><label class="field">Tamaño y disposición</label><select class="input" onchange="quickLayout=this.value;localStorage.setItem('mi-bowling-quick-layout',this.value);render()"><option value="standard" ${quickLayout==='standard'?'selected':''}>Estándar</option><option value="compact" ${quickLayout==='compact'?'selected':''}>Compacto</option><option value="large" ${quickLayout==='large'?'selected':''}>Botones grandes</option></select></div><div class="card"><h2>Perfil de jugador</h2><label class="field" for="mano-bowling">Mano de lanzamiento</label><select id="mano-bowling" class="input" onchange="changeHand(this.value)"><option value="diestro" ${db.hand==='diestro'?'selected':''}>Diestro · pocket 1–3</option><option value="zurdo" ${db.hand==='zurdo'?'selected':''}>Zurdo · pocket 1–2</option></select></div><div class="card"><h2>🔒 Almacenamiento local</h2><p class="hint">No hay usuario ni cuenta. La información queda en el navegador o en la app instalada. No existe sincronización entre dispositivos. Borrar los datos del navegador puede eliminar el historial.</p><p class="hint">Sesiones: ${db.sessions.length} · Bolas: ${db.balls.length}</p></div><div class="card"><h2>Patrones de aceitado</h2><button class="btn primary" onclick="go('patrones')">Abrir biblioteca · ${db.patterns.length} patrones</button><p class="hint">Los PDF se almacenan en este dispositivo por separado de la copia JSON. Descarga los PDF originales antes de borrar o reinstalar la app.</p></div><div class="card"><h2>Copias de seguridad</h2><p class="hint">Recomendado: exportar una copia JSON regularmente y guardarla en Archivos/iCloud/otro lugar seguro. Al importar una copia se sustituyen los datos actuales.</p><div class="actions"><button class="btn primary" onclick="exportData()">↓ Exportar copia</button><button class="btn outline" onclick="$('restore-file').click()">↑ Importar copia</button></div></div><div class="card"><h2>Reglas del marcador</h2><p class="hint">Bolera de 10 bolos · puntuación tradicional hasta 300 puntos · frame 10 con tiradas de bonificación. Las partidas incompletas se guardan, pero no entran en la media de puntuación.</p></div><div class="card"><h2>Actualizaciones</h2><p class="hint">Versión instalada: <strong>${APP_VERSION}</strong>. Al abrir la aplicación se comprueba si hay una versión nueva. Si estás jugando, se aplicará al volver a abrir para no interrumpir la partida.</p><p id="update-state" class="hint">${updateAvailable?"Actualización descargada y lista para aplicar.":"La comprobación se realiza con conexión a Internet."}</p><button class="btn outline block" onclick="checkForUpdates(true)">↻ Comprobar actualizaciones</button><button class="btn primary block mt12" id="apply-update" style="${updateAvailable?"":"display:none"}" onclick="applyUpdate()">Actualizar ahora</button></div><div class="card"><h2>Mi Bowling Analítica</h2><p class="hint">Versión instalada: ${APP_VERSION} · actualización automática al volver a abrir la aplicación con conexión. Los entrenamientos y la competición oficial no se mezclan estadísticamente.</p></div>`}
+function exportData(){const blob=new Blob([JSON.stringify({...db,leagueNational:liga32,leagueRosters:liga33Roster,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Mi_Bowling_copia_${today()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('restore-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const obj=JSON.parse(await f.text());if(!obj||!Array.isArray(obj.sessions)||!Array.isArray(obj.balls)&&obj.version===2)throw Error('Copia no reconocida');if(!confirm('Se REEMPLAZARÁN los datos actuales. ¿Importar esta copia?'))return;db=migrate(obj);ballSelections={};try{localStorage.removeItem(BALL_SELECTION_KEY)}catch{};if(obj.leagueNational?.matches&&Array.isArray(obj.leagueNational.matches)){liga32=obj.leagueNational;liga32Save()}if(obj.leagueRosters&&typeof obj.leagueRosters==='object'){liga33Roster=obj.leagueRosters;localStorage.setItem(LIGA33_ROSTER_KEY,JSON.stringify(liga33Roster))}activeId=null;save();go('inicio')}catch(err){alert('No se pudo importar la copia: '+err.message)}finally{e.target.value=''}});
+
+// Biblioteca de patrones: metadatos en la copia JSON, PDF binarios en IndexedDB.
+function oilDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open('mi-bowling-patrones-pdf',1);r.onupgradeneeded=()=>r.result.createObjectStore('pdf');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function oilPut(id,blob){const d=await oilDB();return new Promise((resolve,reject)=>{const t=d.transaction('pdf','readwrite');t.objectStore('pdf').put(blob,id);t.oncomplete=()=>{d.close();resolve()};t.onerror=()=>{d.close();reject(t.error)}})}
+async function oilGet(id){const d=await oilDB();return new Promise((resolve,reject)=>{const t=d.transaction('pdf','readonly');const r=t.objectStore('pdf').get(id);r.onsuccess=()=>{d.close();resolve(r.result||null)};r.onerror=()=>{d.close();reject(r.error)}})}
+async function addOilPattern(e){e.preventDefault();const f=e.currentTarget,fd=new FormData(f),file=f.querySelector('input[type=file]')?.files?.[0];const name=String(fd.get('name')||'').trim();if(!name)return alert('Indica el nombre del patrón.');if(file&&(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf')||file.size>20*1024*1024))return alert('Utiliza un PDF de hasta 20 MB.');const id=uid();try{if(file)await oilPut(id,file);db.patterns.push({id,name,length:String(fd.get('length')||''),maker:String(fd.get('maker')||''),ratio:String(fd.get('ratio')||''),volume:String(fd.get('volume')||''),notes:String(fd.get('notes')||''),pdfName:file?.name||'',createdAt:new Date().toISOString()});selectedPatternId=id;save();render()}catch(err){alert('No se pudo guardar el PDF localmente: '+err.message)}}
+async function openOilPDF(id){const b=await oilGet(id).catch(()=>null);if(!b)return alert('PDF no disponible en este dispositivo. Vuelve a adjuntarlo.');const url=URL.createObjectURL(b);const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+async function downloadOilPDF(id){const b=await oilGet(id).catch(()=>null);if(!b)return alert('PDF no disponible en este dispositivo.');const p=db.patterns.find(x=>x.id===id);const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download=p?.pdfName||'patron.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}
+async function attachOilPDF(id,input){const f=input.files?.[0];if(!f)return;if((f.type!=='application/pdf'&&!f.name.toLowerCase().endsWith('.pdf'))||f.size>20*1024*1024)return alert('Selecciona un PDF de máximo 20 MB.');try{await oilPut(id,f);const p=db.patterns.find(x=>x.id===id);if(p)p.pdfName=f.name;save();render()}catch(err){alert('No se pudo guardar el PDF: '+err.message)}}
+function savePatternNote(id,value){const s=db.sessions.find(x=>x.id===id);if(s){s.patternNotes=value;save()}}
+function patternPreview(id){const el=$('pattern-last');if(!el)return;const ss=db.sessions.filter(s=>s.patternId===id).sort((a,b)=>b.date.localeCompare(a.date));const s=ss[0];if(!id||!s){el.innerHTML='';return}const r=s.games.flatMap(g=>g.rolls)[0],ball=db.balls.find(b=>b.id===r?.ballId);el.innerHTML=`<div class="card" style="margin-top:10px;background:#eff8fb"><b>Última vez: ${esc(s.date)} · ${esc(s.venue||'Bolera sin indicar')}</b><p class="hint">${s.type==='oficial'?'Competición':'Entrenamiento'} · Bola: ${esc(ball?.model||'Sin asignar')} · Línea: ${esc([r?.line?.approach||'—',r?.line?.arrow||'—',r?.line?.breakpoint||'—'].join(' → '))}</p><p class="hint">${esc(s.patternNotes||s.notes||'Sin observaciones')}</p><button type="button" class="btn outline" onclick="selectedPatternId='${esc(id)}';go('patrones')">Ver historial completo</button></div>`}
+function patternsView(){const p=db.patterns.find(x=>x.id===selectedPatternId);const ss=p?db.sessions.filter(s=>s.patternId===p.id).sort((a,b)=>b.date.localeCompare(a.date)):[];const relevant=ss.filter(s=>s.type===patternMode&&!pendingClassification(s));const games=relevant.flatMap(s=>s.games.filter(g=>complete(g)&&(s.type!=='entrenamiento'||g.includeStats!==false)));const average=games.length?fmt(games.reduce((x,g)=>x+score(g),0)/games.length):'—';return `${head('Patrones de aceitado','')}<div class="card"><h2>Biblioteca · ${db.patterns.length}</h2>${db.patterns.map(x=>`<button class="btn ${selectedPatternId===x.id?'primary':'outline'}" style="margin:3px" onclick="selectedPatternId='${esc(x.id)}';render()">💧 ${esc(x.name)}${x.length?' · '+esc(x.length)+' ft':''}</button>`).join('')||'<p class="hint">Añade tu primer patrón y su PDF.</p>'}</div>${p?`<div class="card"><h2>${esc(p.name)}</h2><p class="hint">${esc([p.maker,p.length&&p.length+' pies',p.ratio&&'Ratio '+p.ratio,p.volume&&'Volumen '+p.volume].filter(Boolean).join(' · '))}</p>${p.notes?`<p>${esc(p.notes)}</p>`:''}<div class="actions"><button class="btn primary" onclick="openOilPDF('${p.id}')">Ver PDF</button><button class="btn outline" onclick="downloadOilPDF('${p.id}')">Descargar PDF</button></div><label class="field">Adjuntar / sustituir PDF local</label><input type="file" class="input" accept="application/pdf,.pdf" onchange="attachOilPDF('${p.id}',this)"><p class="hint">${esc(p.pdfName||'Sin PDF adjunto')} · Documento local, no incluido en la copia JSON</p></div><div class="seg mb16"><button class="${patternMode==='entrenamiento'?'active':''}" onclick="patternMode='entrenamiento';render()">Entrenamientos</button><button class="${patternMode==='oficial'?'active':''}" onclick="patternMode='oficial';render()">Competiciones</button></div><div class="card"><h2>Historial de uso</h2><div class="dashboard-grid">${tile('▤','Jornadas',relevant.length)}${tile('◎','Partidas',games.length)}${tile('★','Media',average)}</div>${relevant.map(s=>{const scores=s.games.filter(complete).map(score);const first=s.games.flatMap(g=>g.rolls)[0];const ball=db.balls.find(b=>b.id===first?.ballId);return `<details class="oil-history"><summary><b>${esc(s.date)}</b> · ${esc(s.venue||'Bolera sin indicar')} · ${scores.length} partidas</summary><p class="hint">${esc(s.title||'')} · ${esc(scores.join(' / ')||'Sin terminar')} · Bola inicial: ${esc(ball?.model||'Sin asignar')} · Línea ${esc([first?.line?.approach||'—',first?.line?.arrow||'—',first?.line?.breakpoint||'—'].join(' → '))}</p><label class="field">Observaciones personales</label><textarea class="input note" onchange="savePatternNote('${s.id}',this.value)">${esc(s.patternNotes||'')}</textarea><button class="btn outline" onclick="activeId='${s.id}';go('detalle')">Ver partidas, bolas y líneas</button></details>`}).join('')||'<p class="hint">Aún no has jugado este patrón en esta modalidad.</p>'}</div>`:''}<div class="card"><h2>Añadir patrón</h2><form onsubmit="addOilPattern(event)"><label class="field">Nombre</label><input class="input" name="name" required placeholder="Nombre exacto del patrón"><div class="form-grid"><div><label class="field">Longitud (pies)</label><input class="input" name="length" inputmode="decimal"></div><div><label class="field">Fabricante</label><input class="input" name="maker"></div><div><label class="field">Ratio</label><input class="input" name="ratio"></div><div><label class="field">Volumen</label><input class="input" name="volume"></div></div><label class="field">PDF (opcional)</label><input class="input" type="file" accept="application/pdf,.pdf"><label class="field">Observaciones del patrón</label><textarea class="input note" name="notes"></textarea><button class="btn primary block mt16" type="submit">Guardar patrón</button></form></div>`}
+
+// Exposed test harness; harmless in normal operation.
+window.__miBowlingTest={next,frameScores,score,complete,currentLane,aggregate,migrate};
+if('serviceWorker'in navigator&&location.protocol.startsWith('http')){
+ let swWasControlled=!!navigator.serviceWorker.controller;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  const isUpdate=swWasControlled;
+  swWasControlled=true;
+  // La primera instalación no es una actualización: no recargar al usuario durante la navegación.
+  if(!isUpdate)return;
+  updateAvailable=true;
+  updateStatus('Nueva versión descargada. Se aplicará al volver a abrir; puedes actualizar ahora.',true);
+  if(tab==='inicio'&&document.visibilityState==='visible'&&!updateCheckStarted){
+   updateCheckStarted=true;window.location.reload();
+  }
+ });
+ window.addEventListener('load',async()=>{try{swRegistration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});await swRegistration.update();}catch(e){}});
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdates(false)});
+}
+render();
+
+
+/* Liga Nacional · Primera División masculina · acta simplificada, almacenamiento aislado */
+const LIGA32_KEY='mi-bowling-liga-acta-v32';
+function ligaActaBlank(previous){const m=previous||ligaCurrent();return {id:uid(),date:today(),myTeam:m?.myTeam||'Mi equipo',rival:'Equipo rival',match:1,players:Array.from({length:12},(_,i)=>({name:m?.players?.[i]?.name||((i<6?'Jugador ':'Rival ')+(i%6+1)),trio:i%6<3?1:2,team:i<6?'own':'rival',scores:['',''],names:['','']})),demo:false}}
+let liga32;try{liga32=JSON.parse(localStorage.getItem(LIGA32_KEY)||'null')}catch(e){}
+if(!liga32||!Array.isArray(liga32.matches)||!liga32.matches.length){liga32={matches:[ligaActaBlank()]};const sample=[[205,198],[187,202],[220,214],[194,201],[179,195],[211,207],[198,195],[195,190],[210,208],[200,205],[188,199],[205,203]];liga32.matches[0].players.forEach((p,i)=>p.scores=sample[i].map(String));liga32.matches[0].demo=true;try{localStorage.setItem(LIGA32_KEY,JSON.stringify(liga32))}catch(e){}}
+let liga32Match=0,liga32Game=0;
+function liga32Current(){return liga32.matches[liga32Match]||liga32.matches[0]}
+function liga32Save(){try{localStorage.setItem(LIGA32_KEY,JSON.stringify(liga32))}catch(e){alert('No se pudo guardar la Liga. Exporta una copia.') }}
+function liga32Name(p,g){return p.names?.[g]||p.name}
+function liga32Score(p,g){if(p.links?.[g]){const link=p.links[g],ss=db.sessions.find(x=>x.id===link.sessionId),gg=ss?.games.find(x=>x.id===link.gameId);if(gg)return complete(gg)?score(gg):null;}let s=p.scores?.[g];return s!==''&&s!==null&&s!==undefined&&Number.isInteger(Number(s))&&Number(s)>=0&&Number(s)<=300?Number(s):null}
+function liga32Group(m,team,trio){return m.players.filter(p=>p.team===team&&p.trio===trio)}
+function liga32Totals(m,g,team,trio){let ps=liga32Group(m,team,trio),values=ps.map(p=>liga32Score(p,g));return {sum:values.reduce((a,v)=>a+(v??0),0),count:values.filter(v=>v!==null).length}}
+function liga32Compute(m){let games=[0,1].map(g=>{const complete=m.players.every(p=>liga32Score(p,g)!==null);let individual=[0,0],trios=[0,0];if(complete){let wins=[0,0];for(let i=0;i<6;i++){const x=liga32Score(m.players[i],g),y=liga32Score(m.players[i+6],g);if(x>y)wins[0]++;else if(x<y)wins[1]++;}individual=wins[0]===wins[1]?[1,1]:wins[0]>wins[1]?[2,0]:[0,2];let tw=[0,0];for(let t=1;t<=2;t++){let a=liga32Totals(m,g,'own',t).sum,b=liga32Totals(m,g,'rival',t).sum;if(a>b)tw[0]++;else if(a<b)tw[1]++;}trios=tw[0]===tw[1]?[1,1]:tw[0]>tw[1]?[2,0]:[0,2];}return {complete,individual,trios}});let final=games.every(g=>g.complete),total=[0,0],bolos=[0,0];for(const p of m.players)for(let g=0;g<2;g++){let n=liga32Score(p,g);if(n!==null)bolos[p.team==='own'?0:1]+=n;}let bp=final?(bolos[0]===bolos[1]?[1,1]:bolos[0]>bolos[1]?[2,0]:[0,2]):[0,0];games.forEach(g=>{if(g.complete){for(let i=0;i<2;i++)total[i]+=g.individual[i]+g.trios[i]}});if(final){total[0]+=bp[0];total[1]+=bp[1]}return {games,final,bolos,bp,total,allocated:games.filter(g=>g.complete).length*4+(final?2:0)}}
+function liga32ScoreChange(i,g,val){const m=liga32Current();if(!m.players[i])return;if(m.players[i].links?.[g])return alert('Esta puntuación procede de un registro detallado. Modifícala desde sus lanzamientos.');const v=String(val).trim();if(v!==''&&(!/^\d{1,3}$/.test(v)||Number(v)>300))return alert('Introduce una puntuación entre 0 y 300.');m.players[i].scores[g]=v;liga32Save();liga32Refresh()}
+function liga32NameChange(i,g,val){let p=liga32Current().players[i];if(p.links?.[g])return alert('No puedes cambiar el nombre de una partida detallada vinculada.');p.names[g]=val.trim();liga32Save();liga33RosterAdd(p.team==='own'?'own':liga32Current().rival,val.trim())}
+function liga32Header(k,v){liga32Current()[k]=v;liga32Save()}
+function liga32New(){const m=liga32Current();const next=liga32.matches.findIndex(x=>Number(x.round)===Number(m.round||1)&&Number(x.match)===Number(m.match||1)+1);if(next>=0){liga32Match=next;render();return}alert('La jornada ya dispone de los siete enfrentamientos. Selecciónalos arriba.')}
+function liga32Export(){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify({version:'3.3',league:liga32,rosters:liga33Roster},null,2)],{type:'application/json'}));a.href=url;a.download='Mi_Bowling_Liga_actas_'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+function liga32Input(m,i,g){const p=m.players[i],v=liga32Score(p,g),linked=!!p.links?.[g];return `<input aria-label="Puntuación ${esc(liga32Name(p,g))}, partida ${g+1}" class="input liga32-input" type="number" inputmode="numeric" min="0" max="300" placeholder="—" value="${v??''}" ${linked?'disabled title="Vinculada a tus lanzamientos"':''} onchange="liga32ScoreChange(${i},${g},this.value)">`}
+function liga33NameSelector(m,p,i,g){const name=liga32Name(p,g),team=p.team==='own'?'own':m.rival;let choices=[...new Set([name,...(liga33Roster[team]||[])].filter(Boolean))];return `<select class="input liga33-select" aria-label="Nombre de jugador" onchange="liga32NameChange(${i},${g},this.value);render()">${choices.map(n=>`<option value="${esc(n)}" ${n===name?'selected':''}>${esc(n)}</option>`).join('')}</select>`}
+function liga32Trio(m,t){return `<div class="card liga32-trio"><h2>Tripleta ${t}</h2><div class="liga32-grid-header"><span>Jugador</span><span>Partida 1</span><span>Partida 2</span></div>${['own','rival'].map(team=>{const group=liga32Group(m,team,t);return `<h3 class="liga32-team">${esc(team==='own'?m.myTeam:m.rival)}</h3>${group.map(p=>{const i=m.players.indexOf(p);return `<div class="liga32-row"><div class="liga32-name">${liga33NameSelector(m,p,i,liga32Game)}</div>${[0,1].map(g=>liga32Input(m,i,g)).join('')}</div><div class="liga33-myactions">${[0,1].map(g=>`<button class="btn outline" onclick="liga33OpenPersonal(${i},${g})">🎳 ${p.links?.[g]?'Continuar detalle':'Detalle opcional'} P${g+1}</button>`).join('')}</div>`}).join('')}<div class="liga32-subtotal"><strong>Total ${team==='own'?'propio':'rival'}</strong>${[0,1].map(g=>{let a=liga32Totals(m,g,team,t);return `<strong>${a.sum}${a.count<3?` <small>(${a.count}/3)</small>`:''}</strong>`}).join('')}</div>`}).join('')}<div class="liga32-difference">${[0,1].map(g=>{let a=liga32Totals(m,g,'own',t),b=liga32Totals(m,g,'rival',t),d=a.sum-b.sum;return `<span>P${g+1}: ${a.count===3&&b.count===3?`${d>0?'+':''}${d} bolos`:'Pendiente'}</span>`}).join('')}</div></div>`}
+function liga34Difference(m){
+ const perGame=[0,1].map(g=>{
+  const own=liga32Totals(m,g,'own',1),own2=liga32Totals(m,g,'own',2);
+  const rival=liga32Totals(m,g,'rival',1),rival2=liga32Totals(m,g,'rival',2);
+  const complete=own.count===3&&own2.count===3&&rival.count===3&&rival2.count===3;
+  const a=own.sum+own2.sum,b=rival.sum+rival2.sum;
+  return {complete,a,b,diff:a-b};
+ });
+ const one=perGame[0],two=perGame[1];
+ if(!one.complete)return `<div class="liga34-balance"><h3>Ventaja de bolos · Primera partida</h3><p class="hint">Pendiente: introduce las 12 puntuaciones de la primera partida para conocer la diferencia real.</p></div>`;
+ const signed=n=>`${n>0?'+':''}${n}`;
+ const lead=one.diff;
+ const goal=lead<0?`Necesitáis ganar la segunda partida por ${-lead+1} bolos para obtener los 2 puntos por bolos.`:lead>0?`Podéis perder la segunda partida por hasta ${lead-1} bolos y conservar los 2 puntos por bolos.`:'Necesitáis superar al rival por 1 bolo en la segunda partida para obtener los 2 puntos.';
+ const tie=lead<0?`Con ${-lead} bolos de ventaja en la segunda partida, empate global: 1 punto por equipo.`:lead>0?`Con ${lead} bolos de desventaja en la segunda partida, empate global: 1 punto por equipo.`:'Con empate en la segunda partida, empate global: 1 punto por equipo.';
+ const all=two.complete?`<p><strong>Segunda partida:</strong> ${two.a} – ${two.b} · ${signed(two.diff)}</p><p><strong>Total encuentro:</strong> ${one.a+two.a} – ${one.b+two.b} · <strong>${signed(lead+two.diff)} bolos</strong></p>`:`<p class="hint">La segunda partida todavía no está completa. No se adjudican los 2 puntos por bolos.</p>`;
+ return `<div class="liga34-balance"><h3>Ventaja de bolos · Primera partida</h3><p>${one.a} – ${one.b} · <strong>${signed(lead)} bolos</strong> ${lead>0?'a favor':lead<0?'en contra':'de diferencia'}</p><p><strong>Objetivo para la segunda:</strong> ${goal}</p><p class="hint">${tie}</p>${all}</div>`;
+}
+function liga32Summary(m){const r=liga32Compute(m);return `<div class="card" id="liga32-summary"><h2>Marcador del enfrentamiento</h2><div class="liga32-points"><div><small>${esc(m.myTeam)}</small><strong>${r.total[0]}</strong></div><span>–</span><div><small>${esc(m.rival)}</small><strong>${r.total[1]}</strong></div></div><p class="hint">${r.allocated} de 10 puntos adjudicados · ${10-r.allocated} pendientes</p><div class="liga32-breakdown"><span>Individuales</span><span>${r.games.map(x=>x.complete?x.individual.join('–'):'Pend.').join(' / ')}</span><span>Tripletas</span><span>${r.games.map(x=>x.complete?x.trios.join('–'):'Pend.').join(' / ')}</span><span>Bolos (2 partidas)</span><span>${r.final?r.bp.join('–'):'Pendiente'}</span><span>Total bolos anotados</span><strong>${r.bolos[0]} – ${r.bolos[1]}</strong></div>${liga34Difference(m)}<p class="hint">Los puntos solo se asignan cuando están registradas las 12 puntuaciones de la partida. Los 2 puntos por bolos se calculan al finalizar ambas.</p></div>`}
+function liga32Refresh(){let element=document.getElementById('liga32-summary');if(element)element.outerHTML=liga32Summary(liga32Current());document.querySelectorAll('.liga32-trio').forEach((el,j)=>{const temp=document.createElement('div');temp.innerHTML=liga32Trio(liga32Current(),j+1);const subtotals=el.querySelectorAll('.liga32-subtotal,.liga32-difference');const replacements=temp.querySelectorAll('.liga32-subtotal,.liga32-difference');subtotals.forEach((e,k)=>{if(replacements[k])e.outerHTML=replacements[k].outerHTML})})}
+/* v3.3: alineaciones con identidad por nombre, tres jornadas y 7 rivales por jornada. */
+const LIGA33_ROSTER_KEY='mi-bowling-liga-rosters-v33';
+let liga33Roster={};try{liga33Roster=JSON.parse(localStorage.getItem(LIGA33_ROSTER_KEY)||'{}')||{}}catch(e){}
+function liga33RosterAdd(team,name){if(!team||!name)return;liga33Roster[team]=liga33Roster[team]||[];if(!liga33Roster[team].includes(name))liga33Roster[team].push(name);localStorage.setItem(LIGA33_ROSTER_KEY,JSON.stringify(liga33Roster))}
+function liga33AddPlayer(){const m=liga32Current(),team=$('liga33-team')?.value||'own',n=$('liga33-player')?.value.trim();if(!n)return;liga33RosterAdd(team==='own'?'own':m.rival,n);render()}
+function liga33Prepare(){liga32.matches.forEach((m,i)=>{m.round=Number(m.round)||1;m.match=Number(m.match)||i%7+1;m.players.forEach(p=>{p.names=Array.isArray(p.names)?p.names:['',''];p.scores=Array.isArray(p.scores)?p.scores:['',''];p.links=p.links||{};if(p.isMe===undefined)p.isMe=false;liga33RosterAdd(p.team==='own'?'own':m.rival,p.name)})});
+ for(let r=1;r<=3;r++)for(let j=1;j<=7;j++)if(!liga32.matches.some(x=>x.round===r&&x.match===j)){const m=ligaActaBlank(liga32.matches[0]);m.round=r;m.match=j;m.date='';m.rival='Equipo rival';m.players.forEach(p=>{p.scores=['',''];p.names=['',''];p.links={};p.isMe=false});liga32.matches.push(m)}
+ liga32Save()}
+liga33Prepare();
+function liga33Choose(r,j){const i=liga32.matches.findIndex(x=>x.round===r&&x.match===j);if(i<0)return;liga32Match=i;render()}
+function liga33MarkMe(i){const m=liga32Current();m.players.forEach((p,k)=>{if(p.team==='own')p.isMe=k===i});liga32Save();render()}
+function liga33OpenPersonal(i,g){const m=liga32Current(),p=m.players[i];if(!p)return;let ss=null,gg=null;const old=p.links?.[g];if(old){ss=db.sessions.find(x=>x.id===old.sessionId);gg=ss?.games.find(x=>x.id===old.gameId)}
+ if(!ss||!gg){if(p.scores?.[g]!==''&&p.scores?.[g]!==undefined&&!confirm('Esta casilla ya tiene una puntuación rápida. Al iniciar el registro detallado se sustituirá por el resultado de los lanzamientos. ¿Continuar?'))return;
+ gg={id:uid(),includeStats:true,pair:null,startLane:null,segments:[],rolls:[]};ss={id:uid(),type:'oficial',leagueOther:!(p.team==='own'&&p.isMe),leaguePlayer:liga32Name(p,g),date:m.date||today(),title:`Liga Nacional · Jornada ${m.round} · Encuentro ${m.match} · ${liga32Name(p,g)} · Partida ${g+1}`,venue:'',pattern:'',patternId:'',patternNotes:'',competition:'Liga Nacional',goal:null,notes:'',currentBallId:'',currentLine:cleanLine({}),lane:null,games:[gg]};db.sessions.push(ss);p.links=p.links||{};p.links[g]={sessionId:ss.id,gameId:gg.id};p.scores[g]='';liga32Save();save()}
+ ligaReturn={matchId:m.id,playerIndex:i,game:g};activeId=ss.id;go('registro')}
+function ligaBack(){if(!ligaReturn)return go('liga');const index=liga32.matches.findIndex(x=>x.id===ligaReturn.matchId);if(index>=0)liga32Match=index;liga32Game=ligaReturn.game;ligaReturn=null;go('liga')}
+function liga33Stats(){const by=new Map();let sum=[0,0],finished=0;for(const m of liga32.matches){const c=liga32Compute(m);if(c.final){sum[0]+=c.total[0];sum[1]+=c.total[1];finished++}m.players.forEach(p=>{for(let g=0;g<2;g++){const v=liga32Score(p,g),n=liga32Name(p,g);if(v===null||!n)continue;const key=(p.team==='own'?'own':m.rival)+'|'+n;let e=by.get(key)||{team:p.team==='own'?m.myTeam:m.rival,name:n,balls:0,games:0,best:0};e.balls+=v;e.games++;e.best=Math.max(e.best,v);by.set(key,e)}})}return `<div class="card"><h2>Estadísticas de Liga Nacional</h2><p class="hint">${finished}/21 enfrentamientos completos · ${sum[0]}–${sum[1]} puntos federativos acumulados</p><div class="liga33-stats">${[...by.values()].sort((a,b)=>b.balls/b.games-a.balls/a.games).map(p=>`<div><strong>${esc(p.name)}</strong> <small>${esc(p.team)}</small><span>${p.games} partidas · Media ${fmt(p.balls/p.games)} · Mejor ${p.best}</span></div>`).join('')}</div><p class="hint">Las medias solo incluyen puntuaciones registradas, no los resultados generales de la Federación. Las partidas detalladas vinculadas se cuentan una sola vez.</p></div>`}
+function ligaView(){const m=liga32Current();return `${head('Liga Nacional','Primera División Masculina · 2026–27',`<button class="btn outline" onclick="newMode='oficial';competitionFormat='liga';go('nueva')">Volver</button>`)}<div class="card"><label class="field">Jornada</label><select class="input" onchange="liga33Choose(Number(this.value),1)">${[1,2,3].map(r=>`<option value="${r}" ${m.round===r?'selected':''}>Jornada ${r}</option>`).join('')}</select><label class="field">Enfrentamiento (sábado 1–4 / domingo 5–7)</label><select class="input" onchange="liga33Choose(${m.round},Number(this.value))">${Array.from({length:7},(_,i)=>`<option value="${i+1}" ${m.match===i+1?'selected':''}>${i<4?'Sábado':'Domingo'} · ${i+1} · ${esc(liga32.matches.find(x=>x.round===m.round&&x.match===i+1)?.rival||'')}</option>`).join('')}</select><label class="field">Mi equipo</label><input class="input" value="${esc(m.myTeam)}" onchange="liga32Header('myTeam',this.value);render()"><label class="field">Equipo rival</label><input class="input" value="${esc(m.rival)}" onchange="liga32Header('rival',this.value);render()"><label class="field">Fecha</label><input class="input" type="date" value="${esc(m.date||'')}" onchange="liga32Header('date',this.value)">${m.demo?'<p class="hint">Ejemplo ficticio editable. Puedes sustituir los resultados y nombres.</p>':''}</div><div class="card"><h2>Plantillas y jugador personal</h2><p class="hint">Añade los nombres una sola vez; selecciónalos en cada partida desde el desplegable. Marca cuál de los seis jugadores eres tú para que solo tus partidas detalladas cuenten en tus estadísticas personales.</p><select class="input" id="liga33-team"><option value="own">Mi equipo</option><option value="rival">${esc(m.rival)}</option></select><div class="row wrap mt12"><input class="input" id="liga33-player" placeholder="Nombre del jugador"><button class="btn outline" onclick="liga33AddPlayer()">+ Añadir</button></div><label class="field">Mi posición en el enfrentamiento</label><select class="input" onchange="liga33MarkMe(Number(this.value))"><option value="-1">Seleccionar mi jugador</option>${m.players.map((p,i)=>p.team==='own'?`<option value="${i}" ${p.isMe?'selected':''}>${esc(liga32Name(p,0))}</option>`:'').join('')}</select></div>${liga32Summary(m)}<div class="card"><h2>Hoja de puntuaciones</h2><p class="hint">Todos pueden usar puntuación final o detalle opcional. Solo el jugador marcado como tú alimenta tus estadísticas personales. Puedes cambiar la alineación entre partidas.</p><label class="field">Nombres que se muestran al editar la alineación</label><select class="input" onchange="liga32Game=Number(this.value);render()"><option value="0" ${liga32Game===0?'selected':''}>Partida 1</option><option value="1" ${liga32Game===1?'selected':''}>Partida 2</option></select></div>${[1,2].map(t=>liga32Trio(m,t)).join('')}${liga33Stats()}<div class="card"><button class="btn outline block" onclick="liga32Export()">↓ Exportar copia de Liga Nacional</button><p class="hint">Para conservar también los lanzamientos detallados, utiliza la copia general desde Ajustes. La copia de actas solo incluye la Liga.</p></div>`}
+function ligaShowFrame(){} // Compatibilidad con el render general.

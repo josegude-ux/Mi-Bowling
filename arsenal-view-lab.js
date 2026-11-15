@@ -15,16 +15,39 @@
   if(ctx.mode==='catalog'){
    const query=String(ctx.catalogQuery||'');
    const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
-   const cards=lib.profiles.map(p=>{
-    const matching=balls.find(b=>lib.find(b)?.id===p.id);
-    const searchText=p.brand+' '+p.model+' '+p.role+' '+p.oil;
+   const official=root.MiBowlingOfficialBallCatalog;
+   const localProfiles=lib.profiles.map(p=>Object.assign({origin:'historical'},p));
+   const extra=(official?.models||[]).map(p=>Object.assign({origin:'official'},p));
+   const pool=[...localProfiles,...extra],total=pool.length;
+   const cards=pool.map(p=>{
+    const matching=balls.find(b=>p.origin==='historical'
+     ?lib.find(b)?.id===p.id
+     :norm(b.brand)===norm(p.brand)&&norm(b.model)===norm(p.model));
+    const searchText=[p.brand,p.model,p.role||'',p.oil||''].join(' ');
     const shown=norm(searchText).includes(norm(query));
-    const status=matching?(matching.retired?'Registrada (retirada)':'Registrada en Mis bolas'):'Ficha informativa';
-    const add=matching?'<span class="pill gray">'+escape(status)+'</span>':'<button type="button" class="btn primary" onclick="registerBallFromCatalog('+escape(JSON.stringify(p.id))+')">Añadir a Mis bolas</button>';
-    return '<article class="arsenal-model" data-search="'+escape(searchText)+'" style="'+(shown?'':'display:none')+'"><div><strong>'+escape(p.brand+' '+p.model)+'</strong><p class="hint">'+escape(p.role)+' · '+escape(p.oil)+'</p></div><div class="actions">'+add+link('Ver análisis','profile',p.id)+'</div></article>';
+    const status=matching?(matching.retired?'Registrada (retirada)':'Registrada en Mis bolas'):'';
+    const add=matching?'<span class="pill gray">'+escape(status)+'</span>'
+     :'<button type="button" class="btn primary" onclick="registerBallFromCatalog('+escape(JSON.stringify(p.id))+')">Añadir a Mis bolas</button>';
+    const source=p.origin==='official'
+     ?'<a class="btn outline" href="'+escape(p.sourceUrl)+'" target="_blank" rel="noopener noreferrer">'+(p.sourceType==='product'?'Ficha del fabricante':'Catálogo del fabricante')+'</a>'
+     :link('Ver análisis','profile',p.id);
+    const info=p.origin==='official'?'Referencia en fabricante · sin parámetros supuestos':p.role+' · '+p.oil;
+    return '<article class="arsenal-model" data-search="'+escape(searchText)+'" style="'+(shown?'':'display:none')+'"><div><strong>'+escape(p.brand+' '+p.model)+'</strong><p class="hint">'+escape(info)+'</p></div><div class="actions">'+add+source+'</div></article>';
    }).join('');
-   const visible=lib.profiles.filter(p=>norm(p.brand+' '+p.model+' '+p.role+' '+p.oil).includes(norm(query))).length;
-   return headline+nav+intro+'<div class="card"><h2>Catálogo técnico · 10 modelos</h2><p class="hint">Busca un modelo y añádelo una sola vez a Mis bolas. Después, marca su casilla para utilizarlo en una sesión. El peso y el taladro son opcionales y no se deducen.</p><label class="field" for="arsenal-catalog-search">Buscar por marca, modelo, función o aceite</label><input id="arsenal-catalog-search" type="search" class="input" value="'+escape(query)+'" placeholder="Ej. Brunswick, Phantom o aceite medio" oninput="filterArsenalCatalog(this.value)"><p class="hint" id="arsenal-catalog-count">'+visible+' de 10 modelos</p><div class="arsenal-model-list">'+cards+'</div><p id="arsenal-catalog-noresults" class="hint" '+(visible?'hidden':'')+'>No hay coincidencias en los 10 modelos locales.</p></div>';
+   const visible=pool.filter(p=>norm([p.brand,p.model,p.role||'',p.oil||''].join(' ')).includes(norm(query))).length;
+   const officialLinks=Object.entries(official?.catalogs||{}).map(([brand,url])=>
+    '<a class="btn outline" target="_blank" rel="noopener noreferrer" href="'+escape(url)+'">'+escape(brand)+'</a>').join(' ');
+   return headline+nav+intro+
+    '<div class="card"><h2>Catálogo local · '+total+' modelos</h2>'+
+    '<p class="hint">Incluye 10 fichas históricas de tu arsenal y '+extra.length+' referencias consultadas en páginas oficiales de fabricantes. Es una selección local, NO una búsqueda en vivo ni un catálogo completo. Se puede utilizar sin conexión.</p>'+
+    '<label class="field" for="arsenal-catalog-search">Buscar por marca o modelo (y función/aceite en fichas históricas)</label>'+
+    '<input id="arsenal-catalog-search" type="search" class="input" value="'+escape(query)+'" placeholder="Ej. Track, Theorem Delta o Phantom" oninput="filterArsenalCatalog(this.value)">'+
+    '<p class="hint" id="arsenal-catalog-count" aria-live="polite">'+visible+' de '+total+' modelos</p>'+
+    '<div class="arsenal-model-list">'+cards+'</div>'+
+    '<p id="arsenal-catalog-noresults" class="hint" '+(visible?'hidden':'')+'>Ese modelo no figura todavía en esta selección local. Puedes consultar el fabricante o añadir marca y modelo manualmente.</p>'+
+    '<div class="card"><h3>Catálogos oficiales completos</h3><p class="hint">Estos enlaces abren la web del fabricante con Internet; la aplicación no extrae datos de esas páginas.</p><div class="actions">'+officialLinks+'</div>'+
+    '<button type="button" class="btn outline block mt12" onclick="setArsenalPanel('+"'list'"+');ballEditingId='+"'nuevo'"+';render()">Añadir una bola manualmente sin inventar ficha técnica</button></div>'+
+    '</div>';
   }
   if(ctx.mode==='profile'||ctx.mode==='detail'){
    const registered=ctx.mode==='detail'?balls.find(b=>b.id===ctx.detailId):balls.find(b=>lib.find(b)?.id===ctx.detailId);
