@@ -4,6 +4,7 @@
 </style></head><body>
 <header><div class="eyebrow">MI BOWLING · CATÁLOGO VISUAL INDEPENDIENTE</div><h1>100 bolas recientes para elegir</h1><p>Busca, compara y marca tus modelos favoritos. Actualiza la lista con el PDF oficial de la USBC, sin alterar tus partidas ni tu arsenal en MI BOWLING.</p></header>
 <main><div class="notice" id="disclaimer"><strong>Origen y alcance:</strong> el listado inicial reúne 100 referencias recientes de 2026 de una fuente secundaria que cita aprobaciones USBC; <strong>no se afirma que sean las 100 más recientes del PDF completo</strong>. Para obtener las 100 últimas exactas, usa <strong>«Actualizar desde PDF USBC»</strong>. Las fotos y especificaciones técnicas que no estén verificadas se muestran como pendientes.</div>
+<div id="private-photo-controls"></div>
 <section class="surface toolbar" aria-label="Herramientas del catálogo"><div class="metrics"><div class="metric"><strong id="total">100</strong><small>Referencias</small></div><div class="metric"><strong id="chosen">0</strong><small>Marcadas</small></div><div class="metric"><strong id="photos">0</strong><small>Con foto</small></div></div>
 <div class="tools"><input type="search" id="query" aria-label="Buscar bolas" placeholder="Buscar marca, modelo o fecha…"><select id="brand" aria-label="Filtrar por marca"><option value="">Todas las marcas</option></select><select id="filter" aria-label="Filtrar selección"><option value="all">Todas las bolas</option><option value="chosen">Solo marcadas</option><option value="images">Con fotografía</option></select></div>
 <div class="tools"><button class="btn primary" id="loadPdf">↻ Actualizar desde PDF USBC</button><input class="hidden" type="file" id="pdfFile" accept=".pdf,application/pdf"><button class="btn" id="saveJson">Exportar elegidas · JSON</button><button class="btn" id="saveCsv">Exportar elegidas · CSV</button><button class="btn" id="saveArchive">Exportar archivo histórico</button><button class="btn" id="reset">Restaurar 100 de referencia</button><a class="btn" rel="noopener noreferrer" target="_blank" href="https://bowl.com/approved-ball-list">Ver fuente USBC</a></div>
@@ -22,5 +23,6 @@
 <script src="../integracion/respaldo-pdf-f1.js"></script>
 <script src="../integracion/recuperacion-integral.js"></script>
 <script src="enrichment20.js"></script>
-<script src="../integracion/arranque-lab.js" data-page="catalogo"></script>
+<script src="../integracion/fotos-privadas.js"></script>
+<script src="../integracion/arranque-fotos.js" data-page="catalogo"></script>
 </body></html>
