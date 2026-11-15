@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const root=path.resolve(__dirname,'..');
 const get=n=>fs.readFileSync(path.join(root,n),'utf8');
-const js=get('official-ball-catalog.js'),view=get('arsenal-view-lab.js'),app=get('app.js'),html=get('index.html'),sw=get('sw.js');
+const js=get('official-ball-catalog.js'),view=get('releases/catalogo-local-f1-fotos1/arsenal-view.js'),app=get('releases/catalogo-local-f1-fotos1/app.js'),html=get('index.html'),sw=get('sw.js'),loader=get('integracion/arranque-fotos.js');
 new Function(js);new Function(view);new Function(app);
 const official=require('node:vm').runInNewContext(js+'; JSON.stringify(MiBowlingOfficialBallCatalog.models)',{});
 const models=JSON.parse(official),norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -14,12 +14,11 @@ for(const m of models){assert(m.id.startsWith('official-'),'id namespaced');
  assert(/^https:\/\/(www\.)?(stormbowling\.com|hammerbowling\.com|trackbowling\.com|dv8bowling\.com|brunswickbowling\.com)\//.test(m.sourceUrl),'enlace de dominio oficial '+m.model);
  assert(!('rg' in m)&&!('weight' in m)&&!('layout' in m),'sin datos técnicos no verificados');
 }
-assert(html.includes('official-ball-catalog.js?v=official-catalog-cp037'),'fuentes enlazadas');
-assert(html.indexOf('official-ball-catalog.js')<html.indexOf('arsenal-view-lab.js'),'fuentes cargadas antes de la vista');
+assert(html.includes('integracion/arranque-fotos.js')&&loader.includes('official-ball-catalog.js?v=official-catalog-cp037'),'fuentes enlazadas');
+assert(loader.indexOf('official-ball-catalog.js')<loader.indexOf('arsenal-view.js'),'fuentes cargadas antes de la vista');
 for(const token of ["const KEY='mi-bowling-analitica-v2'","const BALL_SELECTION_KEY='mi-bowling-ball-selection-v1'","function recordRoll(","function undoRoll("])
  assert(app.includes(token),'compatibilidad '+token);
-assert(sw.includes("const CACHE='mi-bowling-analitica-v3-3-10-catalogo-cp037'"),'versión CP037');
-assert(sw.includes('official-ball-catalog.js?v=official-catalog-cp037'),'precache de fuentes');
+assert(sw.includes("const CACHE='mi-bowling-release-'+RELEASE")&&sw.includes('official-ball-catalog.js?v=official-catalog-cp037'),'precache de fuentes en caché versionada');
 console.log('PASS CATALOG SOURCES static: 21 refs oficiales, 10 perfiles previos, PWA CP037, datos y motor sin migración');
 if(!process.argv.includes('--browser'))process.exit(0);
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg'};
@@ -79,7 +78,7 @@ async function verify(engine,url){
    await page.reload({waitUntil:'load'});
    await page.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:20000});
    const cache=await page.evaluate(async()=>({names:await caches.keys(),catalog:!!(await caches.match('./official-ball-catalog.js?v=official-catalog-cp037'))}));
-   assert(cache.catalog&&cache.names.includes('mi-bowling-analitica-v3-3-10-catalogo-cp037'),'catálogo precargado');
+   assert(cache.catalog&&cache.names.some(name=>name.startsWith('mi-bowling-release-')),'catálogo precargado en caché versionada');
    await ctx.setOffline(true);
    await page.reload({waitUntil:'load'});
    await page.evaluate(()=>{go('bolas');setArsenalPanel('catalog')});
