@@ -1,0 +1,30 @@
+name: MI BOWLING | Catalog UI CP002 origin
+on:
+  push:
+    branches: [ui/catalogo-compacto-20261115]
+    paths:
+      - .github/workflows/catalog-ui-origin-cp002.yml
+      - tests/catalog-ui-origin-cp002.cjs
+      - design-ui-tipo-home-rc2.css
+      - releases/catalogo-local-f1-fotos1/arsenal-view.js
+      - sw.js
+permissions:
+  contents: read
+jobs:
+  chromium:
+    if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/ui/catalogo-compacto-20261115'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install test browser
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify actual isolated origin
+        run: node tests/catalog-ui-origin-cp002.cjs
