@@ -1,0 +1,121 @@
+# CP004 infrastructure only. Private application and test kit are never committed.
+# Deliberately dormant: adding this workflow does not match the activation path.
+name: MI BOWLING | CP004 Chromium privado
+on:
+  push:
+    branches: [lab/pwa-release-cp015-20261113]
+    paths: ['tests/cp004-chromium/ACTIVAR']
+permissions:
+  contents: read
+concurrency:
+  group: cp004-private-chromium
+  cancel-in-progress: false
+jobs:
+  exact-chromium:
+    if: >-
+      github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/lab/pwa-release-cp015-20261113' && github.event.head_commit.message == 'CP004: activar homologacion autorizada B01-B06'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: cp004-private-input
+      deployment: false
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser before private input
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir "$RUNNER_TEMP/cp004-exact"
+          cd "$RUNNER_TEMP/cp004-exact"
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Retrieve both private archives and check exact SHA256
+        env:
+          CP004_DRIVE_FILE_ID: ${{ secrets.CP004_DRIVE_FILE_ID }}
+          CP004_KIT_DRIVE_FILE_ID: ${{ secrets.CP004_KIT_DRIVE_FILE_ID }}
+          CP004_DRIVE_ACCESS_TOKEN: ${{ secrets.CP004_DRIVE_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          python3 - <<'PY'
+          import hashlib, os, re, sys, urllib.request
+          from pathlib import Path
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, *a, **kw): return None
+          root = Path(os.environ['RUNNER_TEMP']) / 'cp004-exact'
+          items = [
+              ('CP004_DRIVE_FILE_ID', 'CP004.zip', 3638416, '737da8902b7524ede5e5d70b57a890957cae3f232061c163ea1681a7d4d82d05'),
+              ('CP004_KIT_DRIVE_FILE_ID', 'kit.zip', 12482, 'fb1a74718223e92307910638c4aca15a48c79ab771d3667b8d4c208b66b08949'),
+          ]
+          try:
+              token = os.environ['CP004_DRIVE_ACCESS_TOKEN']
+              if not token or any(c in token for c in '\r\n'): raise ValueError('credential')
+              opener = urllib.request.build_opener(NoRedirect)
+              for key, name, size, digest in items:
+                  fid = os.environ[key]
+                  if not re.fullmatch(r'[A-Za-z0-9_-]{10,200}', fid): raise ValueError('file')
+                  req = urllib.request.Request('https://www.googleapis.com/drive/v3/files/' + fid + '?alt=media', headers={'Authorization': 'Bearer ' + token, 'Accept-Encoding': 'identity'})
+                  with opener.open(req, timeout=90) as resp:
+                      if resp.status != 200: raise ValueError('status')
+                      raw = resp.read(size + 1)
+                  if len(raw) != size or hashlib.sha256(raw).hexdigest() != digest: raise ValueError('integrity')
+                  with (root / name).open('xb') as out: out.write(raw)
+              print('PRIVATE INPUT PASS: CP004 and kit exact SHA256')
+          except Exception:
+              print('PRIVATE INPUT BLOCKED: authorized exact archives unavailable.', file=sys.stderr)
+              sys.exit(1)
+          PY
+      - name: Verify kit and run exact CP004 B01-B06
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          cd "$RUNNER_TEMP/cp004-exact"
+          python3 - <<'PY'
+          import hashlib, zipfile
+          from pathlib import Path
+          p = Path('kit.zip')
+          if hashlib.sha256(p.read_bytes()).hexdigest() != 'fb1a74718223e92307910638c4aca15a48c79ab771d3667b8d4c208b66b08949': raise SystemExit('KIT BLOCKED: SHA256')
+          with zipfile.ZipFile(p) as z:
+              manifest = z.read('MANIFIESTO.sha256').decode().splitlines()
+              expected = {'LEEME.md','preparar.py','obtener-privado.py','chromium-cp004.cjs','cp004-chromium.yml','evidencia.txt'}
+              if len(z.namelist()) != 7 or set(z.namelist()) != expected | {'MANIFIESTO.sha256'} or len(manifest) != 6 or z.testzip() is not None: raise SystemExit('KIT BLOCKED: entries')
+              seen = set()
+              for line in manifest:
+                  digest, name = line.split('  ', 1)
+                  if name not in expected or name in seen or hashlib.sha256(z.read(name)).hexdigest() != digest: raise SystemExit('KIT BLOCKED: manifest')
+                  seen.add(name)
+              if seen != expected: raise SystemExit('KIT BLOCKED: coverage')
+              Path('kit').mkdir()
+              for name in ('preparar.py','chromium-cp004.cjs'):
+                  (Path('kit') / name).write_bytes(z.read(name))
+          print('KIT PASS: 6/6 exact manifest')
+          PY
+          python3 kit/preparar.py CP004.zip candidate
+          # Keep detailed diagnostic output temporary. Public log only exposes gate results.
+          set +e
+          timeout 9m node kit/chromium-cp004.cjs candidate > browser-private.log 2>&1
+          status=$?
+          set -e
+          python3 - "$status" <<'PY'
+          import re, sys
+          from pathlib import Path
+          passed=[]
+          for line in Path('browser-private.log').read_text(errors='replace').splitlines():
+              if re.fullmatch(r'Chromium [0-9.]+', line) or re.fullmatch(r'TRANSPORT PASS 53/53 exact bytes over loopback HTTP; NOT browser cache', line): print(line)
+              elif re.fullmatch(r'B0[1-6] PASS [A-Za-z0-9 /+,.=-]{1,150}', line):
+                  print(line); passed.append(line[:3])
+          rc=int(sys.argv[1])
+          if rc != 0 or passed != ['B01','B02','B03','B04','B05','B06']:
+              print('CP004_CHROMIUM NOT HOMOLOGATED: exit=%d; completed=%s' % (rc, ','.join(passed) or 'none'))
+              sys.exit(1)
+          print('CP004_CHROMIUM PASS 6/6; Safari/iPhone and actual IDB quota not certified')
+          PY
+      - name: Remove all private inputs and temporary logs
+        if: always()
+        shell: bash
+        run: rm -rf -- "$RUNNER_TEMP/cp004-exact"
