@@ -1,0 +1,45 @@
+name: "MI BOWLING | LAB Catálogo 100 · Guardas de variantes"
+on:
+  push:
+    branches: [lab/catalogo100-variant-identity-20261110]
+  pull_request:
+    branches: [lab/catalogo100-mis-bolas-integracion-20261110]
+    paths:
+      - 'app.js'
+      - 'arsenal-view-lab.js'
+      - 'index.html'
+      - 'catalogo100-variant-policy.js'
+      - 'tests/catalogo100-variant-review-lab.cjs'
+      - 'docs/BOWLING-CATALOG100-VARIANTS-LAB-20261110.md'
+      - '.github/workflows/catalogo100-variants-lab.yml'
+permissions:
+  contents: read
+jobs:
+  static:
+    name: Variantes · contratos nuevos (no repetir CP-001)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: |
+          node --check app.js
+          node --check arsenal-view-lab.js
+          node --check catalogo100-variant-policy.js
+          node --check tests/catalogo100-variant-review-lab.cjs
+          node tests/catalogo100-variant-review-lab.cjs
+  browser:
+    name: Variantes · Chromium/WebKit móvil ficticio
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Playwright aislado
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Choques de nombre, peso/SKU sin verificar, alta manual y JSON
+        run: node tests/catalogo100-variant-review-lab.cjs --browser
