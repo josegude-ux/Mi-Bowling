@@ -7,11 +7,15 @@
   const source=bridge.current(),items=source.items,query=String(ctx.catalogQuery||'');
   const norm=x=>String(x||'').toLowerCase().normalize('NFD')
    .replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+  const policy=root.MiBowlingCatalog100VariantPolicy;
   const exists=x=>balls.find(b=>bridge.identity(b)===bridge.identity(x));
   const matching=x=>norm(x.brand+' '+x.model+' '+x.approved).includes(norm(query));
   const cards=items.map(x=>{
    const found=exists(x),matched=matching(x);
-   const action=found?'<span class="pill gray">'+escape(found.retired?'Registrada (retirada)':'Registrada en Mis bolas')+'</span>'
+   const ambiguity=found||(!policy?true:policy.inspect(x,balls).kind==='name-collision');
+   const action=ambiguity?
+    '<span class="pill gray">Coincidencia de nombre: edición, peso, SKU y unidad sin verificar'+(found?.retired?' (retirada)':'')+'</span>'+
+    '<button class="btn outline" type="button" onclick="openCatalog100Manual('+escape(JSON.stringify(x.id))+')">Revisar variante / alta manual</button>'
     :'<button class="btn primary" type="button" onclick="registerBallFromCatalog('+escape(JSON.stringify(x.id))+')">Añadir a Mis bolas</button>';
    return '<article class="arsenal-model" data-search="'+escape(x.brand+' '+x.model+' '+x.approved)+'" style="'+(matched?'':'display:none')+'">'+
     '<div><strong>'+escape(x.brand+' '+x.model)+'</strong><p class="hint">Fecha de aprobación indicada: '+escape(x.approved)+
@@ -31,7 +35,7 @@
    '<div class="arsenal-model-list">'+cards+'</div>'+
    '<p id="arsenal-catalog-noresults" class="hint" '+(items.some(matching)?'hidden':'')+'>No figura en esta plantilla. Puedes buscarlo en el catálogo local o registrarlo manualmente.</p>'+
    '<div class="card"><h3>Transferir bolas marcadas desde la plantilla</h3>'+
-   '<p class="hint">Exporta «JSON de elegidas» en la plantilla independiente y selecciona ese archivo aquí. Se mostrarán las incorporaciones para confirmarlas. No se copiarán fotos, notas ni especificaciones no verificadas.</p>'+
+   '<p class="hint">Exporta «JSON de elegidas» en la plantilla independiente y selecciona ese archivo aquí. No sincroniza dispositivos ni demuestra variantes/SKU. Las coincidencias de nombre se omitirán para revisión; no se copiarán fotos, notas ni especificaciones no verificadas.</p>'+
    '<label class="field" for="catalog100-selection-file">Elegir archivo JSON de selección</label>'+
    '<input id="catalog100-selection-file" class="input" type="file" accept=".json,application/json" onchange="importCatalog100Selection(this)">'+
    '<p class="hint">El archivo se lee localmente y nunca sustituye tus sesiones ni las bolas existentes. El alta solo se aplica si confirmas.</p></div>'+
