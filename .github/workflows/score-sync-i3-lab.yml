@@ -1,0 +1,68 @@
+name: MI BOWLING · LAB I3 · Autosave privado de puntuaciones
+on:
+  push:
+    branches:
+      - feature/integracion-main-auth-i3-lab-20261109
+  pull_request:
+    paths:
+      - 'lab/score-sync-i3.js'
+      - 'lab/integracion-main-auth-cp020*'
+      - 'tests/score-sync-i3*'
+      - '.github/workflows/score-sync-i3-lab.yml'
+permissions:
+  contents: read
+jobs:
+  i3-contract:
+    name: I3 · contratos, aislamiento A/B/C y concurrencia
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verificar activos publicados CP-020 byte a byte
+        run: |
+          node tests/integracion-main-auth-cp020-contract.test.cjs
+          node tests/official-calendar-smoke.cjs
+      - name: Sintaxis de integración y tests
+        run: |
+          node --check lab/score-sync-i3.js
+          node --check lab/integracion-main-auth-cp020.js
+          node --check tests/score-sync-i3.test.cjs
+          node --check tests/score-sync-i3-browser.test.cjs
+      - name: Tres jugadores, autosave, conflictos, offline, errores y logout
+        run: |
+          node tests/score-sync-i3.test.cjs
+          node tests/auth-three-users-rls-a5.test.cjs
+          node tests/auth-storage-a8.test.cjs
+          node tests/stats-bolos.test.cjs
+  i3-browser:
+    name: I3 · WebKit iPhone/tablet + Chromium escritorio
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright de pruebas (sin servicios de usuario)
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.65.0
+      - name: Preparar WebKit de pruebas
+        run: ./node_modules/.bin/playwright install --with-deps webkit
+      - name: Regresión UI integración I2 preservada
+        run: node tests/integracion-main-auth-cp020-browser.test.cjs
+      - name: I3 autosave desde el main CP-020 en navegadores
+        run: node tests/score-sync-i3-browser.test.cjs
+      - name: Capturas LAB ficticias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mi-bowling-score-sync-i3-lab
+          path: |
+            tests/artifacts-integracion-i3/*.png
+            tests/artifacts-integracion-i2/*.png
+          retention-days: 14
+          if-no-files-found: warn

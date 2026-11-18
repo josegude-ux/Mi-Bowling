@@ -95,7 +95,8 @@ assert.ok(bridge.includes('MiBowlingProfiles.storageKey('),
  'Old local profiles are import sources, not parallel authentication');
 assert.ok(lab.includes('stats-bolos.css?v=r1')&&lab.includes('stats-bolos.js?v=r1'));
 assert.ok(lab.includes('profiles.js?v=i1')&&lab.includes('auth-lab.js?v=a8'));
-assert.ok(lab.indexOf('stats-bolos.js?v=r1')<lab.indexOf('lab/integracion-main-auth-cp020.js?v=i2'));
+assert.ok(lab.indexOf('stats-bolos.js?v=r1')<lab.indexOf('lab/integracion-main-auth-cp020.js?v=i3'),
+ 'I3 must load pin statistics before the isolated integration controller');
 assert.ok(!lab.includes('<script src="app.js'),
  'Main CP-020 app is only loaded after the fake email login');
 assert.ok(!sw.includes('integracion-main-auth-cp020'),

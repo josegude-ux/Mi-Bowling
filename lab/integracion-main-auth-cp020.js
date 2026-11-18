@@ -59,7 +59,7 @@ for(const [letter,u] of Object.entries(USERS)){
    rosters:{own:[]}},revision:0}]
  ]));
 }
-let current=null,currentDocs=null,gate=null,mainReady=false,view='home',archive=null,repo;
+let current=null,currentDocs=null,gate=null,mainReady=false,view='home',archive=null,repo,scoreSync=null;
 const fixtureData=letter=>letter==='B'?personal('B'):personal(letter);
 const totalSessions=letter=>fixtureData(letter).sessions.length;
 const fakeClient={
@@ -185,18 +185,19 @@ function updatePressed(){
  for(const id of Object.values(map))$(id).setAttribute('aria-pressed',id===map[view]?'true':'false');
 }
 async function saveInLAB(){
- if(!mainReady||!current)throw Error('No existe sesión ficticia válida');
- const doc=await repo.load(current.id);
+ if(!mainReady||!current||!scoreSync)throw Error('No existe sesión ficticia válida');
+ scoreSync.observe();
+ const result=await scoreSync.flush({force:true});
+ if(result.blocked||!result.online)throw Error('Guardado privado detenido: '+(result.error||result.phase));
  const body=Function('return JSON.parse(JSON.stringify(db))')();
- const revision=await repo.write(current.id,'personal',body,doc.personal.revision);
  const reloaded=await repo.load(current.id);
- if(reloaded.personal.revision!==revision||
+ if(reloaded.owner!==current.id||reloaded.personal.revision!==result.revision||
     JSON.stringify(reloaded.personal.payload)!==JSON.stringify(body))
   throw Error('La copia privada no coincide con la partida simulada');
  currentDocs=reloaded;
  setStatus('Guardado privado simulado verificado para '+current.name+
-  ' · revisión '+revision+'. Liga Nacional intacta.','success');
- return revision;
+  ' · revisión '+result.revision+'. Liga Nacional intacta.','success');
+ return result.revision;
 }
 async function prepareMain({user,documents}){
  if(mainReady)throw Error('El motor solo puede abrirse una vez por sesión');
@@ -216,6 +217,21 @@ async function prepareMain({user,documents}){
  });
  dom.body.appendChild(script);
  await promise;
+ // I3 attaches AFTER the protected main is loaded. Only reads the in-memory
+ // global db; all private writes pass through identity-checked repository CAS.
+ scoreSync=root.MiBowlingScoreSyncI3.create({
+  repository:repo,owner:current.id,debounceMs:80,
+  read:()=>Function('return JSON.parse(JSON.stringify(db))')(),
+  onStatus:s=>{
+   if(!mainReady)return;
+   if(s.phase==='saved')setStatus('Autosave privado ficticio · revisión '+s.revision+'.','success');
+   else if(s.phase==='conflict'||s.phase==='error')
+    setStatus('I3 bloqueado: '+(s.error||s.phase)+'. No se sobrescriben partidas.','error');
+   else if(s.phase==='offline')setStatus('I3 sin conexión simulada · cambios solo en RAM.','warning');
+  }
+ });
+ await scoreSync.start();
+ scoreSync.attachMain(root);
  mainReady=true;
  $('lab-auth-area').hidden=true;$('lab-app-shell').hidden=false;
  $('lab-owner').textContent='👤 '+current.name+' · '+current.email;
@@ -237,6 +253,7 @@ gate=root.MiBowlingAuthGate.create({
   // The real main app has global variables; never reuse it for another owner.
   // Reload clears all transient data, prevents a stale app from reading B's state.
   $('lab-app-shell').hidden=true;
+  scoreSync?.close();scoreSync=null;
   isolation.local.clear();isolation.session.clear();
   root.location.reload();
  }
@@ -264,6 +281,7 @@ dom.addEventListener('click',e=>{
 root.MiBowlingIntegrationI2=Object.freeze({
  getState:()=>({
   owner:current?.id||null,email:current?.email||null,
+  scoreSync:scoreSync?.state()||null,
   opened:mainReady,view,archive:archive?clone(archive):null,
   auth:gate.getState(),isolation:isolation.status(),
   sessions:currentDocs?.personal?.payload?.sessions?.length??null,
