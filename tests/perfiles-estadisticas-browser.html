@@ -1,0 +1,154 @@
+<!doctype html><html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="../">
+<title>MI BOWLING · integración real de perfiles y estadísticas</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="stats-bolos.css"><link rel="stylesheet" href="profiles.css">
+<style>body{min-height:100vh}.test-lab-title{padding:8px 12px;background:#eaf5ff;color:#205477;font:700 12px system-ui}</style>
+</head><body class="player-gated">
+<div class="test-lab-title">MI BOWLING · LAB de integración · Usuarios y partidas ficticios</div>
+<div id="profile-gate"></div>
+<header class="topbar"><div class="topbar-inner"><span class="brand">🎳 MI BOWLING</span>
+<div class="header-actions"><button id="player-switch" hidden type="button" onclick="MiBowlingProfiles.leave()"><span id="player-current"></span></button></div></div></header>
+<main id="app" class="app-main"></main><nav id="bottom-nav" class="bottom-nav"></nav>
+<input id="restore-file" type="file" accept=".json" hidden disabled>
+<script>
+'use strict';
+const P_TEST={
+ a:'p-e2e-a',b:'p-e2e-b',c:'p-e2e-c'
+};
+const labPlayer=new URL(location.href).searchParams.get('player')||'a';
+const all=[1,2,3,4,5,6,7,8,9,10];
+function sampleGame(which){
+ const rolls=[];
+ for(let f=1;f<=10;f++){
+  if(which==='c'){
+    rolls.push({frame:f,ball:1,pins:all.slice(),ballId:'bola-c'});
+    if(f===10){
+     rolls.push({frame:f,ball:2,pins:all.slice(),ballId:'bola-c'});
+     rolls.push({frame:f,ball:3,pins:all.slice(),ballId:'bola-c'});
+    }
+  }else{
+   const first=f<=5?all.slice(0,9):all.slice(0,8);
+   const second=f<=5?[10]:f===10?[9,10]:[9];
+   rolls.push({frame:f,ball:1,pins:first,ballId:'bola-a'});
+   rolls.push({frame:f,ball:2,pins:second,ballId:'bola-a'});
+   if(f===10)rolls.push({frame:f,ball:3,pins:all.slice(),ballId:'bola-a'});
+  }
+ }
+ return {id:'g-'+which,includeStats:true,rolls};
+}
+function playerDB(which){
+ if(which==='b')return {version:2,hand:'diestro',balls:[],patterns:[],sessions:[]};
+ return {
+  version:2,hand:which==='c'?'zurdo':'diestro',
+  balls:[{id:'bola-'+which,brand:'LAB',model:'Bola '+which}],
+  patterns:[],
+  sessions:[{id:'session-'+which,title:'Ficticia '+which,type:'entrenamiento',
+    date:new Date().toISOString().slice(0,10),games:[sampleGame(which)]}]
+ };
+}
+const fakeValues=new Map([
+ ['mi-bowling-local-profiles-v1',JSON.stringify({version:1,profiles:[
+  {id:P_TEST.a,name:'Jugador A',createdAt:'2026-01-01'},
+  {id:P_TEST.b,name:'Jugador B',createdAt:'2026-01-01'},
+  {id:P_TEST.c,name:'Jugador C',createdAt:'2026-01-01'}
+ ]})],
+ ['mi-bowling-profile:'+P_TEST.a+':mi-bowling-analitica-v2',JSON.stringify(playerDB('a'))],
+ ['mi-bowling-profile:'+P_TEST.c+':mi-bowling-analitica-v2',JSON.stringify(playerDB('c'))],
+ ['mi-bowling-analitica-v2','ORIGINAL NO MODIFICAR']
+]);
+const originalValues=new Map(fakeValues);
+const memory={
+ getItem:key=>fakeValues.has(String(key))?fakeValues.get(String(key)):null,
+ setItem:(key,value)=>fakeValues.set(String(key),String(value)),
+ removeItem:key=>fakeValues.delete(String(key)),
+ clear:()=>fakeValues.clear()
+};
+const tabData=new Map();
+const temporarySession={
+ getItem:key=>tabData.has(String(key))?tabData.get(String(key)):null,
+ setItem:(key,value)=>tabData.set(String(key),String(value)),
+ removeItem:key=>tabData.delete(String(key)),
+ clear:()=>tabData.clear()
+};
+try{
+ Object.defineProperty(window,'localStorage',{configurable:true,value:memory});
+ Object.defineProperty(window,'sessionStorage',{configurable:true,value:temporarySession});
+ Object.defineProperty(window,'indexedDB',{configurable:true,value:undefined});
+}catch(err){document.body.dataset.profilesStatsResult='FAIL';document.body.dataset.error=String(err);}
+window.__integrationFixture={labPlayer,P_TEST,fakeValues,originalValues,playerDB};
+</script>
+<script src="stats-bolos.js"></script>
+<script src="profiles.js"></script>
+<script>
+'use strict';
+(async function run(){
+try{
+ MiBowlingProfiles.init();
+ if(MiBowlingProfiles.profiles().length!==3)throw Error('No se reconocen los tres perfiles');
+ if(!document.body.classList.contains('player-gated'))throw Error('La aplicación se abrió sin seleccionar un jugador');
+ if(document.getElementById('app').children.length)throw Error('Se mostraron partidas antes de elegir jugador');
+ const selected=P_TEST[labPlayer];
+ if(!selected)throw Error('Jugador no válido');
+ const button=document.querySelector('[data-open-profile="'+selected+'"]');
+ if(!button)throw Error('No aparece el jugador');
+ button.click();
+ await new Promise((resolve,reject)=>{
+  let iterations=0;
+  const check=()=>{
+   if(typeof go==='function'&&typeof aggregate==='function'){resolve();return}
+   if(++iterations>240){reject(Error('No se cargó app.js tras seleccionar jugador'));return}
+   setTimeout(check,25)
+  };check()
+ });
+ if(MiBowlingProfiles.current()?.id!==selected)throw Error('Perfil incorrecto tras seleccionar');
+ const playerDB=JSON.parse(fakeValues.get('mi-bowling-profile:'+selected+':mi-bowling-analitica-v2')||'{"sessions":[],"balls":[]}');
+ if(db.sessions.length!==playerDB.sessions.length)throw Error('Se cargó una sesión de otro jugador');
+ if(document.getElementById('player-current').textContent.indexOf('Jugador '+labPlayer.toUpperCase())<0)throw Error('No se muestra nombre activo');
+ statPane='bolos';statMode='entrenamiento';statsBallId='';statsPeriod='all';
+ go('estadisticas');
+ if(!document.getElementById('pinmap-screen'))throw Error('Mapa de bolos no integrado');
+ if(document.querySelectorAll('.pinmap-rack-row').length!==4||document.querySelectorAll('.pinmap-pin').length!==10)throw Error('Mapa 4-3-2-1 incorrecto');
+ const modes=['first','second','single','combinations'];
+ const expectation={a:{first:11,second:10,single:5,combinations:5},b:{first:0,second:0,single:0,combinations:0},c:{first:12,second:0,single:0,combinations:0}}[labPlayer];
+ for(const mode of modes){
+  MiBowlingPinStats.setMode(mode);
+  const result=MiBowlingPinStats.compute(periodAggregate(aggregate('entrenamiento')),mode);
+  if(result.events!==expectation[mode])throw Error('Cómputo '+mode+' para '+labPlayer+': '+result.events+' esperados '+expectation[mode]);
+  if(document.querySelectorAll('.pinmap-pin').length!==10)throw Error('La formación se pierde al cambiar modo');
+  if(labPlayer==='b'&&result.overallRate!==null)throw Error('El nuevo jugador heredó porcentajes');
+  if(labPlayer==='c'&&mode==='first'&&result.overallRate!==100)throw Error('El jugador C no tiene 100 %');
+ }
+ MiBowlingPinStats.setMode('first');
+ if(labPlayer==='a'){
+  const allRolls=MiBowlingPinStats.compute(periodAggregate(aggregate('entrenamiento')),'first').events;
+  statsBallId='otra-bola';render();
+  const filtered=MiBowlingPinStats.compute(periodAggregate(aggregate('entrenamiento',statsBallId)),'first');
+  if(filtered.events!==0)throw Error('Filtro por bola mezcló datos');
+  statsBallId='';statMode='oficial';render();
+  if(MiBowlingPinStats.compute(periodAggregate(aggregate('oficial')),'first').events!==0)throw Error('Entrenamiento filtrado como competición');
+  statMode='entrenamiento';statsPeriod='year';render();
+  if(MiBowlingPinStats.compute(periodAggregate(aggregate('entrenamiento')),'first').events!==allRolls)throw Error('Filtro año alteró la sesión del jugador');
+ }
+ if(labPlayer!=='a'){
+  const bad={version:2,sessions:[],balls:[],localPlayer:{id:P_TEST.a}};
+  let blocked=false;
+  try{MiBowlingProfiles.validateRestore(bad)}catch(e){blocked=/otro jugador/i.test(e.message)}
+  if(!blocked)throw Error('Se pudo restaurar copia de otro jugador');
+  blocked=false;
+  try{MiBowlingProfiles.validateRestore({version:2,sessions:[],balls:[]})}catch(e){blocked=/copia antigua/i.test(e.message)}
+  if(!blocked)throw Error('Se aceptó copia anónima en un perfil nuevo');
+  if(MiBowlingProfiles.validateRestore({...bad,localPlayer:MiBowlingProfiles.current()})!==true)throw Error('Se rechazó la copia propia');
+ }
+ if(fakeValues.get('mi-bowling-analitica-v2')!==originalValues.get('mi-bowling-analitica-v2'))throw Error('Se tocaron claves de legado');
+ if(document.documentElement.scrollWidth>innerWidth+3)throw Error('Desbordamiento '+innerWidth);
+ document.body.dataset.profilesStatsResult='PASS';
+ document.body.dataset.activePlayer=labPlayer;
+}catch(err){
+ document.body.dataset.profilesStatsResult='FAIL';
+ document.body.dataset.error=String(err&&err.stack||err);
+ console.error(err);
+}
+})();
+</script>
+</body></html>

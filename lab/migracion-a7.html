@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#eff6fc">
+<title>MI BOWLING · Migración de historial · LAB A7</title>
+<link rel="stylesheet" href="migracion-a7.css">
+</head>
+<body>
+<main class="shell">
+ <div class="head-row">
+  <div><p class="eyebrow">🎳 MI BOWLING <span>· LAB A7</span></p>
+   <h1>Protección de mi historial</h1>
+   <p class="intro">Respaldo, verificación, importación y restauración por jugador.</p></div>
+  <strong class="flag">SIMULACIÓN · SIN DATOS REALES</strong>
+ </div>
+ <section class="warning" aria-label="Alcance de laboratorio">
+  <strong>Entorno aislado de prueba</strong>
+  <p>Los tres jugadores, sus puntuaciones, las bolas y los PDF son inventados. Esta pantalla no consulta el almacenamiento de MI BOWLING ni se conecta a ningún servidor. Al cerrarla se pierden los cambios simulados.</p>
+ </section>
+ <section class="pane" aria-labelledby="profiles-title">
+  <div class="pane-heading"><h2 id="profiles-title">1. Selecciona una identidad ficticia</h2><span class="hint">Acceso privado por UUID</span></div>
+  <div class="profile-grid">
+   <div class="profile"><span class="avatar">A</span><b>Jugador A</b><span>300 y 181 puntos</span><small id="a7-data-A"></small><small id="a7-rev-A"></small></div>
+   <div class="profile"><span class="avatar">B</span><b>Jugador B</b><span>Cuenta nueva</span><small id="a7-data-B"></small><small id="a7-rev-B"></small></div>
+   <div class="profile"><span class="avatar">C</span><b>Jugador C</b><span>157 y 201 puntos</span><small id="a7-data-C"></small><small id="a7-rev-C"></small></div>
+  </div>
+  <label for="a7-player">Jugador que va a realizar la operación</label>
+  <select id="a7-player" class="input">
+   <option value="A">Jugador A · Historial anterior</option>
+   <option value="B">Jugador B · Cuenta nueva sin partidas</option>
+   <option value="C">Jugador C · Perfil local diferente</option>
+  </select>
+  <p class="metadata">Origen: <code id="a7-source"></code> · Cuenta destino: <code id="a7-uuid"></code></p>
+  <label class="check"><input type="checkbox" id="a7-confirm"><span>Confirmo la asignación del historial ficticio únicamente al UUID seleccionado.</span></label>
+ </section>
+ <div class="two">
+  <section class="pane" aria-labelledby="backup-title">
+   <div class="pane-heading"><h2 id="backup-title">2. Preparar y verificar copia</h2><span class="hint">SHA-256 · PDF originales</span></div>
+   <p>Se crea una copia comprobable de las sesiones, las bolas y los patrones. Liga Nacional se archiva aparte.</p>
+   <div class="actions">
+    <button class="primary" type="button" data-action id="a7-backup">Preparar respaldo ficticio</button>
+    <button type="button" data-action id="a7-verify">Verificar integridad</button>
+   </div>
+   <p class="metadata" id="a7-package">Todavía no hay copia preparada</p>
+  </section>
+  <section class="pane" aria-labelledby="import-title">
+   <div class="pane-heading"><h2 id="import-title">3. Importar al espacio privado</h2><span class="hint">Nunca sobrescribir sin respaldo</span></div>
+   <p>Importación únicamente a una cuenta vacía. Los archivos se comprueban y se colocan en rutas simuladas de ese UUID.</p>
+   <div class="actions"><button class="primary" type="button" data-action id="a7-import">Importar copia verificada</button></div>
+   <label class="check"><input type="checkbox" id="a7-fault"><span>Simular fallo de cuota durante el guardado de PDF</span></label>
+  </section>
+ </div>
+ <section class="pane" aria-labelledby="restore-title">
+  <div class="pane-heading"><h2 id="restore-title">4. Restauración protegida</h2><span class="hint">Respaldo previo · Control de versiones</span></div>
+  <p>Antes de sustituir un historial, conserva un respaldo verificable del estado destino. Si cambian los datos mientras tanto, la restauración se rechaza.</p>
+  <div class="actions">
+   <button type="button" data-action id="a7-previous">Guardar copia previa del destino</button>
+   <button type="button" data-action id="a7-edit">Simular cambio de puntuación</button>
+   <button class="primary" type="button" data-action id="a7-restore">Restaurar copia de origen</button>
+  </div>
+  <p class="metadata" id="a7-prev">No hay copia previa</p>
+ </section>
+ <div id="a7-status" role="status" aria-live="polite" data-kind="info">Selecciona un jugador y confirma su UUID para comenzar.</div>
+ <p class="footer">MI BOWLING · LAB A7 — Todos los resultados se guardan exclusivamente en memoria. Sin cuentas, SQL, despliegues ni datos personales reales.</p>
+</main>
+<script src="../auth-legacy-migration-lab.js"></script>
+<script src="migracion-a7-demo.js"></script>
+</body></html>
