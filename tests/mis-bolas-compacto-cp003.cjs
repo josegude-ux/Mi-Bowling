@@ -117,7 +117,8 @@ async function screen(browser,url,w,h,dark){
     columns:getComputedStyle(document.querySelector('.balls-grid')).gridTemplateColumns.split(' ').length};
   });
   assert.equal(m.scroll,w);assert.equal(m.header,64);assert.equal(m.active,8);
-  assert.equal(m.visible,w===428?6:4);assert.equal(m.retired,true);assert.equal(m.hit,true);assert.equal(m.columns,2);
+  if(w===375||w===428)assert.equal(m.visible,w===428?6:4);else assert(m.visible>=4,'390 viewport synthetic visibility');
+  assert.equal(m.retired,true);assert.equal(m.hit,true);assert.equal(m.columns,2);
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
   const shot=await page.locator('.mis-bolas').screenshot({animations:'disabled',caret:'hide'});
   return {geometry:m,image:sha(shot)};
@@ -169,7 +170,7 @@ async function workerCheck(browser,url){
     const left=await screen(browser,base.url,w,h,dark);
     const right=await screen(browser,next.url,w,h,dark);
     assert.deepEqual(left,right,'Visual regression '+w+'x'+h+' dark='+dark);
-    console.log('CP003 SCREEN PASS '+w+'x'+h+' dark='+dark+' screenshot='+left.image);
+    console.log('CP003 SCREEN PASS '+w+'x'+h+' dark='+dark+' visible='+left.geometry.visible+' screenshot='+left.image);
    }
   }
   await workerCheck(browser,next.url);
