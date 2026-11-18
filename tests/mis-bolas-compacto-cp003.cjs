@@ -51,7 +51,7 @@ function checkManifest(overrides){
  const h=overrides?afterHashes:beforeHashes;
  for(const [url,expected] of Object.entries(h)){
   let rel=url.split('?')[0].replace(/^\.\//,'');
-  if(!rel)rel='index.html';
+  if(!rel||rel.endsWith('/'))rel+='index.html';
   const b=(overrides&&overrides.has(rel))?overrides.get(rel):fs.readFileSync(path.join(root,rel));
   assert.equal(sha(b),expected,'60/60 manifest integrity '+url);
  }
@@ -64,6 +64,7 @@ const afterGzip=Object.keys(pinned).reduce((s,k)=>s+gz(changes.get(k)||old[k]),0
 assert(afterGzip<=76785,'No compensado +1062 B gzip: '+afterGzip);
 assert(beforeGzip-afterGzip>=1062,'Ahorro insuficiente: '+(beforeGzip-afterGzip));
 console.log('CP003 CSS & manifest PASS',JSON.stringify({commentCounts,beforeGzip,afterGzip,saved:beforeGzip-afterGzip,unchangedAliases:57}));
+if(process.argv.includes('--static-only'))process.exit(0);
 const fakeSvg='data:image/svg+xml;base64,'+Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><circle cx="80" cy="80" r="65" fill="#47617c"/></svg>').toString('base64');
 const balls=Array.from({length:10},(_,i)=>({id:'cp003-fake-'+i,brand:'Marca ficticia',model:'Bola de prueba '+i,weight:'15 lb',kind:'Reactiva',notes:'Ficticia',retired:i>=8,photo:i<8?fakeSvg:''}));
 const seed={version:2,hand:'diestro',balls,patterns:[],sessions:[{id:'cp003-fake-session',type:'entrenamiento',date:'2026-01-01',title:'Ficticia',games:[]}]};

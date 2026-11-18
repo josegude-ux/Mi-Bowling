@@ -20,11 +20,12 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Install ephemeral browser only
+      - name: Static gate first (no browser downloads if source or gzip fails)
         run: |
           npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps chromium
-      - name: New CP003 checks only (read-only source, isolated candidate, fake data)
-        run: |
           node --check tests/mis-bolas-compacto-cp003.cjs
-          node tests/mis-bolas-compacto-cp003.cjs
+          node tests/mis-bolas-compacto-cp003.cjs --static-only
+      - name: Install ephemeral browser for integrated checks
+        run: npx playwright install --with-deps chromium
+      - name: New CP003 browser checks (fake data, isolated origin)
+        run: node tests/mis-bolas-compacto-cp003.cjs
