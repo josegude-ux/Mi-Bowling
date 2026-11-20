@@ -12,6 +12,9 @@ jobs:
   webkit:
     if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/ui/mis-bolas-compacto-20261116'
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --user 1001
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -24,7 +27,5 @@ jobs:
         run: |
           npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
           node --check tests/mis-bolas-compacto-cp006-webkit.cjs
-      - name: Install WebKit only
-        run: npx playwright install --with-deps webkit
       - name: Check new Safari-like cases with fake data
         run: node tests/mis-bolas-compacto-cp006-webkit.cjs
