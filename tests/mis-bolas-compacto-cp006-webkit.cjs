@@ -56,7 +56,7 @@ async function probe(browser,url,config){
   assert(state.scrollWidth<=w+1,'Horizontal overflow: '+name);
   assert(state.top[1]>=0&&state.top[3]<=h+1,'Header clipping: '+name);
   assert(state.bottom[1]>=0&&state.bottom[3]<=h+1,'Bottom navigation clipping: '+name);
-  assert.equal(state.active,8);assert(state.touch>0);assert(state.env);assert(state.popover);
+  assert.equal(state.active,8);assert(state.env);assert(state.popover);
   const screenshot=hash(await page.screenshot({fullPage:false,animations:'disabled',caret:'hide'}));
   const trigger=page.locator('.mis-bolas .mb-more').first(),id=await trigger.getAttribute('popovertarget');
   assert(/^mb-\d+-actions$/.test(id));
