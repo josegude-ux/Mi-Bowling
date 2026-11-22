@@ -200,4 +200,4 @@ async function newProfile(){
   console.log('CP032 RESILIENCE LAB PASS · quota, corrupted journal and verified fail-closed startup; all data synthetic');
  }finally{for(const dir of paths)try{fs.rmSync(dir,{recursive:true,force:true})}catch{}
   await new Promise(resolve=>server.close(resolve))}
-})().catch(e=>{console.error('CP032 RESILIENCE LAB FAIL',e);process.exitCode=1;try{server.close()}});
+})().catch(e=>{console.error('CP032 RESILIENCE LAB FAIL',e);process.exitCode=1;try{server.close()}catch{}});
