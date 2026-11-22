@@ -207,3 +207,11 @@ html body .calendar-official-confirmed .calendar-confirmed{align-self:flex-start
 html body .calendar-more{margin:2px 0 0;padding:0!important;background:transparent!important;border:0!important}
 html body .calendar-more summary{color:#fff;font-size:13px;font-weight:700;cursor:pointer;padding:6px 0;min-height:32px}
 html body .calendar-more[open] .calendar-detail{display:block;margin-top:5px}
+
+/* 3.3.26 · Importar cuadro de Liga */
+html body .liga-cuadro-list{list-style:none;padding:0;margin:6px 0 10px}
+html body .liga-cuadro-list li{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;padding:8px 10px;border:1px solid #2c2c2e;border-radius:10px;margin-top:6px;background:#1c1c1e}
+html body .liga-cuadro-list li span{color:#a1a1a6;font-size:12px;min-width:84px}
+html body .liga-cuadro-list li strong{color:#fff}
+html body .liga-cuadro-list li small{color:#ff9f0a;margin-left:auto}
+html body .liga-cuadro-error{color:#ff9f0a!important}
