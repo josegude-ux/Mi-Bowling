@@ -10,6 +10,19 @@ const ROOT=path.resolve(__dirname,'..');
 const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'sw.js'),'utf8').match(/^const HASHES=(\{.*\});$/m)?.[1]||'null');
 assert(manifest,'Service Worker manifest missing');
 assert.equal(Object.keys(manifest).length,66,'Unexpected SW manifest size: stop before browser');
+const crypto=require('node:crypto');
+const mismatches=[];
+for(const [resource,expected] of Object.entries(manifest)){
+ const uri=new URL(resource,'http://127.0.0.1/');
+ let rel=decodeURIComponent(uri.pathname).slice(1);
+ if(!rel||rel.endsWith('/'))rel+='index.html';
+ const target=path.resolve(ROOT,rel);
+ try{const actual=crypto.createHash('sha256').update(fs.readFileSync(target)).digest('hex');
+  if(actual!==expected)mismatches.push({resource,expected,actual});}
+ catch(e){mismatches.push({resource,reason:e.code||e.message})}
+}
+console.log('CP022 MANIFEST DIAGNOSTIC '+JSON.stringify({count:Object.keys(manifest).length,mismatchCount:mismatches.length,mismatches:mismatches.slice(0,12)}));
+assert.equal(mismatches.length,0,'SW local manifest does not match file bytes');
 const types={'.js':'text/javascript; charset=utf-8','.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.woff2':'font/woff2','.txt':'text/plain; charset=utf-8'};
 const misses=[],requests=[];
 const server=http.createServer((req,res)=>{
@@ -48,6 +61,8 @@ const browserOptions={headless:true,args:['--no-sandbox'],viewport:{width:390,he
    const r=await navigator.serviceWorker.getRegistration();
    return !!(r?.active&&r.active.scriptURL.endsWith('/sw.js'));
   },null,{timeout:90000});
+  const installed=await page.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();return {scope:r?.scope,active:r?.active?.state,waiting:r?.waiting?.state,installing:r?.installing?.state,controller:navigator.serviceWorker.controller?.scriptURL}});
+  console.log('CP022 SW INITIAL STATE '+JSON.stringify(installed));
   await page.reload({waitUntil:'load',timeout:30000});
   const diagnostic=await page.evaluate(async()=>{const reg=await navigator.serviceWorker.getRegistration();return {scope:reg?.scope,active:reg?.active?.state,controller:navigator.serviceWorker.controller?.scriptURL,caches:await caches.keys()}});
   console.log('CP022 SW CONTROLLER DIAGNOSTIC '+JSON.stringify(diagnostic));
