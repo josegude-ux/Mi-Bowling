@@ -236,3 +236,14 @@ html body .fb-num small{text-align:right}
 html body .fb-err{color:#ff9f0a!important}
 html body .fb-past{opacity:.6}
 html body details.fb-card summary{cursor:pointer;color:#fff}
+html body .fb-link{background:none!important;border:0!important;padding:0!important;color:#fff!important;font:inherit;font-weight:600;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:#ff6a2b;text-underline-offset:3px;min-height:0!important;box-shadow:none!important}
+html body .fb-cal{margin-top:10px;padding-top:8px;border-top:1px solid #2c2c2e}
+html body .fb-cal-t{display:block;color:#ff6a2b;font-size:11px;font-weight:800;letter-spacing:.3px;text-transform:uppercase}
+html body .fb-cal-s{display:block;color:#a1a1a6;font-size:11px;margin-top:6px}
+html body .fb-cal .fb-list li{padding:6px 0}
+html body .calendar-dot-result{background:#ff6a2b!important}
+html body .fb-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+html body .fb-tile{background:#1c1c1e;border:1px solid #2c2c2e;border-radius:12px;padding:10px}
+html body .fb-tile small{display:block;color:#a1a1a6;font-size:11px}
+html body .fb-tile strong{display:block;color:#fff;font-size:20px}
+html body .fb-tour,html body .fb-list li[onclick]{cursor:pointer}
