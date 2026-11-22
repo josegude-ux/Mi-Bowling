@@ -1,21 +1,21 @@
-name: MI BOWLING | CP032 registro compacto v3 LAB (ficticios)
+name: MI BOWLING | CP032 v3 journal/history LAB (ficticios)
 on:
   push:
     branches: [lab/cp032-registro-compacto-v3-20261122]
     paths:
       - .github/workflows/cp032-registro-lab.yml
-      - lab/registro-cp021/**
-      - lab/cp032-contract-v3.js
-      - tests/cp032-contract.cjs
-      - tests/cp032-browser.cjs
+      - lab/registro-cp021/cp021-entry.js
+      - lab/cp032-history-stats.js
+      - lab/cp032-v3-journal.js
+      - tests/cp032-history-stats.cjs
+      - tests/cp032-journal-browser.cjs
       - index.html
       - sw.js
-      - releases/catalogo-local-f1-fotos1/app.js
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  cp032-only-new-tests:
+  cp032-new-journal-tests-only:
     if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/lab/cp032-registro-compacto-v3-20261122'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -26,16 +26,16 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: New v2/v3 semantic and CP032 resource contract tests
+      - name: NEW CP032 precision-aware history + transactional journal syntax
         run: |
-          node --check releases/catalogo-local-f1-fotos1/app.js
-          node --check lab/cp032-contract-v3.js
-          node --check tests/cp032-contract.cjs
-          node --check tests/cp032-browser.cjs
-          node tests/cp032-contract.cjs
-      - name: Temporary Chromium on isolated runner (no deployment)
+          node --check lab/cp032-history-stats.js
+          node --check lab/cp032-v3-journal.js
+          node --check tests/cp032-history-stats.cjs
+          node --check tests/cp032-journal-browser.cjs
+          node tests/cp032-history-stats.cjs
+      - name: Temporary isolated Chromium runner; no deployment
         run: |
           npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: PWA shell + five simulated iPhone viewport checks, only fictitious data
-        run: node tests/cp032-browser.cjs
+      - name: NEW CP032 IDB journal recovery and exact statistics in one viewport (no repeat of 5 sizes)
+        run: node tests/cp032-journal-browser.cjs
