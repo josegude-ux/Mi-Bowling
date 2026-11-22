@@ -9,12 +9,13 @@ const recorded={
  'lab/registro-cp021/cp014-compat-bridge.js':'f192167c7c10a6508d4839a4b9a09a6eef22b75fe1b4e4ee7f2ea86366bd7921',
  'lab/registro-cp021/cp016-readonly-coexist.js':'9bcb20438bccf40b95439a1cac63d95ed5dbeddb2acc9856f9e0fe353d783a82',
  'lab/registro-cp021/cp015-controller-mount.js':'033d17135ab7c16d704b249d3d9d81b7a7c7d9c299d6b64bc2e9d878687299b1',
- 'lab/registro-cp021/cp021-entry.js':'8a1d3880895a93d9ad54cb65151aac5258bef7bce4036244d9d71503091fa982',
+ 'lab/registro-cp021/cp021-entry.js':'4b10b99d1bfef2bd906ab3f733d37a513576f5ff7fd49b412549213b5cfb9c8b',
+ 'lab/registro-cp021/cp018-persistence.js':'1cd4d8d7ff66f93049a940888ccfe34df2c14ed42f1831fa3cdd61b46e13942a',
 };
 const script=fs.readFileSync(path.join(root,'sw.js'),'utf8'),h=script.match(/^const HASHES=(\{.*\});$/m);
 assert(h,'Cache manifest not found');
 const hashes=JSON.parse(h[1]);
-assert.equal(Object.keys(hashes).length,65);
+assert.equal(Object.keys(hashes).length,66);
 for(const [file,expected] of Object.entries(recorded)){
  const src=fs.readFileSync(path.join(root,file));
  assert.equal(digest(src),expected,'CP021 source modified unexpectedly: '+file);
