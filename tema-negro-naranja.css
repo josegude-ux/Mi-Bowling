@@ -247,3 +247,21 @@ html body .fb-tile{background:#1c1c1e;border:1px solid #2c2c2e;border-radius:12p
 html body .fb-tile small{display:block;color:#a1a1a6;font-size:11px}
 html body .fb-tile strong{display:block;color:#fff;font-size:20px}
 html body .fb-tour,html body .fb-list li[onclick]{cursor:pointer}
+
+/* 3.3.32 · Empezar partida compacto */
+html body .nw-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#1c1c1e;border:1px solid #2c2c2e;border-radius:12px;padding:4px}
+html body .nw-seg button{border:0;border-radius:9px;min-height:40px;background:transparent;color:#a1a1a6;font-weight:700;font-size:15px}
+html body .nw-seg button.active{background:#ff6a2b;color:#fff}
+html body .nw-mode-hint{margin:6px 2px 2px}
+html body .nw-opt{color:#8e8e93;font-weight:500;font-size:12px}
+html body .nw-more{margin-top:14px;border-top:1px solid #2c2c2e;padding-top:4px}
+html body .nw-more summary{display:flex;align-items:baseline;justify-content:space-between;gap:10px;cursor:pointer;padding:10px 2px;color:#fff;font-weight:700;list-style:none}
+html body .nw-more summary::-webkit-details-marker{display:none}
+html body .nw-more summary::after{content:'›';color:#ff6a2b;font-size:20px;transform:rotate(90deg);transition:transform .2s}
+html body .nw-more[open] summary::after{transform:rotate(-90deg)}
+html body .nw-more summary small{color:#8e8e93;font-weight:500;font-size:12px;margin-left:auto}
+html body .nw-sub{margin-top:4px}
+html body .nw-link{display:inline-block;margin-top:8px;color:#ff6a2b!important;font-weight:700}
+html body .nw-lanes{grid-template-columns:repeat(3,1fr)!important;gap:8px}
+html body .nw .note{min-height:64px}
+html body .nw-more summary span{white-space:nowrap}
