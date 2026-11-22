@@ -20,6 +20,7 @@
   assert(doc&&typeof doc==='object','CP032_DOCUMENT_REQUIRED');
   const data=copy(doc);
   A.validateDocument(data);
+  if(data.cp032Mirror){assert(root.MiBowlingCP032PWA?.verifyMirror,'CP032_PWA_ADAPTER_MISSING');root.MiBowlingCP032PWA.verifyMirror(data)}
   assert(data.labFixture==='cp015-synthetic-only'&&data.sessions.length===1,'CP032_ONLY_SYNTHETIC');
   assert(data.sessions.every(s=>s.id.startsWith('cp015-fake-')&&s.games.length>0&&s.games.every(g=>g.id.startsWith('cp015-fake-'))),'CP032_UNTRUSTED_GAME');
   assert(new TextEncoder().encode(JSON.stringify(data)).length<=MAX,'CP032_OVERSIZE');

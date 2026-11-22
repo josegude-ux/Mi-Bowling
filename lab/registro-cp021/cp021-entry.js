@@ -145,6 +145,61 @@ function attachCP032JournalButtons(){
  const close=document.getElementById('io-close');
  dialog.insertBefore(row,close);dialog.insertBefore(status,close);
 }
+function attachCP032PWAButtons(){
+ const dialog=document.getElementById('lab-io'),A=window.MiBowlingCP032PWA,F=window.MiBowlingCP032Fixture,J=window.MiBowlingCP032Journal;
+ if(!enabled||!dialog||!A||!F||!J||document.getElementById('cp032-pwa-load'))return;
+ const row=document.createElement('div');row.className='io-grid';
+ const button=(id,label)=>{
+  const b=document.createElement('button');b.id=id;b.type='button';b.className='io-btn';b.textContent=label;row.append(b);return b;
+ };
+ const load=button('cp032-pwa-load','Cargar v2+liga FICTICIA');
+ const inspect=button('cp032-pwa-inspect','Historial y estadísticas ficticios');
+ const exportButton=button('cp032-pwa-export','Exportar respaldo ampliado ficticio');
+ const restoreButton=button('cp032-pwa-restore','Restaurar JSON ficticio validado');
+ const input=document.createElement('input');input.id='cp032-pwa-input';input.type='file';
+ input.accept='.json,application/json';input.hidden=true;
+ const status=document.createElement('p');status.id='cp032-pwa-status';status.setAttribute('role','status');
+ status.textContent='CP032 · Claves personales bloqueadas. Todo aquí es ficticio.';
+ const run=async(button,work)=>{button.disabled=true;status.textContent='Validando datos ficticios…';
+  try{status.textContent=await work()}catch(e){status.textContent='CP032 NO GO: '+e.message}
+  finally{button.disabled=false}};
+ const doc=()=>JSON.parse(window.__CP015_LAB.exportJSON());
+ const describe=(d)=>{
+  const v=A.read(d),linked=v.league.flatMap(m=>m.players.flatMap(p=>p.scores)).filter(x=>x.source==='linked-complete').length;
+  return 'Historial '+v.sessions.length+' sesiones · '+v.totals.count+' partidas estadísticas · media '+v.totals.average+
+   ' · liga '+linked+' enlaces resueltos · fotos '+v.sourceMetadata.photos.length+' · PDF '+v.sourceMetadata.pdfs.length;
+ };
+ load.addEventListener('click',()=>run(load,async()=>{
+  const sample=F.make(),next=A.attach(doc(),sample.rawMap,sample.assets);
+  window.__CP015_LAB.reopenJSON(JSON.stringify(next));
+  return 'Muestra PWA ficticia en memoria. '+describe(next)+' · Pulsa Guardar v3 ficticio para conservarla.';
+ }));
+ inspect.addEventListener('click',()=>run(inspect,async()=>describe(doc())));
+ exportButton.addEventListener('click',()=>run(exportButton,async()=>{
+  const raw=await A.exportExtended(doc());
+  const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));
+  const a=document.createElement('a');a.href=url;a.download='MI-BOWLING-CP032-AMPLIADO-SOLO-FICTICIO.json';
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+  return 'Respaldo v2+v3+liga ficticio verificado y descargado (sin fotos/PDF binarios).';
+ }));
+ restoreButton.addEventListener('click',()=>input.click());
+ input.addEventListener('change',async(event)=>{
+  const file=event.target.files?.[0];
+  try{
+   if(!file||file.size>2097152)throw Error('CP032_RESTORE_SIZE');
+   const restored=await A.restoreExtended(await file.text()),prior=doc();
+   const current=await J.read();
+   // Validated backup is committed via the synthetic journal only, never the v2 store.
+   await J.save(restored,current.revision);
+   try{window.__CP015_LAB.reopenJSON(JSON.stringify(restored))}
+   catch(e){window.__CP015_LAB.reopenJSON(JSON.stringify(prior));throw e}
+   status.textContent='Restauración ficticia confirmada. '+describe(restored);
+  }catch(e){status.textContent='CP032 restauración rechazada: '+e.message}
+  finally{event.target.value=''}
+ });
+ const close=document.getElementById('io-close');
+ dialog.insertBefore(row,close);dialog.insertBefore(input,close);dialog.insertBefore(status,close);
+}
 function attachMigrateButton(){
  const dialog=document.getElementById('lab-io');
  if(!dialog||document.getElementById('cp021-migrate-btn'))return;
@@ -163,7 +218,7 @@ function attachMigrateButton(){
 window.MiBowlingRegistroCP021=Object.freeze({
 enabled,
 render(){if(!enabled)throw Error('CP021_INACTIVE');mounted=false;return '<style id="cp021-css">'+css+'</style><div class="cp021-root">'+markup+'</div>';},
-mount(){if(!enabled)return;if(mounted)return;const node=document.querySelector('.cp021-root');if(!node)throw Error('CP021_ROOT_MISSING');if(typeof window.MiBowlingCP021Mount!=='function')throw Error('CP021_CONTROLLER_MISSING');mounted=true;window.MiBowlingCP021Mount();attachMigrateButton();attachCP025Button();attachCP032JournalButtons();},
+mount(){if(!enabled)return;if(mounted)return;const node=document.querySelector('.cp021-root');if(!node)throw Error('CP021_ROOT_MISSING');if(typeof window.MiBowlingCP021Mount!=='function')throw Error('CP021_CONTROLLER_MISSING');mounted=true;window.MiBowlingCP021Mount();attachMigrateButton();attachCP025Button();attachCP032JournalButtons();attachCP032PWAButtons();},
 summarySynthetic(legacyRaw,modernRaw){if(!enabled)throw Error('CP021_INACTIVE');return window.BowlingCp016Coexist.analyse({legacy:legacyRaw,modern:modernRaw});},
 migrateSynthetic,
 promoteV3Demo,promoteV3Synthetic,readV3Synthetic,rollbackV3Synthetic,
