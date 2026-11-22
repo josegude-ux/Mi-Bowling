@@ -62,13 +62,16 @@
   A.addRoll(exact,10,{pinIds:[1,2,3,4,5,6,7,8,9,10],ballId:ball1});
   const count=A.newGame('cp015-fake-count',{includeStats:true,pair:[9,10],startLane:9,segments:[]});
   A.addRoll(count,7,{ballId:ball2});A.addRoll(count,3,{ballId:ball2});
+  const countComplete=A.newGame('cp015-fake-count-complete',{includeStats:true,pair:[9,10],startLane:9,segments:[]});
+  A.addRoll(countComplete,7,{ballId:ball2});A.addRoll(countComplete,3,{ballId:ball2});
+  for(let frame=2;frame<=10;frame++){A.addRoll(countComplete,0,{ballId:ball2});A.addRoll(countComplete,0,{ballId:ball2});}
   const final=A.newGame('cp015-fake-final',{includeStats:true,pair:[9,10],startLane:9,segments:[]});
   A.recordFinalOnly(final,225);
   const modern={format:A.FORMAT,version:3,labFixture:LAB,
    hand:'diestro',balls:[],patterns:[],sessions:[{
     id:'cp015-fake-session-001',type:'oficial',date:'2026-11-20',
     title:'Puntuación de liga FICTICIA',leagueOther:false,leaguePlayer:'JUGADOR FICTICIO',
-    games:[exact,count,final]}]};
+    games:[exact,count,countComplete,final]}]};
   const assets={photos:[{id:FAKE+'photo-01',ballId:ball1,label:'Foto FICTICIA (solo metadatos)'}],
     pdfs:[{id:FAKE+'pdf-01',label:'PDF FICTICIO (solo metadatos)'}]};
   return copy({rawMap,modern,assets});
