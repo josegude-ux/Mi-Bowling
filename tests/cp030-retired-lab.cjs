@@ -45,7 +45,7 @@ c.catalog100Rows=[{id:'fake-cat',brand:'FICTICIO',model:'REF FICTICIA',approved:
  assert(JSON.stringify(db.sessions)===history,'Historical rolls changed');
  assert(db.balls.map(x=>x.photo).join('|')===photos,'Photos changed');
  assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Data schema key changed');
- assert(/const RELEASE="[^"]*cachefix2[^"]*cp030-retired-settings"/.test(sw),'Cachefix2 release missing');
+ assert(/const RELEASE="[^"]*cachefix2[^"]*cp030-retired-settings-v3313-prueba"/.test(sw),'Cachefix2 or candidate release marker missing');
  assert(!sw.includes('skipWaiting()'),'Forced SW activation');
  const hashes=JSON.parse(sw.match(/^const HASHES=(\{.*\});$/m)[1]);
  assert(Object.keys(hashes).length===60,'Expected 60 PWA hashes');

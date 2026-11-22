@@ -1,4 +1,4 @@
-name: MI BOWLING | MI BOWLING | CP031 3.3.13-prueba candidata (ficticios)
+name: MI BOWLING | CP031 3.3.13-prueba candidata (ficticios)
 on:
   push:
     branches: [release/mi-bowling-3.3.13-prueba-20261122]
