@@ -1,0 +1,29 @@
+name: MI BOWLING | CP032 PWA fixture bridge LAB (new tests)
+on:
+  push:
+    branches: [lab/cp032-registro-compacto-v3-20261122]
+    paths:
+      - .github/workflows/cp032-pwa-fixture-lab.yml
+      - lab/cp032-pwa-adapter.js
+      - lab/cp032-fixture.js
+      - tests/cp032-pwa-adapter.cjs
+permissions:
+  contents: read
+jobs:
+  cp032-real-shaped-fixtures:
+    if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/lab/cp032-registro-compacto-v3-20261122'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Only new CP032 real-shaped PWA adapter tests
+        run: |
+          node --check lab/cp032-pwa-adapter.js
+          node --check lab/cp032-fixture.js
+          node --check tests/cp032-pwa-adapter.cjs
+          node tests/cp032-pwa-adapter.cjs
