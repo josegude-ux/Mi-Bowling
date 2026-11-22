@@ -215,3 +215,5 @@ html body .liga-cuadro-list li span{color:#a1a1a6;font-size:12px;min-width:84px}
 html body .liga-cuadro-list li strong{color:#fff}
 html body .liga-cuadro-list li small{color:#ff9f0a;margin-left:auto}
 html body .liga-cuadro-error{color:#ff9f0a!important}
+html body .liga-pdf-hint{display:block;color:#a1a1a6;font-size:11px;line-height:1.35;margin-top:3px}
+html body .liga-pdf-hint.bad{color:#ff9f0a;font-weight:700}

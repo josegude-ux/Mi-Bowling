@@ -39,5 +39,28 @@
    for(const it of tc.items){if(!it.str||!it.str.trim())continue;const y=it.transform[5],x=it.transform[4];let r=rows.find(r=>Math.abs(r.y-y)<3);if(!r)rows.push(r={y,items:[]});r.items.push({x,s:it.str})}
    rows.sort((a,b)=>b.y-a.y).forEach(r=>lines.push(r.items.sort((a,b)=>a.x-b.x).map(i=>i.s).join(' ')))}
   return lines}
- return Object.freeze({parse,pdfLines,norm,findTeams});
+
+ /* 3.3.27 · PDF «RESULTADOS Nº ENFRENTAMIENTO» de la FEB: clasificación individual acumulada
+  * «POS CODG CLUB JUGADORES PART BOLOS PROMD MAX MAXS». Se guarda tal cual; las diferencias
+  * entre enfrentamientos consecutivos dicen quién jugó, sustituciones y bolos. */
+ const keep=s=>String(s||'').normalize('NFC').split('').map(c=>{const d=c.normalize('NFD').replace(/[̀-ͯ]/g,'');return (d.length===1?d:c).toUpperCase().length===1?(d.length===1?d:c).toUpperCase():c}).join('').replace(/[“”«»„‟″'`´’‘]/g,'"');
+ const ORD={PRIMERA:1,SEGUNDA:2,TERCERA:3,'1':1,'2':2,'3':3};
+ function parseResultados(lines,teams){let round=null,enf=null;const players=[],seen=new Set();let stop=false;
+  for(const raw of lines){const n=norm(raw);
+   if(round===null){const m=n.match(/\b(PRIMERA|SEGUNDA|TERCERA|[123])\s*[ªA°O]?\s*JORNADA\b/);if(m)round=ORD[m[1]]}
+   if(enf===null){const m=n.match(/RESULTADOS\s+(?:DEL\s+)?(\d)\s*[ºO°]?\s*ENFRENTAMIENTO/);if(m)enf=Number(m[1])}
+   if(/CLASIFICACION\s+GENERAL/.test(n))stop=true;if(stop)continue;
+   const row=raw.replace(/\s+/g,' ').trim().match(/^(\d{1,3})\s+(ES\s?\d{3,4})\s+(.+)$/i);if(!row)continue;
+   let rest=row[3],part=0,bolos=0,max=0,maxs=0;
+   const tail=rest.match(/\s+(\d{1,3})\s+(\d{1,2}\.\d{3}|\d{1,5})\s+(\d{1,3},\d{1,3})\s+(\d{1,3})\s+(?:\d{1,3}\s+)?(\d{1,4}(?:\.\d{3})?)\s*$/);
+   if(tail){part=Number(tail[1]);bolos=Number(tail[2].replace('.',''));max=Number(tail[4]);maxs=Number(tail[5].replace('.',''));rest=rest.slice(0,tail.index)}
+   const k=keep(rest);let team=null,end=0;for(const t of teams){const re=teamRegex(t);re.lastIndex=0;const x=re.exec(k);if(x&&x.index<=2&&(!team||x[0].length>end)){team=t;end=x.index+x[0].length}}
+   if(!team)continue;const name=rest.slice(end).replace(/^[\s"]+/,'').trim();if(!name||!/,/.test(name))continue;
+   const code=row[2].toUpperCase().replace(/\s/g,' ');if(seen.has(code))continue;seen.add(code);
+   players.push({code,team,name,part,bolos,max,maxs})}
+  return {round,enf,players}}
+ // Diferencia con el PDF anterior (o con cero): quién jugó y cuánto.
+ function delta(cur,prev){const pm=new Map((prev?.players||[]).map(p=>[p.code,p]));
+  return cur.players.map(p=>{const q=pm.get(p.code)||{part:0,bolos:0,max:0};return {...p,dPart:p.part-q.part,dBolos:p.bolos-q.bolos,newMax:p.max>q.max?p.max:null}}).filter(p=>p.dPart>0)}
+ return Object.freeze({parse,pdfLines,norm,findTeams,parseResultados,delta});
 });
