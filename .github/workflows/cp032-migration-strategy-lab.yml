@@ -1,0 +1,34 @@
+name: MI BOWLING | CP032 migracion CP004/Web Locks LAB (nuevos casos)
+on:
+  push:
+    branches: [lab/cp032-registro-compacto-v3-20261122]
+    paths:
+      - .github/workflows/cp032-migration-strategy-lab.yml
+      - lab/cp032-migration-simulation.js
+      - lab/cp032-migration-harness.html
+      - tests/cp032-migration-strategy-browser.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cp032-only-new-migration-cases:
+    if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/lab/cp032-registro-compacto-v3-20261122'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Syntax of CP032 new synthetic migration strategy
+        run: |
+          node --check lab/cp032-migration-simulation.js
+          node --check tests/cp032-migration-strategy-browser.cjs
+      - name: Temporary isolated Chromium on CI runner
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: CP032 new Web Locks + CP003/CP004 + v3 fault cases (only fictitious)
+        run: node tests/cp032-migration-strategy-browser.cjs

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CP032 LAB aislado · únicamente ficticios</title></head>
+<body><main><h1>CP032 · Migración simulada</h1><p>Solo datos ficticios en origen localhost. Sin conexión con producción.</p></main>
+<script>
+(function(){
+  const loc=window.location;
+  const valid=['localhost','127.0.0.1'].includes(loc.hostname)&&window.isSecureContext&&
+    new URLSearchParams(loc.search).get('cp032lab')==='ficticio'&&
+    Object.keys(localStorage).every(key=>!key.startsWith('mi-bowling-'));
+  if(!valid)throw Error('CP032_SIM_HARNESS_FAIL_CLOSED');
+  window.MiBowlingRegistroCP021=Object.freeze({enabled:true,simulationOnly:true});
+})();
+</script>
+<script src="../integracion/autoridad-local.js"></script>
+<script src="../catalogo/modelo-fase1.js"></script>
+<script src="../integracion/respaldo-local.js"></script>
+<script src="../integracion/respaldo-pdf-f1.js"></script>
+<script src="../integracion/recuperacion-integral.js"></script>
+<script src="registro-cp021/cp013-engine.js"></script>
+<script src="registro-cp021/cp014-compat-bridge.js"></script>
+<script src="cp032-history-stats.js"></script>
+<script src="cp032-pwa-adapter.js"></script>
+<script src="cp032-fixture.js"></script>
+<script src="cp032-v3-journal.js"></script>
+<script src="cp032-migration-simulation.js"></script>
+</body></html>
