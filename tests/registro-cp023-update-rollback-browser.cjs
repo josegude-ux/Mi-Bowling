@@ -108,6 +108,7 @@ const profileArgs = {headless:true,viewport:{width:390,height:844},deviceScaleFa
     },85000);
     await page.reload({waitUntil:'load',timeout:30000});
     await until('A_CONTROLLER',async()=>{const v=await inspect(page);return {...v,ok:v.controller&&v.active==='activated'}},10000);
+    await page.waitForFunction(()=>window.MiBowlingRegistroCP021?.enabled&&!!window.__CP015_LAB&&!!document.querySelector('.cp021-root'),null,{timeout:30000});
     const first=await inspect(page);
     assert.equal(first.marker,'A');assert.equal(first.compact,true);
     const migration=await page.evaluate(()=>window.MiBowlingRegistroCP021.migrateSynthetic());
