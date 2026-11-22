@@ -54,7 +54,7 @@
   assert(guard&&storage&&io&&sidecar&&target,'CP032_SIM_DEPENDENCIES_REQUIRED');
   guard.assertAuthority();const before=source(document,storage);
   const old=await snapshot({guard,storage,io}),next=await Integral.validate(target);
-  assert(exactEqual(next.raw,old.raw),'CP032_SIM_V2_RAW_CHANGE_DENIED');
+  assert(exactEqual(next.raw,old.rawAll),'CP032_SIM_V2_RAW_CHANGE_DENIED');
   assert(next.pdfs.length===old.indexedDB.pdfs.length,'CP032_SIM_PDF_COUNT_CHANGE');
   const photos=await photoProbe(),legacyChecksum=JSON.stringify(before.legacyExact);
   assert(typeof photos==='string'&&photos.length>0,'CP032_SIM_PHOTO_SNAPSHOT_REQUIRED');

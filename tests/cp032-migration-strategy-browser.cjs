@@ -106,7 +106,7 @@ const server=http.createServer((req,res)=>{
    };
    const p=await window.MiBowlingCP032MigrationSimulation.preflight(window.__cp032Args);
    return {steps:p.plan.stepOrder.length,atomic:p.plan.crashSafeAcrossStores,pdfs:modified.indexedDB.pdfs.length,
-    unchanged:JSON.stringify(p.old.raw)===JSON.stringify(exported.rawAll)};
+    unchanged:JSON.stringify(p.old.rawAll)===JSON.stringify(exported.rawAll)};
   });
   assert(first.unchanged&&first.steps===7&&!first.atomic&&first.pdfs===1);
   const success=await p.evaluate(()=>window.MiBowlingCP032MigrationSimulation.simulate(window.__cp032Args));
