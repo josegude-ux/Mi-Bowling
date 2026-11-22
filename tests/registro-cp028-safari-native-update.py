@@ -174,6 +174,7 @@ window.MiBowlingRegistroCP021.readV3Synthetic().then(function(v){done(v)},functi
     print('CP028_SAFARI_B_WAITING '+json.dumps(waiting),flush=True)
     d.get('about:blank');time.sleep(1);d.get(lab)
     upgraded=poll('B_ACTIVATED',lambda:(lambda z:dict(z,ok=z.get('marker')=='B' and z.get('active')=='activated' and z.get('controlled')))(inspect(d)),seconds=50)
+    poll('B_COMPACT_MOUNT',lambda:{'ok':bool(d.js("return !!(window.MiBowlingRegistroCP021?.enabled&&document.querySelector('.cp021-root'))"))},seconds=25)
     print('CP028_SAFARI_B_ACTIVATED '+json.dumps(upgraded),flush=True)
     stored=d.js_async('''var done=arguments[arguments.length-1];window.MiBowlingRegistroCP021.inspectSynthetic().then(v=>done({mode:v.mode,average:v.stats.averageScore}),e=>done({error:String(e)}));''')
     assert stored.get('mode')=='shadow-v3' and stored.get('average')==289
@@ -182,6 +183,7 @@ window.MiBowlingRegistroCP021.readV3Synthetic().then(function(v){done(v)},functi
     poll('A_ROLLBACK_WAITING',lambda:(lambda z:dict(z,ok=z.get('waiting')=='installed'))(inspect(d)),seconds=50)
     d.get('about:blank');time.sleep(1);d.get(lab)
     reverted=poll('A_ROLLBACK',lambda:(lambda z:dict(z,ok=z.get('marker')=='A' and z.get('controlled') and z.get('active')=='activated'))(inspect(d)),seconds=50)
+    poll('A_COMPACT_MOUNT',lambda:{'ok':bool(d.js("return !!(window.MiBowlingRegistroCP021?.enabled&&document.querySelector('.cp021-root'))"))},seconds=25)
     print('CP028_SAFARI_A_ROLLBACK '+json.dumps(reverted),flush=True)
     # True network-off scenario: localhost server shutdown, original SafariDriver session stays open.
     server.shutdown();server.server_close();serverOff=True
