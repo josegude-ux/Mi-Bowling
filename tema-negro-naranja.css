@@ -217,3 +217,22 @@ html body .liga-cuadro-list li small{color:#ff9f0a;margin-left:auto}
 html body .liga-cuadro-error{color:#ff9f0a!important}
 html body .liga-pdf-hint{display:block;color:#a1a1a6;font-size:11px;line-height:1.35;margin-top:3px}
 html body .liga-pdf-hint.bad{color:#ff9f0a;font-weight:700}
+
+/* 3.3.28 · Resultados oficiales (Federación Galega) */
+html body .fb-table{width:100%;border-collapse:collapse;font-size:13px}
+html body .fb-table th{color:#a1a1a6;font-weight:600;text-align:left;padding:6px 4px;border-bottom:1px solid #2c2c2e}
+html body .fb-table td{padding:7px 4px;border-bottom:1px solid #1f1f21;color:#f5f5f7;white-space:nowrap}
+html body .fb-table td:nth-child(2){white-space:normal}
+html body .fb-table small,html body .fb-list small{display:block;font-size:11px;color:#a1a1a6}
+html body .fb-table small.up,html body .fb-list .up{color:#30d158}
+html body .fb-table small.down{color:#ff453a}
+html body .fb-list{list-style:none;padding:0;margin:6px 0}
+html body .fb-list li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1f1f21}
+html body .fb-pos{min-width:34px;color:#a1a1a6;font-weight:700}
+html body .fb-pos.podium{color:#ff6a2b}
+html body .fb-who{flex:1;min-width:0;color:#f5f5f7;overflow-wrap:anywhere}
+html body .fb-num{text-align:right;color:#fff}
+html body .fb-num small{text-align:right}
+html body .fb-err{color:#ff9f0a!important}
+html body .fb-past{opacity:.6}
+html body details.fb-card summary{cursor:pointer;color:#fff}
