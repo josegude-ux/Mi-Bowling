@@ -1,0 +1,106 @@
+/* MI BOWLING · Tema único negro y naranja (3.3.16).
+   Misma paleta que el registro de partida: negro, grises iOS y naranja.
+   Solo presentación: no cambia datos, puntuación ni almacenamiento. */
+:root{
+ --rc-bg:#000;--rc-s1:#1c1c1e;--rc-s2:#2c2c2e;--rc-s3:#3a3a3c;--rc-line:#2c2c2e;
+ --rc-text:#f5f5f7;--rc-muted:#8e8e93;--rc-acc:#f0612d;--rc-acc2:#ff8a5c;--rc-red:#ff453a;--rc-green:#30d158;
+ --bg:#000;--paper:#1c1c1e;--ink:#f5f5f7;--muted:#8e8e93;--teal:#f0612d;--teal2:#f0612d;--line:#2c2c2e;--soft:#2c2c2e;--orange:#f0612d;--red:#ff453a;--shadow:none;
+ color-scheme:dark;color:var(--rc-text)
+}
+html,html body,html body.home-screen,html body.registry-screen{background:#000!important;color:var(--rc-text)}
+html body .app-main{background:transparent!important;color:var(--rc-text)}
+/* Cabecera y navegación */
+html body .topbar{background:rgba(0,0,0,.86)!important;border-bottom:1px solid var(--rc-line)!important;box-shadow:none!important}
+html body .brand,html body .brand b{color:var(--rc-text)!important}
+html body .brand-sub,html body .offline-label{color:var(--rc-muted)!important;border-color:var(--rc-s3)!important}
+html body .brand-mark{background:var(--rc-s1)!important}
+html body .design-lab-header-theme,html body .side-theme,html body [data-design-theme]{display:none!important}
+html body .icon-button,html body .header-actions button{background:var(--rc-s1)!important;color:var(--rc-text)!important;border:0!important;box-shadow:none!important}
+html body .bottom-nav{background:rgba(0,0,0,.92)!important;border-top:1px solid var(--rc-line)!important;box-shadow:none!important}
+html body .bottom-nav button{color:var(--rc-muted)!important;background:transparent!important}
+html body .bottom-nav button.active,html body .bottom-nav button[aria-current="page"]{color:var(--rc-acc)!important}
+html body .bottom-nav button.active::after,html body .bottom-nav button[aria-current="page"]::after{background:var(--rc-acc)!important}
+html body .bottom-nav .fab .nav-icon,html body .bottom-nav button.fab .nav-icon{background:var(--rc-acc)!important;color:#fff!important;box-shadow:0 6px 18px rgba(240,97,45,.35)!important;border-color:#000!important}
+html body .design-lab-sidebar,html body .design-lab-side-nav{background:#000!important;border-color:var(--rc-line)!important}
+html body .design-lab-side-nav button{color:var(--rc-muted)!important;background:transparent!important}
+html body .design-lab-side-nav button.is-active{background:var(--rc-s1)!important;color:var(--rc-acc)!important}
+/* Texto */
+html body h1,html body h2,html body h3,html body h4,html body strong,html body b,html body .item-title,html body .value,html body label,html body .label{color:var(--rc-text)}
+html body .hint,html body .muted,html body .section-head p,html body small,html body .item-subtitle,html body .field,html body .card-head span:not(.pill),html body th{color:var(--rc-muted)!important}
+html body a,html body .textlink,html body .quick-link{color:var(--rc-acc)!important}
+/* Superficies */
+html body .card,html body .stat-tile,html body .premium-stat,html body .dialog-card,html body .list-item,html body .v25-day,html body .calendar-panel,html body .calendar-agenda,html body .dash-section,html body .ui-empty-card,html body .home-start-card,html body .bowling-home-stats,html body .arsenal-catalog-card,html body .arsenal-control,html body .mb-sheet,html body .premium-session,html body .premium-banner,html body .compact-score,html body details,html body .registry-v4-roll,html body .registry-v4-score,html body .score-detail,html body .pin-perf,html body .progress-row,html body .ball-session-toggle,html body .arsenal-facts,html body .arsenal-detail-facts,html body .arsenal-info,html body .arsenal-source-note,html body .calendar-session,html body .v25-day-session,html body .liga32-subtotal,html body .premium-summary-main,html body .ui-stats-filter,html body dialog,html body .stats-checkbox{background:var(--rc-s1)!important;border-color:var(--rc-line)!important;box-shadow:none!important;color:var(--rc-text)}
+html body .card .card,html body .card .stat-tile,html body .card .list-item,html body .card details,html body .dash-section .stat-tile,html body .card .progress-row,html body .card .calendar-session,html body .card .v25-day-session,html body .card .stats-checkbox,html body .card .pin-perf,html body .dialog-card .card{background:var(--rc-s2)!important}
+html body [style*="background:#f"],html body [style*="background: #f"],html body [style*="background:#e"],html body [style*="background:white"],html body [style*="background:#fff"]{background:var(--rc-s2)!important;color:var(--rc-text)!important}
+html body [style*="color:var(--teal2)"]{color:var(--rc-acc)!important}
+html body hr{border-color:var(--rc-line)!important}
+/* Formularios */
+html body .input,html body input:not([type=checkbox]):not([type=radio]):not([type=range]),html body select,html body textarea{background:var(--rc-s2)!important;color:var(--rc-text)!important;border:1px solid var(--rc-s3)!important;box-shadow:none!important}
+html body input::placeholder,html body textarea::placeholder{color:#636366!important}
+html body input[type=checkbox],html body input[type=radio],html body input[type=range]{accent-color:var(--rc-acc)}
+/* Botones */
+html body .btn{background:var(--rc-s2)!important;color:var(--rc-text)!important;border:1px solid var(--rc-s3)!important;box-shadow:none!important}
+html body .btn.primary,html body .btn-primary,html body .registry-v4-record{background:var(--rc-acc)!important;color:#fff!important;border-color:var(--rc-acc)!important}
+html body .btn.outline{background:transparent!important;color:var(--rc-acc)!important;border:1px solid var(--rc-s3)!important}
+html body .btn.danger,html body .btn.foul-btn{color:var(--rc-red)!important}
+html body .seg,html body .tabs-scroll{background:var(--rc-s1)!important;border-color:var(--rc-line)!important;box-shadow:none!important}
+html body .seg button,html body .ui-stats-chip,html body .calendar-filter button{background:transparent!important;color:var(--rc-text)!important;border-color:transparent!important;box-shadow:none!important}
+html body .seg button.active,html body .ui-stats-chip[aria-pressed="true"],html body .calendar-filter button.active,html body .calendar-filter button[aria-pressed="true"]{background:var(--rc-s3)!important;color:#fff!important}
+html body .pill{background:var(--rc-s2)!important;color:var(--rc-acc)!important;border-color:transparent!important}
+html body .pill.orange{background:rgba(240,97,45,.18)!important;color:var(--rc-acc2)!important}
+html body .pill.gray{color:var(--rc-muted)!important}
+html body .badge-large{background:var(--rc-s2)!important;color:var(--rc-acc)!important}
+/* Tablas y progreso */
+html body table{color:var(--rc-text)!important;background:transparent!important}
+html body th,html body td{background:transparent!important;border-color:var(--rc-line)!important}
+html body thead tr,html body thead th{background:var(--rc-s2)!important}
+html body tbody tr:nth-child(even) td{background:rgba(255,255,255,.02)!important}
+html body .progress{background:var(--rc-s3)!important}
+html body .progress i{background:var(--rc-acc)!important}
+html body .line-chart{color:var(--rc-acc)}
+/* Marcador clásico */
+html body .score-strip,html body .frame-cell{background:var(--rc-s1)!important;border-color:var(--rc-s3)!important;color:var(--rc-text)!important}
+html body .frame-cell.current{background:#2a1209!important;box-shadow:inset 0 0 0 2px var(--rc-acc)!important}
+html body .frame-cell span{color:var(--rc-muted)!important}
+html body .score-mark{color:var(--rc-text)!important;background:transparent!important}
+html body .score-mark.strike-mark{color:var(--rc-acc)!important}
+html body .score-mark.split-mark{border-color:var(--rc-acc)!important;color:var(--rc-text)!important;background:transparent!important}
+html body .pin{background:transparent!important;border:3px solid var(--rc-acc)!important;color:var(--rc-text)!important;box-shadow:none!important}
+html body .pin.selected{background:var(--rc-acc)!important;color:#000!important}
+html body .pin.unavailable,html body .pin:disabled{border-color:var(--rc-s2)!important;color:#48484a!important}
+/* Calendario */
+html body .calendar-day{background:var(--rc-s2)!important;color:var(--rc-text)!important;border-color:transparent!important;box-shadow:none!important}
+html body .calendar-day.selected,html body .calendar-day[aria-pressed="true"],html body .calendar-day.today{background:var(--rc-acc)!important;color:#fff!important}
+html body .calendar-day:disabled,html body .calendar-day.empty{background:transparent!important}
+/* Inicio: fotos en blanco y negro con degradado negro y brillo naranja */
+html body .home-start-card{border:1px solid var(--rc-line)!important;box-shadow:none!important;background-color:#000!important;background-size:cover,cover,cover,cover!important;background-position:center!important;background-blend-mode:normal,normal,saturation,normal!important}
+html body .home-start-primary{background-image:linear-gradient(105deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.55) 55%,rgba(0,0,0,.15) 100%),radial-gradient(circle at 85% 110%,rgba(240,97,45,.45),transparent 55%),linear-gradient(#000,#000),url('./home-registro.jpg')!important}
+html body .home-start-history{background-image:linear-gradient(160deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.6) 60%,rgba(0,0,0,.35) 100%),radial-gradient(circle at 90% 110%,rgba(240,97,45,.35),transparent 60%),linear-gradient(#000,#000),url('./home-partidas.jpg')!important}
+html body .home-start-stats{background-image:linear-gradient(160deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.6) 60%,rgba(0,0,0,.35) 100%),radial-gradient(circle at 90% 110%,rgba(240,97,45,.35),transparent 60%),linear-gradient(#000,#000),url('./home-estadisticas-limpio.jpg')!important}
+html body .home-start-card,html body .home-start-card *{color:#fff!important}
+html body .home-start-arrow{background:var(--rc-acc)!important;color:#fff!important;border-color:transparent!important}
+html body .home-start-card .ui-line-icon{color:var(--rc-acc)!important}
+/* Textos con color fijo en las hojas antiguas */
+html body .app-main :is(h1,h2,h3,h4,.value,.item-title,.liga32-team,.v25-hero-name,.arsenal-model,.ball-name){color:var(--rc-text)!important}
+html body .app-main :is(strong,b,summary,label,.label,p,footer,.detail,.arsenal-label,.arsenal-brand,.ball-brand,.home-start-footer,.switch){color:var(--rc-text)!important}
+html body .app-main :is(.label,.arsenal-label,.arsenal-brand,.ball-brand,.home-start-footer,p.hint,.detail){color:var(--rc-muted)!important}
+html body .app-main .card-head span:not(.pill),html body .app-main .row>span:not(.pill),html body .app-main .v25-day-head span:not(.v25-day-icon){color:var(--rc-muted)!important}
+html body .app-main .v25-day-head strong,html body .app-main .v25-day-head b{color:var(--rc-text)!important}
+html body .stat-tile .value,html body .premium-stat .value{color:var(--rc-text)!important}
+html body .stat-tile .ui-line-icon,html body .premium-stat .ui-line-icon,html body .card h2 .ui-line-icon{color:var(--rc-acc)!important}
+html body .app-main .pill,html body .app-main .textlink,html body .app-main a,html body .app-main .score-mark.strike-mark,html body .app-main .btn.outline{color:var(--rc-acc)!important}
+html body .app-main .btn.primary,html body .app-main .btn.primary *{color:#fff!important}
+/* Fondos claros sueltos */
+html body :is(.v25-day-icon,.map-circle,.ball-art,.arsenal-image,.pin-map,.liga32-difference,.arsenal-segment,.mb-segment,.calendar-filter,.calendar-chevron,.liga-frame-pill,.liga32-points,.badge-large,.arsenal-icon,.bowling-home-module-icon){background:var(--rc-s2)!important;border-color:var(--rc-s3)!important;color:var(--rc-text)!important;box-shadow:none!important}
+html body .arsenal-segment button,html body .mb-segment button{background:transparent!important;color:var(--rc-text)!important}
+html body .arsenal-segment button.active,html body .mb-segment button.active,html body .arsenal-segment button[aria-pressed="true"],html body .mb-segment button[aria-selected="true"]{background:var(--rc-s3)!important}
+html body .calendar-filter.active,html body .calendar-filter[aria-pressed="true"]{background:var(--rc-acc)!important;color:#fff!important}
+html body .rc-classic-bar{background:var(--rc-s1)!important;color:var(--rc-text)!important;border:1px solid var(--rc-line)}
+/* Diálogos */
+html body .dialog-card,html body dialog{color:var(--rc-text)!important}
+html body ::selection{background:rgba(240,97,45,.45)}
+html body .app-main .home-start-result-grid span,html body .app-main .calendar-markers span,html body .app-main .calendar-legend span{color:var(--rc-muted)!important}
+html body .app-main .arsenal-catalog-card span{color:var(--rc-muted)!important;border-color:var(--rc-s3)!important}
+html body .app-main [class*="split"]{background:transparent!important;border-color:var(--rc-acc)!important;color:var(--rc-text)!important;box-shadow:none!important}
+html body .app-main .calendar-panel p,html body .app-main .calendar-panel small{color:var(--rc-muted)!important}
+html body .app-main .calendar-summary,html body .app-main .calendar-summary *{color:var(--rc-muted)!important}
