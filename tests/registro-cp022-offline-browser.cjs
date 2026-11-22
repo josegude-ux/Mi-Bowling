@@ -38,10 +38,9 @@ const browserOptions={headless:true,args:['--no-sandbox'],viewport:{width:390,he
   const page=await context.newPage();
   const exceptions=[],external=[];
   page.on('pageerror',error=>exceptions.push(error.message));
-  await context.route('**/*',route=>{
-   const url=route.request().url();
-   if(url.startsWith('data:')||new URL(url).origin===origin)return route.continue();
-   external.push(url);return route.abort();
+  // Intercept only off-origin HTTP(S). Intercepting all requests interferes with SW handling.
+  await context.route(/^https?:\/\/(?!127\.0\.0\.1:)/,route=>{
+   external.push(route.request().url());return route.abort();
   });
   await page.goto(labUrl,{waitUntil:'load',timeout:30000});
   await page.waitForFunction(()=>window.MiBowlingRegistroCP021?.enabled&&!!window.__CP015_LAB,null,{timeout:30000});
@@ -50,7 +49,9 @@ const browserOptions={headless:true,args:['--no-sandbox'],viewport:{width:390,he
    return !!(r?.active&&r.active.scriptURL.endsWith('/sw.js'));
   },null,{timeout:90000});
   await page.reload({waitUntil:'load',timeout:30000});
-  await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&window.MiBowlingRegistroCP021?.enabled,null,{timeout:30000});
+  const diagnostic=await page.evaluate(async()=>{const reg=await navigator.serviceWorker.getRegistration();return {scope:reg?.scope,active:reg?.active?.state,controller:navigator.serviceWorker.controller?.scriptURL,caches:await caches.keys()}});
+  console.log('CP022 SW CONTROLLER DIAGNOSTIC '+JSON.stringify(diagnostic));
+  await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&window.MiBowlingRegistroCP021?.enabled,null,{timeout:15000});
   const online=await page.evaluate(async()=>{
    const names=(await caches.keys()).filter(name=>name.startsWith('mi-bowling-release-'));
    const name=names.at(-1),cache=await caches.open(name);
