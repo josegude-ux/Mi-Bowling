@@ -23,6 +23,71 @@ async function getStore(){
  if(!syntheticStore)syntheticStore=new window.MiBowlingCP018.CP018Store();
  return syntheticStore;
 }
+
+let loadingCP025=null;
+function cp025Gate(){
+ const ok=enabled&&(loc.hostname==='localhost'||loc.hostname==='127.0.0.1')&&new URLSearchParams(loc.search).get('cp021lab')==='ficticio';
+ if(!ok)throw Error('CP025_LAB_ONLY');
+ try{if(protectedKeys.some(k=>window.localStorage.getItem(k)!==null))throw Error('CP025_EXISTING_DATA_PROTECTED');}
+ catch(e){if(e.message==='CP025_EXISTING_DATA_PROTECTED')throw e;throw Error('CP025_STORAGE_UNAVAILABLE')}
+}
+async function cp025Module(){
+ cp025Gate();await getStore();
+ if(!window.BowlingCp025V3){
+  if(!loadingCP025)loadingCP025=new Promise((resolve,reject)=>{
+   const script=document.createElement('script');
+   script.src='./lab/registro-cp021/cp025-v3-adapter.js';
+   script.onload=resolve;script.onerror=()=>reject(Error('CP025_MODULE_LOAD_FAILED'));
+   document.head.appendChild(script);
+  });
+  await loadingCP025;
+ }
+ cp025Gate();
+ if(!window.BowlingCp025V3||window.BowlingCp025V3.version!==3)throw Error('CP025_ADAPTER_MISSING');
+ return window.BowlingCp025V3;
+}
+async function promoteV3Synthetic(){
+ cp025Gate();const mod=await cp025Module();return mod.promote({getStore});
+}
+async function readV3Synthetic(){
+ cp025Gate();const mod=await cp025Module();return mod.read({getStore});
+}
+async function rollbackV3Synthetic(){
+ cp025Gate();const mod=await cp025Module();return mod.rollback({getStore});
+}
+async function promoteV3Demo(){
+ cp025Gate();const store=await getStore();
+ if(!(await store.row('sources'))){
+  const C=window.BowlingCp016Coexist,legacy=C.buildLegacyFixture(),modern=C.buildFinalFixture(278);
+  legacy.balls=[{id:'cp016-fake-ball-v2',name:'v2 mock ball'}];
+  legacy.patterns=[{id:'cp016-fake-pattern-v2',name:'v2 mock pattern'}];
+  modern.balls=[{id:'cp016-fake-ball-v3',name:'v3 mock ball'}];
+  modern.patterns=[{id:'cp016-fake-pattern-v3',name:'v3 mock pattern'}];
+  modern.sessions[0].type='oficial';
+  cp025Gate();await store.seed(JSON.stringify(legacy),JSON.stringify(modern));
+ }
+ return promoteV3Synthetic();
+}
+function attachCP025Button(){
+ const dialog=document.getElementById('lab-io');
+ if(!enabled||!dialog||document.getElementById('cp025-v3-promote'))return;
+ const button=document.createElement('button');button.type='button';
+ button.id='cp025-v3-promote';button.className='io-btn';
+ button.style.width='100%';button.textContent='Activar contrato v3 · solo partidas ficticias';
+ const status=document.createElement('p');
+ status.id='cp025-v3-status';status.setAttribute('role','status');
+ button.addEventListener('click',async()=>{
+  button.disabled=true;status.textContent='Comprobando respaldo y formato v3…';
+  try{
+   const r=await promoteV3Demo();const doc=await readV3Synthetic();
+   status.textContent='Contrato v3 validado: '+r.totalGames+' partidas ficticias, media '+r.averageScore+' · '+doc.format;
+  }catch(e){status.textContent='Contrato v3 detenido: '+e.message}
+  finally{button.disabled=false}
+ });
+ const close=document.getElementById('io-close');
+ dialog.insertBefore(button,close);dialog.insertBefore(status,close);
+}
+
 async function migrateSynthetic(){
  const store=await getStore(),C=window.BowlingCp016Coexist;
  const legacy=JSON.stringify(C.buildLegacyFixture()),modern=JSON.stringify(C.buildFinalFixture(278));
@@ -50,12 +115,13 @@ function attachMigrateButton(){
 window.MiBowlingRegistroCP021=Object.freeze({
 enabled,
 render(){if(!enabled)throw Error('CP021_INACTIVE');mounted=false;return '<style id="cp021-css">'+css+'</style><div class="cp021-root">'+markup+'</div>';},
-mount(){if(!enabled)return;if(mounted)return;const node=document.querySelector('.cp021-root');if(!node)throw Error('CP021_ROOT_MISSING');if(typeof window.MiBowlingCP021Mount!=='function')throw Error('CP021_CONTROLLER_MISSING');mounted=true;window.MiBowlingCP021Mount();attachMigrateButton();},
+mount(){if(!enabled)return;if(mounted)return;const node=document.querySelector('.cp021-root');if(!node)throw Error('CP021_ROOT_MISSING');if(typeof window.MiBowlingCP021Mount!=='function')throw Error('CP021_CONTROLLER_MISSING');mounted=true;window.MiBowlingCP021Mount();attachMigrateButton();attachCP025Button();},
 summarySynthetic(legacyRaw,modernRaw){if(!enabled)throw Error('CP021_INACTIVE');return window.BowlingCp016Coexist.analyse({legacy:legacyRaw,modern:modernRaw});},
 migrateSynthetic,
+promoteV3Demo,promoteV3Synthetic,readV3Synthetic,rollbackV3Synthetic,
 async inspectSynthetic(){const s=await getStore();return s.read()},
 async recoverSynthetic(){const s=await getStore();await s.recover();return s.read()},
 async rollbackSynthetic(){const s=await getStore();await s.rollback();return s.read()},
-kind:'existing-PWA-registry-LAB',sources:['CP013','CP014','CP015','CP016','CP018'],writesProduction:false
+kind:'existing-PWA-registry-LAB',sources:['CP013','CP014','CP015','CP016','CP018','CP025'],writesProduction:false
 });
 })();
