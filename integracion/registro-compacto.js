@@ -43,10 +43,10 @@ body.rc-open{overflow:hidden}
 .rc-frame em{font-style:normal;font-size:15px;font-weight:700;white-space:nowrap;letter-spacing:-.02em;display:flex;align-items:center;gap:3px}
 .rc-frame em .sp{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;border:2px solid #f0612d;font-size:12px}
 .rc-frame strong{font-size:15px;min-height:18px}
-.rc-rack{width:24px;height:22px;display:block;margin:1px 0}
-.rc-rack .s{fill:#f5f5f7}
-.rc-rack .m{fill:#ff453a}
-.rc-rack .k{fill:#48484a}
+.rc-mini{width:24px;height:22px;display:block;margin:1px 0}
+.rc-mini .s{fill:#f5f5f7}
+.rc-mini .m{fill:#ff453a}
+.rc-mini .k{fill:#48484a}
 .rc-score{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .rc-score>span{color:#8e8e93;font-size:19px}
 .rc-score b{font-size:30px;line-height:1;color:#f5f5f7}
@@ -134,7 +134,7 @@ body.rc-open{overflow:hidden}
  function frameRack(g,f){const rs=rollsIn(g,f);if(!rs.length||!rs.every(r=>exactRoll(r)))return '';
   let i=0;if(f===10){while(i<rs.length&&rs[i].pins.length===10)i++;if(i>=rs.length)return ''}else if(rs[0].pins.length===10)return '';
   const a=rs[i],b=f===10&&i>=2?null:rs[i+1];const st1=[1,2,3,4,5,6,7,8,9,10].filter(p=>!a.pins.includes(p)),st2=b?st1.filter(p=>!b.pins.includes(p)):null;
-  return `<svg class="rc-rack" viewBox="0 0 26 24" aria-hidden="true">${Object.entries(RACK_POS).map(([p,[x,y]])=>{p=+p;const up=st1.includes(p),miss=st2&&st2.includes(p);return `<circle cx="${x}" cy="${y}" r="${up?2.6:1.3}" class="${!up?'k':miss?'m':'s'}"/>`}).join('')}</svg>`}
+  return `<svg class="rc-mini" viewBox="0 0 26 24" aria-hidden="true">${Object.entries(RACK_POS).map(([p,[x,y]])=>{p=+p;const up=st1.includes(p),miss=st2&&st2.includes(p);return `<circle cx="${x}" cy="${y}" r="${up?2.6:1.3}" class="${!up?'k':miss?'m':'s'}"/>`}).join('')}</svg>`}
  function boardHtml(g,n){
   const scores=frameScores(g);
   return '<div class="rc-board" role="group" aria-label="Hoja de puntuación. Toca un frame para corregirlo">'+Array.from({length:10},(_,i)=>{const f=i+1,cur=!n.done&&n.frame===f,has=rollsIn(g,f).length>0;
