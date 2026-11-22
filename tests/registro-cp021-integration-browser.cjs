@@ -74,6 +74,29 @@ async function browserChecks(){
     });
     assert.equal(dual.averageScore,289);
     assert.equal(dual.pinPatternEligibleGames,1);
+    // Incremental CP018 integration: actual isolated IndexedDB, explicit synthetic action only.
+    if(width===390){
+     const before=await page.evaluate(()=>['mi-bowling-analitica-v2','mi-bowling-v1','mi-bowling-liga-v1','mi-bowling-ball-selection-v1'].map(key=>localStorage.getItem(key)));
+     const migrated=await page.evaluate(()=>window.MiBowlingRegistroCP021.migrateSynthetic());
+     assert.equal(migrated.result.mode,'shadow-v3');
+     assert.equal(migrated.result.stats.averageScore,289);
+     assert.equal(migrated.result.stats.pinPatternEligibleGames,1);
+     const names=await page.evaluate(()=>indexedDB.databases().then(d=>d.map(x=>x.name)));
+     assert(names.includes('mi-bowling-cp018-synthetic-v3'));
+     const after=await page.evaluate(()=>['mi-bowling-analitica-v2','mi-bowling-v1','mi-bowling-liga-v1','mi-bowling-ball-selection-v1'].map(key=>localStorage.getItem(key)));
+     assert.deepEqual(after,before,'CP018 changed legacy storage keys');
+     await page.reload({waitUntil:'load',timeout:30000});
+     await page.waitForFunction(()=>window.MiBowlingRegistroCP021?.enabled&&!!window.__CP015_LAB,null,{timeout:30000});
+     const reopened=await page.evaluate(()=>window.MiBowlingRegistroCP021.inspectSynthetic());
+     assert.equal(reopened.mode,'shadow-v3');
+     assert.equal(reopened.stats.averageScore,289);
+     const reverted=await page.evaluate(()=>window.MiBowlingRegistroCP021.rollbackSynthetic());
+     assert.equal(reverted.mode,'dual-read');
+     assert.equal(reverted.stats.averageScore,289);
+     const retest=await page.evaluate(()=>window.MiBowlingRegistroCP021.recoverSynthetic());
+     assert.equal(retest.mode,'dual-read');
+     console.log('CP021 REAL IDB PASS: synthetic CP018 shadow, reload, legacy keys unchanged, rollback/recovery');
+    }
     assert.deepEqual(errors,[]);
     assert.deepEqual(external,[]);
     console.log('CP021 INTEGRATED PASS '+width+'x'+height+' 3 modes no scroll, 44px, synthetic quantity, v2/v3 average 289');
