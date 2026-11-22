@@ -9,7 +9,7 @@ const {chromium}=require('playwright');
 const ROOT=path.resolve(__dirname,'..');
 const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'sw.js'),'utf8').match(/^const HASHES=(\{.*\});$/m)?.[1]||'null');
 assert(manifest,'Service Worker manifest missing');
-assert.equal(Object.keys(manifest).length,66,'Unexpected SW manifest size: stop before browser');
+assert.equal(Object.keys(manifest).length,67,'Unexpected SW manifest size: stop before browser');
 const crypto=require('node:crypto');
 const mismatches=[];
 for(const [resource,expected] of Object.entries(manifest)){
@@ -69,7 +69,7 @@ const browserOptions={headless:true,args:['--no-sandbox'],viewport:{width:390,he
    new Promise((_,reject)=>setTimeout(()=>reject(Error('CP022_SW_ACTIVATION_TIMEOUT')),75000))
   ]);
   assert.equal(ready.state,'activated','Service Worker not active after ready');
-  assert.equal(ready.cacheCount,66,'Service Worker cache incomplete');
+  assert.equal(ready.cacheCount,67,'Service Worker cache incomplete');
   console.log('CP022 SW ACTIVATION READY '+JSON.stringify(ready));
   const installed=await page.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();return {scope:r?.scope,active:r?.active?.state,waiting:r?.waiting?.state,installing:r?.installing?.state,controller:navigator.serviceWorker.controller?.scriptURL}});
   console.log('CP022 SW INITIAL STATE '+JSON.stringify(installed));
@@ -85,7 +85,7 @@ const browserOptions={headless:true,args:['--no-sandbox'],viewport:{width:390,he
     hasLabDeepLink:!!(await cache.match(location.origin+'/?cp021lab=ficticio')),
     activeScript:navigator.serviceWorker.controller.scriptURL};
   });
-  assert.equal(online.count,66,'SW cache missing or extra resources');
+  assert.equal(online.count,67,'SW cache missing or extra resources');
   assert.equal(online.hasRoot,true,'Offline root not cached');
   console.log('CP022 SW INSTALLED: cached='+online.count+' root='+online.hasRoot+' labDeepLink='+online.hasLabDeepLink);
   assert.equal(online.hasLabDeepLink,true,'CP022 LAB_URL_NOT_CACHED: ?cp021lab=ficticio cannot load offline without a hash-checked manifest alias');
