@@ -27,4 +27,4 @@ jobs:
           npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: NEW actual Chromium process SIGKILL during pending IDB requests
-        run: node tests/cp032-midtransaction-crash-browser.cjs
+        run: timeout --signal=SIGTERM --kill-after=5s 95s node tests/cp032-midtransaction-crash-browser.cjs

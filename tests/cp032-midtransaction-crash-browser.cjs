@@ -166,9 +166,9 @@ async function crashAt(dir,page,phase){
     ctx=await launch(dir);page=await ctx.newPage();
     await load(page);await configure(page,false);await lock(page);
    }
-   const fatal=await crashAt(dir,page,phase);
+   console.log('CP032 SIGNAL ARM '+phase);const fatal=await crashAt(dir,page,phase);
    assert(fatal.forced&&fatal.pid>0);
-   try{await ctx.close()}catch{}
+   try{await Promise.race([ctx.close().catch(()=>{}),new Promise(done=>setTimeout(done,3000))])}catch{}
    ctx=await launch(dir);page=await ctx.newPage();
    await load(page);await configure(page,false);await lock(page);
    const report=await page.evaluate(async()=>{
@@ -186,6 +186,6 @@ async function crashAt(dir,page,phase){
   console.log('CP032 REAL CRASH LAB PASS · SIGKILL during sidecar v3 readwrite and PDF rollback readwrite; original data/fake photo preserved');
  }finally{
   for(const dir of paths)try{fs.rmSync(dir,{recursive:true,force:true})}catch{}
-  await new Promise(resolve=>server.close(resolve));
+  server.closeAllConnections?.();await new Promise(resolve=>server.close(resolve));
  }
-})().catch(e=>{console.error('CP032 REAL CRASH LAB FAIL',e);process.exitCode=1;try{server.close()}catch{}});
+})().catch(e=>{console.error('CP032 REAL CRASH LAB FAIL',e);try{server.closeAllConnections?.();server.close()}catch{}process.exit(1)});
