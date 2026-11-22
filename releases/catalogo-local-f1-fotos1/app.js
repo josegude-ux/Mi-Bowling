@@ -1,6 +1,6 @@
 'use strict';
 /* Mi Bowling · versión analítica local. Sin dependencias ni cuentas. */
-const APP_VERSION='3.3.30-prueba';
+const APP_VERSION='3.3.31-prueba';
 const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1';
 const PINS=[1,2,3,4,5,6,7,8,9,10], RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
 const $=id=>document.getElementById(id);
@@ -1036,10 +1036,18 @@ function fbPlayerView(k){const S=fbStore(),p=S.players[k];if(!p){fbPlayer='';ret
  ${next.length?`<div class="card fb-card"><h2>Próximas series</h2><ul class="fb-list">${next.map(x=>`<li onclick="${goDay(x.day)}"><span class="fb-who">${esc(x.ev.title)}<small>${fdate(x.day)}${x.ev.venue?' · '+esc(x.ev.venue):''}</small></span><span class="fb-num"><strong>${esc(x.r.serie||'')}${x.r.time?' · '+esc(x.r.time):''}</strong>${x.r.lanes?`<small>Pistas ${x.r.lanes.map(esc).join(' → ')}</small>`:''}</span></li>`).join('')}</ul></div>`:''}
  <div class="card fb-card"><h2>Torneos jugados</h2>${tours.length?`<ul class="fb-list">${tours.map(({d,r,date})=>{const ks=fbRowKeys(r),mate=r.names.map((n,i)=>ks[i]===k?'':fbNameLink(n,r,ks[i])).filter(Boolean);
   return `<li class="fb-tour" onclick="${date?goDay(date):''}"><span class="fb-pos${r.pos<=3?' podium':''}">${r.pos}.º</span><span class="fb-who">${esc(d.title)}<small>${fdate(date)}${r.sect?' · '+esc(r.sect):''}${mate.length?' · con '+mate.join(' / '):''}</small></span><span class="fb-num"><strong>${r.bolos}</strong><small>${r.parts?.length?'Pareja · '+r.parts.join(' + '):r.serie?'Serie '+esc(r.serie.slice(1)):''}</small></span></li>`}).join('')}</ul>`:'<p class="hint">Sin torneos importados.</p>'}</div>`}
+let fbSearch='';
+function fbSearchResults(){const q=window.MiBowlingFGB.norm(fbSearch).split(/\s+/).filter(Boolean);if(!q.length)return '';
+ const S=fbStore(),gens=S.docs.filter(d=>d.kind==='general'),cur=new Map((gens[gens.length-1]?.rows||[]).map(r=>[window.MiBowlingFGB.personKey(r.name),r]));
+ const hits=fbRegistry().filter(p=>{const t=window.MiBowlingFGB.norm(p.name+' '+(p.alias||'')+' '+p.club);return q.every(w=>t.includes(w))}).sort((a,b)=>(cur.get(a.key)?.pos||999)-(cur.get(b.key)?.pos||999)).slice(0,25);
+ if(!hits.length)return '<p class="hint">Ningún jugador coincide.</p>';
+ return `<ul class="fb-list">${hits.map(p=>{const r=cur.get(p.key);return `<li onclick="fbOpenPlayer(${esc(JSON.stringify(p.key))})"><span class="fb-who"><strong>${esc(fbShort(p.key))}</strong><small>${esc(p.name)} · ${esc(p.club)} · ${esc(p.cat)}</small></span><span class="fb-num">${r&&r.part?`<strong>${r.pos}.º</strong><small>${fmt(r.prom)} · ${r.part} p.</small>`:'<small>Sin partidas</small>'}</span></li>`}).join('')}</ul>`}
+function fbSearchInput(v){fbSearch=v;const el=document.getElementById('fb-search-res');if(el)el.innerHTML=fbSearchResults()}
+function fbSearchCard(){if(!Object.keys(fbStore().players).length)return '';return `<div class="card fb-card"><label class="field" for="fb-search">Buscar jugador</label><input id="fb-search" class="input" type="search" autocomplete="off" placeholder="Nombre, apellido o club" value="${esc(fbSearch)}" oninput="fbSearchInput(this.value)"><div id="fb-search-res">${fbSearchResults()}</div></div>`}
 function federacionView(){const S=fbStore();if(fbPlayer)return fbPlayerView(fbPlayer);
  return `${head('Resultados oficiales','Federación Galega · jugadores del Celta',`<button class="btn outline" onclick="go('calendario')">Calendario</button>`)}
  <div class="card fb-card"><p class="hint">Importa los PDF de la Federación (clasificación general, parejas, copa, orden de pistas, distribución de series). Puedes elegir varios a la vez. Se leen en el móvil.</p><label class="btn primary block">Importar PDF de la Federación<input type="file" accept="application/pdf,.pdf" multiple hidden onchange="fbImport(this)"></label>${S.docs.length?`<label class="switch mt12"><input type="checkbox" ${fbShowAll?'checked':''} onchange="fbShowAll=this.checked;render()"> Ver todos los clubs</label>`:''}</div>
- ${fbPreviewCard()}${fbDocsCard()}${fbGeneralCard()}${fbFollowCard()}${S.docs.length?'':'<div class="card empty">Aún no hay resultados importados.</div>'}`}
+ ${fbPreviewCard()}${fbSearchCard()}${fbDocsCard()}${fbGeneralCard()}${fbFollowCard()}${S.docs.length?'':'<div class="card empty">Aún no hay resultados importados.</div>'}`}
 function fbHomeCard(){let S;try{S=liga32?.federacion}catch(e){return ''}if(!S?.docs?.length)return '';const d=[...S.docs].filter(x=>x.kind==='parejas'||x.kind==='copa').sort((a,b)=>fbDocDate(b).localeCompare(fbDocDate(a)))[0];
  const top=d?d.rows.filter(r=>r.names.some(n=>{const k=fbKeyOf(n,r.club,r.cat);return k?fbFollowed(k,r.club):fbFollowed('',r.club)})).sort((a,b)=>a.pos-b.pos)[0]:null;
  const dd=d?fbDocDate(d):'';return `<button type="button" class="hm-card" onclick="${dd?`calendarMonth=${esc(JSON.stringify(dd.slice(0,7)))};calendarSelected=${esc(JSON.stringify(dd))};go('calendario')`:`go('federacion')`}"><span class="hm-kicker">Resultados oficiales</span><strong>${d?esc(d.title):'Federación Galega'}</strong><span class="hm-sub">${top?esc(top.pos+'.º '+(top.sect?top.sect+' · ':'')+top.names.map(n=>{const k=fbKeyOf(n,top.club,top.cat);return k?fbShort(k):n}).join(' / ')+' · '+top.bolos):'Clasificación y resultados del Celta'}</span></button>`}

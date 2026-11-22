@@ -17,6 +17,12 @@ const srv=http.createServer((q,r)=>{let rel=decodeURIComponent(new URL(q.url,'ht
   const txt=(await p.textContent('main')).replace(/\s+/g,' ');
   for(const s of ['Clasificación general','En el calendario','Jugadores seguidos','Reydnier Chavez','Manuel Novo'])assert(txt.includes(s),'falta: '+s);
   assert(!txt.includes('1101 + 1227'),'los resultados ya no se listan aquí');
+  // Buscador: cualquier club, por apodo, sin perder el foco al escribir.
+  await p.fill('#fb-search','guille');let res=(await p.textContent('#fb-search-res')).replace(/\s+/g,' ');assert(res.includes('Guille Dopico')&&res.includes('DOPICO PEREIRA'),'busca por apodo');
+  await p.fill('#fb-search','prego solbowling');res=await p.textContent('#fb-search-res');assert(/PREGO BESTEIRO/.test(res),'busca otros clubs');
+  await p.type('#fb-search','x');assert.equal(await p.evaluate(()=>document.activeElement.id),'fb-search','mantiene el foco');
+  await p.fill('#fb-search','gude herv');await p.click('#fb-search-res li');await p.waitForSelector('.fb-tiles');assert((await p.textContent('main')).includes('GUDE HERVÉS, Raul'));await p.click('button:text-is("Volver")');
+  await p.fill('#fb-search','');
   // Calendario: resultados dentro de la competición, en su fecha.
   const day=async d=>{await p.evaluate(d=>{calendarMonth=d.slice(0,7);calendarSelected=d;go('calendario')},d);return (await p.textContent('.calendar-agenda')).replace(/\s+/g,' ')};
   const par=await day('2026-11-14');for(const s of ['CAMPIONATO GALEGO PARELLAS','Resultados · PODIUM','Jose Gude','Hernan Gil','2328','1101 + 1227','Raul Gude','1911'])assert(par.includes(s),'parejas falta: '+s);
