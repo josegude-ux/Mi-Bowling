@@ -1,124 +1,220 @@
 'use strict';
-/* MI BOWLING · Registro compacto (prueba, opcional).
- * Vista alternativa del registro de la partida, inspirada en el diseño CP021/CP032.
- * NO tiene almacenamiento propio: cada acción llama a las funciones existentes de la app
- * (togglePin, recordRoll, fastRoll, foulRoll, undoRoll, changeBall, addGame) y, por tanto,
- * guarda exactamente en el mismo formato v2 y por la misma vía protegida (MiBowlingEscritura).
- * Solo modo «Bolos»: «Cantidad» y «Solo puntuación» necesitan el formato v3, aún no homologado.
- * La preferencia se guarda fuera del prefijo mi-bowling- para no entrar en copias ni restauraciones.
+/* MI BOWLING · Registro de partida (3.3.15).
+ * Tres formas de anotar: Bolos (posiciones exactas), Cantidad (solo número) y Solo puntuación.
+ * Sin almacenamiento propio: llama a recordThrow / setFinalOnly / undoLast / rewindFrame / nextGameQuick
+ * de la app, que guardan en mi-bowling-analitica-v2 mediante MiBowlingEscritura (Web Lock + journal).
+ * Preferencias fuera del prefijo mi-bowling- (no entran en copias ni restauraciones).
  */
 (function(){
- const PREF='mibowling.pref.registro-compacto';
- let classicGameId=null;
- function readPref(){try{return localStorage.getItem(PREF)==='1'}catch(e){return false}}
- function writePref(on){try{if(on)localStorage.setItem(PREF,'1');else localStorage.removeItem(PREF)}catch(e){alert('No se pudo guardar la preferencia.')}}
+ const PREF='mibowling.pref.registro-compacto';   // '0' = usar el registro clásico
+ const MODE='mibowling.pref.registro-modo';       // bolos | cantidad | final
+ const MODES=['bolos','cantidad','final'];
+ let classicGameId=null,modeByGame={},sheet=null,hideTip=false;
+ const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+ const put=(k,v)=>{try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){alert('No se pudo guardar la preferencia.')}};
+ const enabled=()=>get(PREF)!=='0';
+ const defaultMode=()=>MODES.includes(get(MODE))?get(MODE):null;
  function currentGameId(){try{const s=session();return s?game(s)?.id||null:null}catch(e){return null}}
- function active(){return readPref()&&!(classicGameId&&classicGameId===currentGameId())}
+ function active(){return enabled()&&!(classicGameId&&classicGameId===currentGameId())}
+ function rerender(){window.render()}
+
+ function modeFor(g,n){
+  if(isFinalOnly(g))return 'final';
+  let m=modeByGame[g.id]||defaultMode()||'bolos';
+  if(m==='final'&&g.rolls.length)m=defaultMode()==='cantidad'?'cantidad':'bolos';
+  if(m==='bolos'&&!n.done&&!n.available)m='cantidad';
+  return m;
+ }
 
  const CSS=`
 body.rc-open{overflow:hidden}
-.rc-root{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;gap:clamp(6px,1.3vh,12px);
- padding:calc(env(safe-area-inset-top,0px) + 10px) 14px calc(env(safe-area-inset-bottom,0px) + 12px);
- background:#080809;color:#faf9f7;font-family:inherit;overflow:hidden;-webkit-user-select:none;user-select:none}
+.rc-root{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;gap:clamp(6px,1.3vh,12px);padding:calc(env(safe-area-inset-top,0px) + 10px) 16px calc(env(safe-area-inset-bottom,0px) + 12px);background:#000;color:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .rc-root *{box-sizing:border-box}
+.rc-root button{font-family:inherit;cursor:pointer}
 .rc-head{display:flex;align-items:center;gap:10px}
-.rc-round{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:1px solid #414146;background:#1e1e21;color:#faf9f7;font-size:20px;display:grid;place-items:center}
-.rc-title{flex:1;min-width:0;text-align:center}
-.rc-title small{display:block;color:#f36a3d;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rc-title b{display:block;font-size:20px;line-height:1.2}
-.rc-board{display:grid;grid-template-columns:repeat(9,1fr) 1.35fr;border:1px solid #414146;border-radius:14px;overflow:hidden;background:#0d0d0f}
-.rc-frame{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px 1px;min-height:clamp(52px,8.4vh,78px);border-right:1px solid #2c2c30}
+.rc-round{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:0;background:#1c1c1e;color:#f5f5f7;display:grid;place-items:center;padding:0}
+.rc-round svg{width:22px;height:22px}
+.rc-title{flex:1;min-width:0;text-align:center;font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-board{display:grid;grid-template-columns:repeat(9,1fr) 1.45fr;border:1px solid #3a3a3c;border-radius:12px;overflow:hidden}
+.rc-frame{all:unset;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px 1px;min-height:clamp(52px,8.4vh,80px);border-right:1px solid #2c2c2e;cursor:pointer}
 .rc-frame:last-child{border-right:0}
-.rc-frame.cur{background:#2a140c;box-shadow:inset 0 0 0 2px #f36a3d}
-.rc-frame i{font-style:normal;font-size:10px;color:#a6a5ad}
-.rc-frame em{font-style:normal;font-size:12px;font-weight:700;white-space:nowrap;letter-spacing:-.02em}
-.rc-frame strong{font-size:13px;min-height:16px}
-.rc-score{display:flex;align-items:baseline;justify-content:space-between}
-.rc-score span{color:#a6a5ad;font-size:15px}
-.rc-score b{font-size:30px;line-height:1}
-.rc-score small{color:#a6a5ad;font-size:13px;margin-right:6px}
-.rc-mode{display:flex;gap:4px;padding:4px;border-radius:999px;background:#1e1e21}
-.rc-mode button{flex:1;border:0;border-radius:999px;padding:9px 4px;background:transparent;color:#a6a5ad;font:inherit;font-size:14px;font-weight:700}
-.rc-mode button[aria-selected="true"]{background:#5d5d63;color:#fff}
-.rc-mode button:disabled{opacity:.45}
-.rc-turn{text-align:center;font-size:18px;font-weight:800;margin:0}
-.rc-turn span{font-size:12px;font-weight:600;color:#a6a5ad}
-.rc-ball{display:flex;align-items:center;gap:8px;border:1px solid #414146;border-radius:14px;background:#1e1e21;padding:6px 10px}
-.rc-ball label{font-size:13px;color:#a6a5ad;white-space:nowrap}
-.rc-ball select{flex:1;min-width:0;background:transparent;color:#faf9f7;border:0;font:inherit;font-weight:700;font-size:15px;padding:6px 0}
-.rc-ball select option{color:#111}
-.rc-hint{text-align:center;color:#a6a5ad;font-size:14px;margin:0}
-.rc-rack{flex:1;min-height:0;display:flex;flex-direction:column-reverse;justify-content:center;align-items:center;gap:clamp(6px,1.4vh,14px)}
-.rc-row{display:flex;gap:clamp(8px,3vw,16px)}
-.rc-pin{width:clamp(44px,min(12.5vw,7vh),58px);height:clamp(44px,min(12.5vw,7vh),58px);border-radius:50%;border:3px solid #f36a3d;background:#111113;color:#7d8fa6;font:inherit;font-size:20px;font-weight:800;box-shadow:0 4px 0 #d8d8dc33}
-.rc-pin[aria-pressed="true"]{background:#faf9f7;color:#180d09;border-color:#faf9f7}
-.rc-pin:disabled{border-color:#2c2c30;color:#3b3b40;background:#0d0d0f;box-shadow:none}
-.rc-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.rc-btn{border:0;border-radius:16px;padding:13px 8px;background:#28282c;color:#faf9f7;font:inherit;font-size:17px;font-weight:700}
-.rc-foot{display:grid;grid-template-columns:64px 1fr;gap:10px}
-.rc-undo{border:0;border-radius:16px;background:#1e1e21;color:#f36a3d;font-size:26px}
-.rc-undo:disabled{color:#5a3a2e}
-.rc-submit{border:0;border-radius:16px;padding:16px 8px;background:#f36a3d;color:#180d09;font:inherit;font-size:20px;font-weight:800}
-.rc-note{margin:0;text-align:center;font-size:11px;color:#f36a3d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rc-done{flex:1;overflow:auto;-webkit-user-select:text;user-select:text}
-.rc-done .rc-final{text-align:center;padding:16px 0}
-.rc-done .rc-final b{display:block;font-size:64px;line-height:1.05}
-.rc-done .rc-final span{color:#a6a5ad}
-.rc-done .rc-light{background:#fff;color:#102e48;border-radius:16px;padding:2px}
-.rc-hint{flex:0 0 auto}
-@media (max-height:740px){.rc-root{gap:6px;padding-top:calc(env(safe-area-inset-top,0px) + 6px)}.rc-round{width:40px;height:40px}.rc-title b{font-size:18px}.rc-frame{min-height:44px;padding:2px 1px}.rc-score b{font-size:24px}.rc-mode button{padding:6px 4px;font-size:13px}.rc-turn{font-size:16px}.rc-ball{padding:2px 10px}.rc-hint,.rc-note{display:none}.rc-rack{gap:5px}.rc-btn{padding:10px 8px;font-size:16px}.rc-submit{padding:12px 8px;font-size:18px}.rc-pin{font-size:18px}}
+.rc-frame.cur{background:#2a1209;box-shadow:inset 0 0 0 2px #f0612d}
+.rc-frame i{font-style:normal;font-size:11px;color:#8e8e93}
+.rc-frame em{font-style:normal;font-size:15px;font-weight:700;white-space:nowrap;letter-spacing:-.02em;display:flex;align-items:center;gap:3px}
+.rc-frame em .sp{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;border:2px solid #f0612d;font-size:12px}
+.rc-frame strong{font-size:15px;min-height:18px}
+.rc-score{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.rc-score>span{color:#8e8e93;font-size:19px}
+.rc-score b{font-size:30px;line-height:1;color:#f5f5f7}
+.rc-score small{color:#8e8e93;font-size:15px;margin-right:8px}
+.rc-mode{display:flex;gap:4px;padding:3px;border-radius:12px;background:#1c1c1e}
+.rc-mode button{flex:1;border:0;border-radius:10px;padding:8px 2px;background:transparent;color:#f5f5f7;font-size:14px;font-weight:500}
+.rc-mode button[aria-selected="true"]{background:#636366;font-weight:600}
+.rc-mode button:disabled{opacity:.35}
+.rc-turn{text-align:center;font-size:19px;font-weight:700;margin:0}
+.rc-balls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rc-ballbtn{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;background:#1c1c1e;padding:10px 6px;min-width:0}
+.rc-ballbtn span{font-size:12px;color:#8e8e93;white-space:nowrap}
+.rc-ballbtn b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-ballbtn select{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px}
+.rc-hint{text-align:center;color:#8e8e93;font-size:15px;margin:0}
+.rc-panel{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1.2vh,12px)}
+.rc-rack{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:clamp(6px,1.4vh,14px)}
+.rc-row{display:flex;gap:clamp(10px,3.4vw,18px)}
+.rc-pin{width:clamp(44px,min(14vw,7.2vh),60px);height:clamp(44px,min(14vw,7.2vh),60px);border-radius:50%;border:3px solid #f0612d;background:transparent;color:#f5f5f7;font-size:21px;font-weight:700;padding:0}
+.rc-pin[aria-pressed="true"]{background:#f0612d;color:#000}
+.rc-pin:disabled{border-color:#2c2c2e;color:#3a3a3c}
+.rc-quick{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rc-btn{border:0;border-radius:22px;padding:14px 8px;background:#3a3a3c;color:#f5f5f7;font-size:19px;font-weight:500}
+.rc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-content:start}
+.rc-key{border:0;border-radius:30px;padding:clamp(12px,2.4vh,22px) 0;background:#1c1c1e;color:#f0612d;font-size:26px;font-weight:700}
+.rc-key[data-k="F"]{color:#ff453a}
+.rc-key:disabled{color:#3a3a3c}
+.rc-final{display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:8px}
+.rc-final input{width:100%;background:transparent;border:0;color:#f5f5f7;text-align:center;font:inherit;font-size:clamp(44px,9vh,64px);font-weight:800;outline:none}
+.rc-final input::placeholder{color:#3a3a3c}
+.rc-final p{color:#8e8e93;font-size:15px;text-align:center;margin:0}
+.rc-save{border:0;border-radius:30px;padding:16px 32px;background:#f0612d;color:#fff;font-size:19px;font-weight:600}
+.rc-save:disabled{background:#1c1c1e;color:#48484a}
+.rc-foot{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center}
+.rc-undo{height:64px;border:0;border-radius:32px;background:#1c1c1e;color:#f0612d;display:grid;place-items:center;padding:0}
+.rc-undo svg{width:28px;height:28px}
+.rc-undo:disabled{color:#48484a}
+.rc-submit{height:64px;border:0;border-radius:32px;background:#f0612d;color:#fff;font-size:21px;font-weight:700;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-done{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;gap:12px;overflow:auto}
+.rc-done .big{font-size:clamp(64px,12vh,96px);font-weight:800;line-height:1}
+.rc-share{border:0;border-radius:24px;background:#1c1c1e;color:#f0612d;font-size:19px;font-weight:500;padding:12px 22px;display:flex;align-items:center;gap:10px}
+.rc-share svg{width:22px;height:22px}
+.rc-tip{width:100%;display:flex;gap:14px;align-items:flex-start;background:#1c1c1e;border-radius:20px;padding:16px}
+.rc-tip h3{margin:0 0 4px;font-size:18px}
+.rc-tip p{margin:0;color:#8e8e93;font-size:15px}
+.rc-tip button{margin-left:auto;border:0;background:#3a3a3c;color:#c7c7cc;border-radius:50%;width:30px;height:30px;flex:0 0 auto}
+.rc-sheetbg{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.55);display:flex;align-items:flex-end}
+.rc-sheet{width:100%;max-height:92vh;overflow:auto;background:#1c1c1e;color:#f5f5f7;border-radius:28px 28px 0 0;padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 20px);font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.rc-sheet .grab{width:44px;height:5px;border-radius:3px;background:#48484a;margin:0 auto 14px}
+.rc-sheet h2{font-size:22px;margin:0 0 14px;color:#f5f5f7}
+.rc-opt{all:unset;box-sizing:border-box;display:flex;gap:16px;width:100%;padding:16px;margin-bottom:12px;border-radius:18px;background:#2c2c2e;cursor:pointer;color:#f5f5f7}
+.rc-opt i{font-style:normal;color:#f0612d;font-size:28px;width:34px;text-align:center}
+.rc-opt b{display:block;font-size:17px;margin-bottom:4px}
+.rc-opt span{color:#8e8e93;font-size:14px}
+.rc-sheet .note{color:#8e8e93;font-size:13px;margin:4px 0 0}
+.rc-sheet label{display:block;color:#8e8e93;font-size:14px;margin:12px 0 6px}
+.rc-sheet select{width:100%;padding:12px;border-radius:12px;border:0;background:#2c2c2e;color:#f5f5f7;font-size:16px}
 .rc-classic-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fff3ee;color:#7a2d12;font-size:14px}
+@media (max-height:740px){.rc-root{gap:6px;padding-top:calc(env(safe-area-inset-top,0px) + 6px)}.rc-round{width:40px;height:40px}.rc-frame{min-height:46px;padding:2px 1px}.rc-frame em,.rc-frame strong{font-size:13px}.rc-score>span{font-size:16px}.rc-score b{font-size:24px}.rc-turn{font-size:17px}.rc-ballbtn{padding:7px 6px}.rc-hint{display:none}.rc-btn{padding:10px 8px;font-size:17px}.rc-foot{grid-template-columns:60px 1fr}.rc-undo,.rc-submit{height:54px}.rc-submit{font-size:19px}.rc-key{font-size:22px}}
 `;
+ const ICON={
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+  opts:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
+  undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>'
+ };
  function ensureCss(){if(document.getElementById('rc-css'))return;const st=document.createElement('style');st.id='rc-css';st.textContent=CSS;document.head.appendChild(st)}
  function syncBody(open){document.body.classList.toggle('rc-open',!!open)}
 
+ function frameMarks(g,f){
+  const label=frameLabel(g,f);if(!label)return '';
+  const parts=label.split(' ').map(x=>esc(x));
+  if(isSplitFirst(g,f))parts[0]=`<span class="sp" title="Split">${parts[0]}</span>`;
+  return parts.join(' ');
+ }
  function boardHtml(g,n){
   const scores=frameScores(g);
-  return '<div class="rc-board" role="group" aria-label="Marcador">'+Array.from({length:10},(_,i)=>{const f=i+1,m=frameLabel(g,f)||'·',cur=!n.done&&n.frame===f;
-   return `<div class="rc-frame ${cur?'cur':''}" aria-label="Frame ${f}: ${esc(m)}${scores[i]!=null?', acumulado '+scores[i]:''}"><i>${f}</i><em>${esc(m)}</em><strong>${scores[i]??''}</strong></div>`}).join('')+'</div>';
+  return '<div class="rc-board" role="group" aria-label="Hoja de puntuación. Toca un frame para corregirlo">'+Array.from({length:10},(_,i)=>{const f=i+1,cur=!n.done&&n.frame===f,has=rollsIn(g,f).length>0;
+   return `<button type="button" class="rc-frame ${cur?'cur':''}" data-rc-frame="${f}" ${has?`onclick="MiBowlingRegistroCompacto.fix(${f})"`:'tabindex="-1"'} aria-label="Frame ${f}${has?', '+esc(frameLabel(g,f))+(scores[i]!=null?', acumulado '+scores[i]:'')+'. Corregir':''}"><i>${f}</i><em>${frameMarks(g,f)}</em><strong>${scores[i]??''}</strong></button>`}).join('')+'</div>';
+ }
+ const ballLabel=b=>esc(((b.brand||'')+' '+(b.model||'')).trim()||'Bola');
+ function ballName(id){const b=db.balls.find(x=>x.id===id);return b?ballLabel(b):'Sin definir'}
+ function ballOptions(selected){
+  const s=session(),allowed=selectedBallsFor(s.id);
+  const list=db.balls.filter(b=>allowed===null?(!b.retired||b.id===selected):allowed.includes(b.id));
+  return `<option value="">Sin definir</option>`+list.map(b=>`<option value="${esc(b.id)}" ${b.id===selected?'selected':''}>${ballLabel(b)}</option>`).join('');
+ }
+ function ballsHtml(s){
+  return `<div class="rc-balls"><label class="rc-ballbtn"><span>Bola de strike</span><b>${ballName(s.currentBallId)}</b><select aria-label="Bola de strike" onchange="changeBall(this.value);render()">${ballOptions(s.currentBallId)}</select></label><label class="rc-ballbtn"><span>Bola de spare</span><b>${s.spareBallId?ballName(s.spareBallId):(s.currentBallId?'La misma':'Sin definir')}</b><select aria-label="Bola de spare" onchange="setSpareBall(this.value);render()">${ballOptions(s.spareBallId||'')}</select></label></div>`;
  }
  function rackHtml(n){
-  return '<div class="rc-rack">'+RACK.slice().reverse().map(row=>'<div class="rc-row">'+row.map(p=>{const can=n.available.includes(p),up=selection.includes(p);
+  return '<div class="rc-rack">'+RACK.map(row=>'<div class="rc-row">'+row.map(p=>{const can=n.available.includes(p),up=selection.includes(p);
    return `<button type="button" class="rc-pin" data-rc-pin="${p}" onclick="togglePin(${p})" ${can?'':'disabled'} aria-pressed="${up}" aria-label="Bolo ${p}: ${!can?'ya derribado':up?'en pie':'derribado'}">${p}</button>`}).join('')+'</div>').join('')+'</div>';
+ }
+ function keysHtml(n){
+  const spareKey=n.capacity<10?'/':'X';
+  const keys=[['−',0],['1',1],['2',2],['3',3],['4',4],['5',5],['6',6],['7',7],['8',8],['9',9],[spareKey,n.capacity],['F','F']];
+  return '<div class="rc-keys">'+keys.map(([label,v])=>{const dis=v!=='F'&&label!==spareKey&&v>=n.capacity&&v!==0;
+   return `<button type="button" class="rc-key" data-k="${label}" ${dis?'disabled':''} onclick="MiBowlingRegistroCompacto.count(${v==='F'?"'F'":v})" aria-label="${label==='−'?'Canal, 0':label==='F'?'Falta':label==='X'?'Strike':label==='/'?'Spare, '+v:label}">${label}</button>`}).join('')+'</div>';
+ }
+ const MODE_NAME={bolos:'Bolos en pie',cantidad:'Cantidad',final:'Solo puntuación'};
+ function sheetHtml(){
+  if(sheet==='modo')return `<div class="rc-sheetbg" onclick="if(event.target===this)MiBowlingRegistroCompacto.closeSheet()"><div class="rc-sheet" role="dialog" aria-label="Cómo quieres anotar tus partidas"><div class="grab"></div><h2>¿Cómo quieres anotar tus partidas?</h2>
+   <button type="button" class="rc-opt" data-choose="cantidad" onclick="MiBowlingRegistroCompacto.chooseDefault('cantidad')"><i>#</i><div><b>Cuenta los bolos que derribaste</b><span>La forma más sencilla: toca un número del 0 al 10 tras cada bola.</span></div></button>
+   <button type="button" class="rc-opt" data-choose="bolos" onclick="MiBowlingRegistroCompacto.chooseDefault('bolos')"><i>⁘</i><div><b>Toca los bolos que siguen en pie</b><span>Requiere un poco de práctica y muestra qué spares y splits te cuestan bolos.</span></div></button>
+   <button type="button" class="rc-opt" data-choose="final" onclick="MiBowlingRegistroCompacto.chooseDefault('final')"><i>Σ</i><div><b>Solo la puntuación final</b><span>Escribe tu total tras cada partida. Strikes, spares y leaves necesitan los frames.</span></div></button>
+   <p class="note">Puedes cambiarlo cuando quieras arriba en la pantalla de puntuación.</p></div></div>`;
+  if(sheet==='opciones'){const s=session(),g=game(s);return `<div class="rc-sheetbg" onclick="if(event.target===this)MiBowlingRegistroCompacto.closeSheet()"><div class="rc-sheet" role="dialog" aria-label="Opciones de la partida"><div class="grab"></div><h2>Opciones</h2>
+   <label for="rc-def">Forma de anotar por defecto</label><select id="rc-def" onchange="MiBowlingRegistroCompacto.chooseDefault(this.value,true)">${MODES.map(m=>`<option value="${m}" ${defaultMode()===m?'selected':''}>${MODE_NAME[m]}</option>`).join('')}</select>
+   ${s.type==='entrenamiento'&&!pendingClassification(s)?`<label><input type="checkbox" ${g.includeStats!==false?'checked':''} onchange="toggleGameStats('${esc(g.id)}',this.checked)"> Incluir esta partida en estadísticas</label>`:''}
+   <button type="button" class="rc-opt" style="margin-top:16px" onclick="MiBowlingRegistroCompacto.classic()"><i>⇄</i><div><b>Par, pistas, línea e historial</b><span>Abre el registro clásico de esta partida.</span></div></button>
+   <button type="button" class="rc-opt" onclick="MiBowlingRegistroCompacto.closeSheet()"><i>✓</i><div><b>Cerrar</b></div></button></div></div>`}
+  return '';
  }
  function render(){
   ensureCss();
   const s=session();if(!s)return null;
-  const g=game(s),n=next(g),lane=n.done?currentLane(g,10):currentLane(g,n.frame);
-  const where=lane.pair?`Par ${lane.pair.join('–')} · Pista ${lane.lane}`:lane.lane?`Pista ${lane.lane}`:'';
+  const g=game(s),n=next(g),mode=modeFor(g,n),total=score(g),idx=s.games.length;
+  if(!defaultMode()&&!sheet&&!g.rolls.length&&!isFinalOnly(g))sheet='modo';
+  const who=s.leaguePlayer?esc(s.leaguePlayer)+', partida '+idx:'Partida '+idx;
   const back=ligaReturn?'ligaBack()':"go('historial')";
-  const head=`<div class="rc-head"><button type="button" class="rc-round" onclick="${back}" aria-label="${ligaReturn?'Volver a Liga':'Salir del registro'}">‹</button>
-   <div class="rc-title"><small>${esc(s.title||classificationLabel(s))}${where?' · '+esc(where):''}</small><b>Partida ${s.games.length}</b></div>
-   <button type="button" class="rc-round" onclick="MiBowlingRegistroCompacto.classic()" aria-label="Más opciones: vista clásica (línea, par, historial)">⋯</button></div>`;
-  const total=score(g);
+  const head=`<div class="rc-head"><button type="button" class="rc-round" onclick="${back}" aria-label="${ligaReturn?'Volver a Liga':'Salir del registro'}">${ICON.back}</button><div class="rc-title">${who}</div><button type="button" class="rc-round" onclick="MiBowlingRegistroCompacto.openSheet('opciones')" aria-label="Opciones de la partida">${ICON.opts}</button></div>`;
+  const tabs=`<div class="rc-mode" role="tablist" aria-label="Forma de anotar">${[['bolos','Bolos'],['cantidad','Cantidad'],['final','Solo puntuación']].map(([m,l])=>{const dis=n.done||(m==='bolos'&&!n.available)||(m==='final'&&g.rolls.length>0);return `<button type="button" role="tab" data-mode="${m}" aria-selected="${mode===m}" ${dis&&mode!==m?'disabled':''} onclick="MiBowlingRegistroCompacto.mode('${m}')">${l}</button>`}).join('')}</div>`;
+  const undoBtn=`<button type="button" class="rc-undo" onclick="MiBowlingRegistroCompacto.undo()" ${g.rolls.length||isFinalOnly(g)?'':'disabled'} aria-label="Deshacer">${ICON.undo}</button>`;
+  let body;
   if(n.done){
-   const completed=s.games.filter(complete).length;
-   return `<div class="rc-root" data-rc="done">${head}${boardHtml(g,n)}<div class="rc-done"><div class="rc-final"><span>Partida terminada</span><b>${total}</b><span>${completed} partida(s) completas en esta sesión</span></div>
-    <div class="rc-quick">${ligaReturn?'<button type="button" class="rc-btn" onclick="ligaBack()">✓ Guardar y volver a Liga</button><span></span>':`<button type="button" class="rc-btn" onclick="showNext=!showNext;render()">＋ Siguiente partida</button><button type="button" class="rc-btn" onclick="go('historial')">Guardar y salir</button>`}</div>
-    ${showNext&&!ligaReturn?`<div class="rc-light" style="margin-top:12px">${nextGameForm(s,g)}</div>`:''}</div></div>`;
+   const nextLabel=ligaReturn?'Guardar y volver a Liga':`Siguiente: partida ${idx+1}${s.leaguePlayer?', '+esc(s.leaguePlayer):''}`;
+   body=`${isFinalOnly(g)?'':boardHtml(g,n)}<div class="rc-score"><span>Puntuación</span><b>${total}</b></div>${tabs}
+    <div class="rc-done"><div class="big">${total}</div><button type="button" class="rc-share" onclick="shareSessionImage()">${ICON.share} Compartir</button>
+    ${isFinalOnly(g)?'<p class="rc-hint">Partida guardada solo con la puntuación final.</p>':'<p class="rc-hint">Toca un frame de arriba para corregirlo.</p>'}
+    ${hideTip||isFinalOnly(g)?'':`<div class="rc-tip"><div><h3>¿Te equivocaste?</h3><p>Toca cualquier frame de la hoja para anotarlo de nuevo.</p></div><button type="button" aria-label="Cerrar aviso" onclick="MiBowlingRegistroCompacto.tip()">✕</button></div>`}</div>
+    <div class="rc-foot">${undoBtn}<button type="button" class="rc-submit" id="rc-next" onclick="MiBowlingRegistroCompacto.nextGame()">${nextLabel}</button></div>`;
+  }else if(mode==='final'){
+   body=`${tabs}<div class="rc-panel"><div class="rc-final"><input id="rc-final-input" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" placeholder="Puntuación final" aria-label="Puntuación final de 0 a 300" oninput="MiBowlingRegistroCompacto.finalInput(this)"><button type="button" class="rc-save" id="rc-final-save" disabled onclick="MiBowlingRegistroCompacto.saveFinal()">Guardar puntuación</button><p>Las partidas con solo la puntuación final cuentan únicamente para el promedio y las mejores marcas.</p></div></div>
+    <div class="rc-foot">${undoBtn}<span></span></div>`;
+  }else{
+   const scoreRow=`<div class="rc-score"><span>Puntuación actual</span><span><small>máx. ${maxPossible(g)}</small><b>${total}</b></span></div>`;
+   const title=`<p class="rc-turn">Frame ${n.frame}, bola ${n.ball}</p>`;
+   if(mode==='cantidad'){
+    body=`${boardHtml(g,n)}${scoreRow}${tabs}${title}${ballsHtml(s)}<div class="rc-panel"><p class="rc-hint">Bolos derribados</p>${keysHtml(n)}</div><div class="rc-foot">${undoBtn}<span></span></div>`;
+   }else{
+    const down=n.available.length-selection.length;
+    const label=selection.length===0?(n.capacity===10?'Strike':'Spare'):(down===0?'Registrar 0':`Registrar ${down}`);
+    body=`${boardHtml(g,n)}${scoreRow}${tabs}${title}${ballsHtml(s)}<div class="rc-panel"><p class="rc-hint">Toca los bolos que siguen en pie</p>${rackHtml(n)}<div class="rc-quick"><button type="button" class="rc-btn" data-rc="canal" onclick="MiBowlingRegistroCompacto.pins('canal')">— Canal</button><button type="button" class="rc-btn" data-rc="foul" onclick="MiBowlingRegistroCompacto.pins('foul')">⚠ Foul</button></div></div>
+     <div class="rc-foot">${undoBtn}<button type="button" class="rc-submit" id="quick-record" onclick="MiBowlingRegistroCompacto.pins()">${label}</button></div>`;
+   }
   }
-  const down=n.available.length-selection.length;
-  const label=selection.length===0?(n.available.length===10?'Strike':(n.frame===10||n.ball===2?'Spare · todos derribados':'Todos derribados')):`Registrar ${down} derribado${down===1?'':'s'}`;
-  const ball=ballSelect('roll-ball','ballId',s.currentBallId).replace('<select class="input" ','<select onchange="changeBall(this.value)" ');
-  return `<div class="rc-root" data-rc="play">${head}${boardHtml(g,n)}
-   <div class="rc-score"><span>Puntuación actual</span><span><small>Parcial</small><b>${total}</b></span></div>
-   <div class="rc-mode" role="tablist" aria-label="Forma de anotar"><button type="button" role="tab" aria-selected="true">Bolos</button><button type="button" role="tab" aria-selected="false" disabled title="Necesita el formato v3, aún en pruebas">Cantidad</button><button type="button" role="tab" aria-selected="false" disabled title="Necesita el formato v3, aún en pruebas">Solo puntuación</button></div>
-   <p class="rc-turn">Frame ${n.frame}, bola ${n.ball} <span>· ${n.available.length} bolos disponibles</span></p>
-   <div class="rc-ball"><label for="roll-ball">Bola</label>${ball}</div>
-   <p class="rc-hint">Toca los bolos que quedan en pie</p>
-   ${rackHtml(n)}
-   <div class="rc-quick"><button type="button" class="rc-btn" onclick="fastRoll(true)">– Canal</button><button type="button" class="rc-btn" onclick="foulRoll()">⚠ Falta</button></div>
-   <div class="rc-foot"><button type="button" class="rc-undo" onclick="undoRoll()" ${g.rolls.length?'':'disabled'} aria-label="Deshacer último lanzamiento">↶</button><button type="button" class="rc-submit" id="quick-record" onclick="recordRoll()">${label}</button></div>
-   <p class="rc-note">Registro compacto (prueba) · se guarda como siempre en tu historial</p></div>`;
+  return `<div class="rc-root" data-rc="${n.done?'done':mode}">${head}${body}</div>${sheetHtml()}`;
  }
- function classicBar(){return `<div class="rc-classic-bar"><span>Vista clásica de esta partida</span><button type="button" class="btn outline" onclick="MiBowlingRegistroCompacto.compact()">Volver al compacto</button></div>`}
- function settingsCard(){const on=readPref();
-  return `<div class="card" id="rc-settings"><h2>Registro compacto <span class="pill orange">Prueba</span></h2><p class="hint">Pantalla de anotación en una sola vista, con bolos grandes. Guarda en tu historial exactamente igual que el registro clásico. Desde «⋯» puedes abrir la vista clásica para cambiar par, línea o corregir tiradas. Los modos «Cantidad» y «Solo puntuación» todavía no están disponibles.</p><label class="switch"><input type="checkbox" id="rc-toggle" ${on?'checked':''} onchange="MiBowlingRegistroCompacto.setEnabled(this.checked)"> Usar el registro compacto</label></div>`}
- window.MiBowlingRegistroCompacto=Object.freeze({
-  PREF,active,render,classicBar,settingsCard,syncBody,
-  enabled:readPref,
-  setEnabled(on){writePref(!!on);classicGameId=null},
-  classic(){classicGameId=currentGameId();window.render()},
-  compact(){classicGameId=null;window.render()}
- });
+ function classicBar(){return `<div class="rc-classic-bar"><span>Registro clásico de esta partida</span><button type="button" class="btn outline" onclick="MiBowlingRegistroCompacto.compact()">Volver al registro nuevo</button></div>`}
+ function settingsCard(){
+  return `<div class="card" id="rc-settings"><h2>Registro de partidas</h2><p class="hint">Registro en una sola pantalla: bolos en pie, cantidad o solo la puntuación final. Las partidas por cantidad o solo puntuación cuentan para media y mejores marcas, pero no para el análisis de bolos, pocket o splits.</p><label class="switch"><input type="checkbox" id="rc-toggle" ${enabled()?'checked':''} onchange="MiBowlingRegistroCompacto.setEnabled(this.checked)"> Usar el registro nuevo</label><label class="field" for="rc-mode-def">Forma de anotar por defecto</label><select class="input" id="rc-mode-def" onchange="MiBowlingRegistroCompacto.chooseDefault(this.value,true)"><option value="" ${defaultMode()?'':'selected'}>Preguntar la primera vez</option>${MODES.map(m=>`<option value="${m}" ${defaultMode()===m?'selected':''}>${MODE_NAME[m]}</option>`).join('')}</select></div>`;
+ }
+ const api={
+  PREF,MODE,active,render,classicBar,settingsCard,syncBody,enabled,
+  setEnabled(on){put(PREF,on?null:'0');classicGameId=null},
+  classic(){sheet=null;classicGameId=currentGameId();rerender()},
+  compact(){classicGameId=null;rerender()},
+  openSheet(k){sheet=k;rerender()},
+  closeSheet(){if(sheet==='modo'&&!defaultMode())put(MODE,'bolos');sheet=null;rerender()},
+  chooseDefault(m,stay){if(!m){put(MODE,null);return}if(!MODES.includes(m))return;put(MODE,m);const id=currentGameId();if(id&&!stay){const g=game(session());if(!(m==='final'&&g.rolls.length))modeByGame[id]=m}sheet=null;if(document.querySelector('.rc-root'))rerender()},
+  mode(m){const s=session();if(!s||!MODES.includes(m))return;const g=game(s),n=next(g);if(n.done)return;if(m==='bolos'&&!n.available)return;if(m==='final'&&g.rolls.length)return;modeByGame[g.id]=m;selection=[];rerender()},
+  pins(kind){const s=session();if(!s)return;const n=next(game(s));if(n.done||!n.available)return;
+   const ok=kind==='canal'?recordThrow({pins:[]}):kind==='foul'?recordThrow({pins:[],foul:true}):recordThrow({pins:n.available.filter(p=>!selection.includes(p))});
+   if(ok)rerender()},
+  count(v){const ok=v==='F'?recordThrow({foul:true}):recordThrow({count:v});if(ok)rerender()},
+  finalInput(el){el.value=el.value.replace(/\D/g,'').slice(0,3);const v=Number(el.value);const b=document.getElementById('rc-final-save');if(b)b.disabled=!(el.value!==''&&v>=0&&v<=300)},
+  saveFinal(){const el=document.getElementById('rc-final-input');if(!el||el.value==='')return;if(setFinalOnly(Number(el.value)))rerender();else alert('Introduce una puntuación de 0 a 300.')},
+  undo(){if(undoLast())rerender()},
+  fix(f){const s=session();if(!s)return;const g=game(s);if(!rollsIn(g,f).length)return;if(!confirm(`¿Corregir el frame ${f}? Se borrarán sus tiradas y las posteriores para anotarlas de nuevo.`))return;if(rewindFrame(f))rerender()},
+  nextGame(){if(ligaReturn){ligaBack();return}if(nextGameQuick())rerender()},
+  tip(){hideTip=true;rerender()}
+ };
+ window.MiBowlingRegistroCompacto=Object.freeze(api);
 })();
