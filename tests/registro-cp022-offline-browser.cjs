@@ -57,9 +57,14 @@ const browserOptions={headless:true,args:['--no-sandbox'],viewport:{width:390,he
   });
   await page.goto(labUrl,{waitUntil:'load',timeout:30000});
   await page.waitForFunction(()=>window.MiBowlingRegistroCP021?.enabled&&!!window.__CP015_LAB,null,{timeout:30000});
+  // Wait for the exact activated worker and all 66 cache entries, not merely a registered worker.
   await page.waitForFunction(async()=>{
    const r=await navigator.serviceWorker.getRegistration();
-   return !!(r?.active&&r.active.scriptURL.endsWith('/sw.js'));
+   if(!r?.active||r.active.state!=='activated'||r.installing)return false;
+   const names=(await caches.keys()).filter(n=>n.startsWith('mi-bowling-release-'));
+   if(!names.length)return false;
+   const c=await caches.open(names.at(-1));
+   return (await c.keys()).length===66;
   },null,{timeout:90000});
   const installed=await page.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();return {scope:r?.scope,active:r?.active?.state,waiting:r?.waiting?.state,installing:r?.installing?.state,controller:navigator.serviceWorker.controller?.scriptURL}});
   console.log('CP022 SW INITIAL STATE '+JSON.stringify(installed));
