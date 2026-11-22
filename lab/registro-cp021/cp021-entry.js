@@ -170,7 +170,7 @@ function attachCP032PWAButtons(){
    ' · liga '+linked+' enlaces resueltos · fotos '+v.sourceMetadata.photos.length+' · PDF '+v.sourceMetadata.pdfs.length;
  };
  load.addEventListener('click',()=>run(load,async()=>{
-  const sample=F.make(),next=A.attach(doc(),sample.rawMap,sample.assets);
+  const sample=F.make(),next=A.attach(sample.modern,sample.rawMap,sample.assets);
   window.__CP015_LAB.reopenJSON(JSON.stringify(next));
   return 'Muestra PWA ficticia en memoria. '+describe(next)+' · Pulsa Guardar v3 ficticio para conservarla.';
  }));
