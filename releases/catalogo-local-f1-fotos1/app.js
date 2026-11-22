@@ -1,6 +1,6 @@
 'use strict';
 /* Mi Bowling · versión analítica local. Sin dependencias ni cuentas. */
-const APP_VERSION='3.3.23-prueba';
+const APP_VERSION='3.3.24-prueba';
 const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1';
 const PINS=[1,2,3,4,5,6,7,8,9,10], RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
 const $=id=>document.getElementById(id);
@@ -292,7 +292,8 @@ function home(){
 
 let calendarMonth=today().slice(0,7),calendarSelected=today(),calendarScope='todos';
 function officialCalendarEvents(){
- return Array.isArray(globalThis.BOWLING_OFFICIAL_CALENDAR_2026_27)?globalThis.BOWLING_OFFICIAL_CALENDAR_2026_27:[];
+ const base=Array.isArray(globalThis.BOWLING_OFFICIAL_CALENDAR_2026_27)?globalThis.BOWLING_OFFICIAL_CALENDAR_2026_27:[],conf=globalThis.BOWLING_CALENDAR_CONFIRMED||{};
+ return base.map(e=>conf[e.id]?{...e,...conf[e.id],confirmed:true}:e);
 }
 function calendarEventOnDay(event,day){return event.start<=day&&event.end>=day;}
 function calendarOfficialInMonth(month){
@@ -368,7 +369,7 @@ function calendarView(){
  for(const event of selectedCompetitions){
   const where=event.venue||'Sede no indicada en el PDF';
   const span=event.start===event.end?event.start.split('-').reverse().join('/'):(event.start.split('-').reverse().join('/')+' – '+event.end.split('-').reverse().join('/'));
-  html+='<article class="calendar-official '+(event.category==='gallego'?'calendar-official-gallego':'calendar-official-nacional')+'"><div><span class="calendar-category">'+(event.category==='gallego'?'Gallego':'Nacional')+'</span><strong>'+esc(event.title)+'</strong><small>'+esc(span)+' · '+esc(where)+'</small></div><span class="calendar-provisional">Provisional</span></article>';
+  html+='<article class="calendar-official '+(event.category==='gallego'?'calendar-official-gallego':'calendar-official-nacional')+(event.confirmed?' calendar-official-confirmed':'')+'"><div><span class="calendar-category">'+(event.category==='gallego'?'Gallego':'Nacional')+'</span><strong>'+esc(event.title)+'</strong><small>'+esc(span)+' · '+esc(where)+'</small>'+(event.confirmed?(event.changed?'<small class="calendar-changed">'+esc(event.changed)+'</small>':'')+'<details class="calendar-more"><summary>Horario y detalles</summary>'+(event.details||[]).map(d=>'<small class="calendar-detail">'+esc(d)+'</small>').join('')+'</details><a class="calendar-circular" href="'+esc(event.url)+'" target="_blank" rel="noopener">'+esc(event.source)+' ↗</a>':'')+'</div><span class="calendar-provisional'+(event.confirmed?' calendar-confirmed':'')+'">'+(event.confirmed?'Oficial':'Provisional')+'</span></article>';
  }
  html+='</section>';
  html+='<p class="calendar-source">Fuente: Federación Galega de Bolos · calendario provisional de 17/07/2026. Las fechas pueden cambiar. No son inscripciones ni partidos creados en tu historial.</p>';
