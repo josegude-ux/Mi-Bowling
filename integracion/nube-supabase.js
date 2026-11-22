@@ -59,11 +59,11 @@
 
  async function entrar(email,pass){
   const d=await peticion('/auth/v1/token?grant_type=password',{email:String(email).trim(),password:pass});
-  const k=await derivar(pass,d.user.id);await guardarClave(k);guardarSesion(d);setEstado({error:''});
+  const k=await derivar(pass,d.user.id);await guardarClave(k);guardarSesion(d);setEstado({error:''});setTimeout(()=>fotosSync(),0);
  }
  async function desbloquear(pass){const s=sesion();if(!s)throw Error('Sesión necesaria');
   await peticion('/auth/v1/token?grant_type=password',{email:s.email,password:pass}).then(guardarSesion);
-  await guardarClave(await derivar(pass,s.userId));
+  await guardarClave(await derivar(pass,s.userId));setTimeout(()=>fotosSync(),0);
  }
  async function salir(){const s=sesion();try{if(s)await peticion('/auth/v1/logout',{},s.access)}catch(e){}escribir(SES,null);escribir(EST,null);await borrarClave();copias=null;abierto=false}
  async function copiar(forzar){
@@ -74,7 +74,7 @@
    const cuerpo=JSON.stringify({schema:SCHEMA,appVersion:typeof APP_VERSION==='string'?APP_VERSION:'',exportedAt:new Date().toISOString(),raw});
    const c=await cifrar(key,cuerpo);
    const r=await rpc('mibowling_guardar_copia',{p_version:String(typeof APP_VERSION==='string'?APP_VERSION:'?').slice(0,40),p_dispositivo:dispositivo(),p_huella:huella,p_tamano:plano.length,p_cifrado:c});
-   const fila=Array.isArray(r)?r[0]:r;setEstado({huella,ultima:fila&&fila.creada||new Date().toISOString(),error:''});copias=null;return {ok:true,nueva:!!(fila&&fila.nueva)};
+   const fila=Array.isArray(r)?r[0]:r;if(fotosPendientes())setTimeout(()=>fotosSync(),0);setEstado({huella,ultima:fila&&fila.creada||new Date().toISOString(),error:''});copias=null;return {ok:true,nueva:!!(fila&&fila.nueva)};
   }catch(e){setEstado({error:traducir(e)});throw e}finally{ocupado=false}
  }
  function programar(){if(!sesion())return;clearTimeout(timer);timer=setTimeout(()=>{copiar(false).then(()=>repintarSiAjustes()).catch(()=>repintarSiAjustes())},AUTO_MS)}
@@ -127,9 +127,21 @@
   restaurar:id=>{const c=(copias||[]).find(x=>x.id===id);if(!confirm(`¿Restaurar la copia del ${fecha(c&&c.creada)}?\n\nTus datos actuales de este iPhone se sustituirán por los de esa copia. Antes se guardará una copia de lo que tienes ahora.`))return;accion('restaurar',async()=>{await restaurar(id);return 'Restaurando…'})},
   salir:()=>{if(!confirm('¿Cerrar sesión? Tus partidas siguen en el iPhone; solo se dejan de copiar.'))return;accion('salir',async()=>{await salir();return 'Sesión cerrada.'})}
  };
+ // 3.3.35 · Fotos privadas compartidas por la nube: un único paquete para los miembros de Mi Bowling.
+ // Sin fotos en el móvil → se descargan; con fotos y sin paquete en la nube → se suben; al importar → se suben.
+ let fotosOcupado=false,fotosMsg='';
+ const fotosPendientes=()=>{const F=window.MiBowlingFotosPrivadas;return !!F&&F.count()<F.entries.length};
+ async function fotosSync(subir){const F=window.MiBowlingFotosPrivadas;if(!F||fotosOcupado||!sesion())return;fotosOcupado=true;
+  try{const local=await F.packageText(),hl=local?await sha256(local):null;
+   if(subir&&local){await rpc('mibowling_guardar_recurso',{p_nombre:'fotos-v1',p_contenido:local,p_huella:hl});fotosMsg='Fotos compartidas en la nube.';return}
+   const r=(await rpc('mibowling_obtener_recurso',{p_nombre:'fotos-v1',p_huella:hl}))||[];const f=Array.isArray(r)?r[0]:r;
+   if(f&&f.contenido&&!local){await F.save(f.contenido);fotosMsg=F.count()+' fotos descargadas de la nube.';try{if(typeof window.render==='function')window.render()}catch(e){}}
+   else if(!f&&local){await rpc('mibowling_guardar_recurso',{p_nombre:'fotos-v1',p_contenido:local,p_huella:hl});fotosMsg='Fotos compartidas en la nube.'}
+  }catch(e){fotosMsg=/No autorizado/.test(String(e&&e.message))?'Las fotos se compartirán tras la primera copia en la nube.':''}finally{fotosOcupado=false}}
+ window.addEventListener('mibowling-fotos-importadas',()=>fotosSync(true));
  // Revisión periódica y al volver a la app: copia si hubo cambios
  setInterval(()=>{if(sesion())copiar(false).catch(()=>{})},REVISION_MS);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&timer){clearTimeout(timer);timer=null;copiar(false).catch(()=>{})}});
- window.addEventListener('load',()=>{const e=estado();if(sesion()&&(!e.ultima||Date.now()-new Date(e.ultima).getTime()>MAX_EDAD_MS))programar()});
- window.MiBowlingNube=Object.freeze({settingsCard,programar,ui,_test:{copiar,listar,restaurar,entrar,salir,sesion,estado}});
+ window.addEventListener('load',()=>{const e=estado();if(sesion()&&(!e.ultima||Date.now()-new Date(e.ultima).getTime()>MAX_EDAD_MS))programar();if(sesion())setTimeout(()=>fotosSync(),1500)});
+ window.MiBowlingNube=Object.freeze({settingsCard,programar,ui,fotosSync,fotosMsg:()=>fotosMsg,_test:{copiar,fotosSync,listar,restaurar,entrar,salir,sesion,estado}});
 })();
