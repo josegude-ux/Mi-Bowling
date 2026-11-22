@@ -195,3 +195,15 @@ html body .calendar-session strong{color:#fff!important;overflow-wrap:anywhere}
 html body .calendar-session small{color:#a1a1a6!important}
 html body .calendar-official>div,html body .calendar-session>div{min-width:0;flex:1 1 0}
 html body .calendar-agenda,html body .calendar-panel{max-width:100%;box-sizing:border-box;overflow:hidden}
+
+/* 3.3.24 · Datos confirmados por circular oficial */
+html body .calendar-official-confirmed{border-left-color:#ff6a2b!important}
+html body .calendar-official .calendar-detail{color:#d1d1d6!important;line-height:1.45}
+html body .calendar-official .calendar-changed{color:#ff9f0a!important;font-weight:700}
+html body .calendar-circular{color:#ff6a2b!important;font-size:12px;font-weight:700;text-decoration:none;margin-top:2px;overflow-wrap:anywhere}
+html body .calendar-provisional.calendar-confirmed{color:#30d158!important;border-color:#30d158!important}
+html body .calendar-official-confirmed{flex-direction:column;align-items:stretch}
+html body .calendar-official-confirmed .calendar-confirmed{align-self:flex-start;order:-1}
+html body .calendar-more{margin:2px 0 0;padding:0!important;background:transparent!important;border:0!important}
+html body .calendar-more summary{color:#fff;font-size:13px;font-weight:700;cursor:pointer;padding:6px 0;min-height:32px}
+html body .calendar-more[open] .calendar-detail{display:block;margin-top:5px}
