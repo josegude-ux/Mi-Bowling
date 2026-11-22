@@ -97,6 +97,54 @@ async function migrateSynthetic(){
  const result=await store.read();
  return {stage,active,result};
 }
+function attachCP032JournalButtons(){
+ const dialog=document.getElementById('lab-io');
+ const api=window.MiBowlingCP032Journal,views=window.MiBowlingCP032Views;
+ if(!enabled||!dialog||!api||!views||document.getElementById('cp032-save'))return;
+ const row=document.createElement('div');row.className='io-grid';
+ const make=(id,label)=>{
+  const button=document.createElement('button');button.type='button';button.className='io-btn';
+  button.id=id;button.textContent=label;row.append(button);return button;
+ };
+ const save=make('cp032-save','Guardar v3 ficticio'),reopen=make('cp032-reopen','Reabrir v3 ficticio');
+ const rollback=make('cp032-rollback','Deshacer último guardado ficticio');
+ const exportB=make('cp032-backup','Exportar respaldo v3 ficticio');
+ const status=document.createElement('p');status.id='cp032-status';status.setAttribute('role','status');
+ status.textContent='CP032 · Solo pruebas en localhost, sin escrituras personales.';
+ async function execute(button,fn){
+  button.disabled=true;status.textContent='Verificando contrato y journal ficticio…';
+  try{status.textContent=await fn()}catch(e){status.textContent='CP032 detenido: '+e.message}
+  finally{button.disabled=false}
+ }
+ save.addEventListener('click',()=>execute(save,async()=>{
+  const doc=JSON.parse(window.__CP015_LAB.exportJSON()),summary=views.project(doc);
+  const current=await api.read(),out=await api.save(doc,current.revision);
+  return 'Guardado ficticio rev '+out.revision+' · '+summary.sessions[0].games.length+' partidas.';
+ }));
+ reopen.addEventListener('click',()=>execute(reopen,async()=>{
+  const saved=await api.read();if(!saved.document)throw Error('No existe respaldo CP032');
+  const previous=window.__CP015_LAB.exportJSON();
+  try{window.__CP015_LAB.reopenJSON(JSON.stringify(saved.document))}
+  catch(e){window.__CP015_LAB.reopenJSON(previous);throw e}
+  const summary=views.project(saved.document);
+  return 'Reabierta rev '+saved.revision+' · '+summary.summary.totalGames+
+   ' partidas · '+summary.precision.finalOnly+' solo puntuación · '+summary.precision.countOnly+' cantidad.';
+ }));
+ rollback.addEventListener('click',()=>execute(rollback,async()=>{
+  const active=await api.read(),back=await api.rollback(active.revision);
+  if(back.restored!==null)window.__CP015_LAB.reopenJSON(JSON.stringify(back.restored));
+  return 'Rollback ficticio verificado · rev '+back.revision;
+ }));
+ exportB.addEventListener('click',()=>execute(exportB,async()=>{
+  const raw=await api.exportCopy(),value=api.parseCopy(raw),blob=new Blob([raw],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='mi-bowling-cp032-ficticio-v3.json';document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  return 'Respaldo ficticio verificado · '+value.sessions.length+' sesión(es).';
+ }));
+ const close=document.getElementById('io-close');
+ dialog.insertBefore(row,close);dialog.insertBefore(status,close);
+}
 function attachMigrateButton(){
  const dialog=document.getElementById('lab-io');
  if(!dialog||document.getElementById('cp021-migrate-btn'))return;
@@ -115,7 +163,7 @@ function attachMigrateButton(){
 window.MiBowlingRegistroCP021=Object.freeze({
 enabled,
 render(){if(!enabled)throw Error('CP021_INACTIVE');mounted=false;return '<style id="cp021-css">'+css+'</style><div class="cp021-root">'+markup+'</div>';},
-mount(){if(!enabled)return;if(mounted)return;const node=document.querySelector('.cp021-root');if(!node)throw Error('CP021_ROOT_MISSING');if(typeof window.MiBowlingCP021Mount!=='function')throw Error('CP021_CONTROLLER_MISSING');mounted=true;window.MiBowlingCP021Mount();attachMigrateButton();attachCP025Button();},
+mount(){if(!enabled)return;if(mounted)return;const node=document.querySelector('.cp021-root');if(!node)throw Error('CP021_ROOT_MISSING');if(typeof window.MiBowlingCP021Mount!=='function')throw Error('CP021_CONTROLLER_MISSING');mounted=true;window.MiBowlingCP021Mount();attachMigrateButton();attachCP025Button();attachCP032JournalButtons();},
 summarySynthetic(legacyRaw,modernRaw){if(!enabled)throw Error('CP021_INACTIVE');return window.BowlingCp016Coexist.analyse({legacy:legacyRaw,modern:modernRaw});},
 migrateSynthetic,
 promoteV3Demo,promoteV3Synthetic,readV3Synthetic,rollbackV3Synthetic,
