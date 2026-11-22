@@ -233,6 +233,9 @@ const profileArgs = {headless:true,viewport:{width:390,height:844},deviceScaleFa
     assert.equal(upgraded.cacheNames.length,2);
     assert.equal(await page.evaluate(()=>window.MiBowlingRegistroCP021.cp024ContractVersion),3,
       'B did not introduce a functional v3 reader');
+    // Lazy CP018 module loads on explicit access only. Prepare it before fault injection.
+    const bPrepared=await page.evaluate(()=>window.MiBowlingRegistroCP021.inspectSynthetic());
+    assert.equal(bPrepared.mode,'dual-read');
     // Simulate a crash AFTER backup but BEFORE activating shadow; fail closed to dual read.
     const crash=await page.evaluate(async()=>{
       const s=new window.MiBowlingCP018.CP018Store();let thrown='';
