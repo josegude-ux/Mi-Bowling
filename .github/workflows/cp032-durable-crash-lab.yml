@@ -1,0 +1,34 @@
+name: MI BOWLING | CP032 durable context-restart LAB fictitious
+on:
+  push:
+    branches: [lab/cp032-registro-compacto-v3-20261122]
+    paths:
+      - .github/workflows/cp032-durable-crash-lab.yml
+      - lab/cp032-durable-coordinator.js
+      - lab/cp032-durable-harness.html
+      - tests/cp032-durable-browser.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cp032-new-crash-only:
+    if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/lab/cp032-registro-compacto-v3-20261122'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Syntax of new CP032 coordinator and browser restart test
+        run: |
+          node --check lab/cp032-durable-coordinator.js
+          node --check tests/cp032-durable-browser.cjs
+      - name: Temporary Chromium in disposable LAB runner only
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: New cross-store crash/restart and conflict cases only
+        run: node tests/cp032-durable-browser.cjs
