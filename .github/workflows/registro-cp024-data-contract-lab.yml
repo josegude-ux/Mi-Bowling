@@ -1,0 +1,34 @@
+name: MI BOWLING | CP024 PWA real v2-v3 contract upgrade and rollback LAB
+on:
+  push:
+    branches: [ui/mis-bolas-compacto-20261116]
+    paths:
+      - .github/workflows/registro-cp024-update-rollback-lab.yml
+      - tests/registro-cp024-data-contract-browser.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cp024-update-rollback-lab
+  cancel-in-progress: false
+jobs:
+  upgrade-rollback:
+    if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/ui/mis-bolas-compacto-20261116'
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --user 1001
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install isolated temporary Playwright runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          node --check tests/registro-cp024-data-contract-browser.cjs
+      - name: NEW CP024 real browser update and rollback, fictional profile only
+        run: node tests/registro-cp024-data-contract-browser.cjs
