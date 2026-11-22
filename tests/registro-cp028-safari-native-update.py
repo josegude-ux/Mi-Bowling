@@ -35,7 +35,7 @@ for key in ALIASES:assert HASH_A[key]==sha(INDEX_A), 'CP028: unsafe A HTML alias
 for resource,expected in HASH_A.items():
     path=urllib.parse.urlparse(resource).path
     relative=path.removeprefix('./').lstrip('/')
-    if not relative:relative='index.html'
+    if not relative or relative.endswith('/'):relative+='index.html'
     raw=(ROOT/relative).resolve()
     assert raw.is_relative_to(ROOT) and raw.is_file(), 'CP028: missing file '+resource
     assert sha(raw.read_bytes())==expected, 'CP028: source hash mismatch '+resource
