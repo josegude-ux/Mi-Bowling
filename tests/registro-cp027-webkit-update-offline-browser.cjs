@@ -42,6 +42,8 @@ let serving = 'A';
 let siteClosed = false;
 let external = [];
 const errors = [];
+const failedRequests=[];
+const consoleDiagnostics=[];
 const requests = {A:0,B:0,notFound:[]};
 const server = http.createServer((request,response)=>{
   try {
@@ -101,12 +103,23 @@ const profileArgs = {headless:true,viewport:{width:390,height:844},deviceScaleFa
     });
     let page=await context.newPage();
     page.on('pageerror',e=>errors.push(e.message));
+    page.on('console',m=>{if(m.type()==='error'||m.type()==='warning')consoleDiagnostics.push(m.type()+': '+m.text())});
+    page.on('requestfailed',r=>failedRequests.push({url:r.url(),failure:r.failure()}));
     await page.goto(lab,{waitUntil:'load',timeout:30000});
     await page.waitForFunction(()=>window.MiBowlingRegistroCP021?.enabled&&!!window.__CP015_LAB,null,{timeout:30000});
     await until('A_ACTIVATED',async()=>{
       const v=await inspect(page);
       return {...v,ok:v.active==='activated'&&!v.waiting&&v.cacheNames.length===1};
-    },85000);
+    },25000).catch(async error=>{
+      const diagnostic=await page.evaluate(async()=>{
+        const registrations=await navigator.serviceWorker.getRegistrations();
+        const names=(await caches.keys()).filter(n=>n.startsWith('mi-bowling-release-'));
+        const resources=[];for(const name of names){const cache=await caches.open(name);resources.push({name,count:(await cache.keys()).length})}
+        return {secure:isSecureContext,swAvailable:'serviceWorker'in navigator,registrations:registrations.map(reg=>({scope:reg.scope,active:reg.active?.state,installing:reg.installing?.state,waiting:reg.waiting?.state})),resources,control:!!navigator.serviceWorker.controller};
+      });
+      console.error('CP027 WEBKIT_INSTALL_DIAGNOSTIC '+JSON.stringify({diagnostic,consoleDiagnostics,failedRequests}));
+      throw error;
+    });
     await page.reload({waitUntil:'load',timeout:30000});
     await until('A_CONTROLLER',async()=>{const v=await inspect(page);return {...v,ok:v.controller&&v.active==='activated'}},10000);
     await page.waitForFunction(()=>window.MiBowlingRegistroCP021?.enabled&&!!window.__CP015_LAB&&!!document.querySelector('.cp021-root'),null,{timeout:30000});
@@ -218,6 +231,6 @@ const profileArgs = {headless:true,viewport:{width:390,height:844},deviceScaleFa
   }
 })().catch(error=>{
   console.error('CP027 FINAL FAIL:',error.stack||error);
-  console.error('CP027 diagnostic '+JSON.stringify({serving,requests,external:external.slice(0,8),errors:errors.slice(0,8)}));
+  console.error('CP027 diagnostic '+JSON.stringify({serving,requests,external:external.slice(0,8),errors:errors.slice(0,8),failedRequests:failedRequests.slice(0,8),consoleDiagnostics:consoleDiagnostics.slice(0,8)}));
   process.exitCode=1;
 });
