@@ -371,7 +371,7 @@ const profileArgs = {headless:true,viewport:{width:390,height:844},deviceScaleFa
     assert.equal(restored.mode,'dual-read');assert.equal(restored.average,289);
     const oldOffline=await offline.evaluate(async()=>{const s=new window.MiBowlingCP018.CP018Store();const raw=await s.row('sources');return {version:JSON.parse(raw.legacy).version,score:window.BowlingCp014Compat.summary(window.BowlingCp014Compat.fromLegacyV2(JSON.parse(raw.legacy))).averageScore,legacy:raw.legacy};});
     assert.equal(oldOffline.version,2);assert.equal(oldOffline.score,300);assert.equal(oldOffline.legacy,seeded.raw.legacy);
-    assert.deepEqual(restored.protected,initial.protected);
+    assert.deepEqual(restored.protected,initialProtected);
     assert.deepEqual(requests.notFound,[],'Missing original resources');
     assert.deepEqual(external,[],'Unexpected external requests');
     assert.deepEqual(errors,[],'Unexpected JavaScript errors');
