@@ -1,6 +1,6 @@
 /* CP032 · Non-mutating dual-read risk classifier. No production storage writes. */
 (function(root,factory){
- const api=factory(typeof module==='object'&&module.exports?require('../registro-cp021/cp014-compat-bridge.js'):root.BowlingCp014Compat);
+ const api=factory(typeof module==='object'&&module.exports?require('./registro-cp021/cp014-compat-bridge.js'):root.BowlingCp014Compat);
  if(typeof module==='object'&&module.exports)module.exports=api;
  else root.MiBowlingCP032Audit=api;
 })(typeof globalThis!=='undefined'?globalThis:null,function(A){
