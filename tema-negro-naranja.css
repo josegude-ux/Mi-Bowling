@@ -181,3 +181,17 @@ html body .app-main #nube-card .nube-estado b{color:var(--rc-text)!important}
 html body .app-main #nube-card .nube-err{color:#ff453a!important;font-size:14px;margin:10px 0 0}
 html body .app-main #nube-card .nube-ok{color:#30d158!important;font-size:14px;margin:10px 0 0}
 html body .app-main #nube-card .nube-lista{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+
+/* 3.3.23 · Agenda del calendario: tarjetas oscuras legibles y sin desbordar la pantalla */
+html body .calendar-official,html body .card .calendar-official{background:#1c1c1e!important;border:1px solid #2c2c2e!important;border-left:4px solid #0a84ff!important;max-width:100%;box-sizing:border-box}
+html body .calendar-official-gallego{border-left-color:#30d158!important}
+html body .calendar-official strong{color:#fff!important;overflow-wrap:anywhere}
+html body .calendar-official small{color:#a1a1a6!important;overflow-wrap:anywhere}
+html body .calendar-category{color:#30d158!important}
+html body .calendar-official-nacional .calendar-category{color:#64a8ff!important}
+html body .calendar-provisional{background:transparent!important;border:1px solid #3a3a3c!important;color:#ff9f0a!important}
+html body .calendar-session,html body .card .calendar-session{background:#1c1c1e!important;border:1px solid #2c2c2e!important;max-width:100%;box-sizing:border-box}
+html body .calendar-session strong{color:#fff!important;overflow-wrap:anywhere}
+html body .calendar-session small{color:#a1a1a6!important}
+html body .calendar-official>div,html body .calendar-session>div{min-width:0;flex:1 1 0}
+html body .calendar-agenda,html body .calendar-panel{max-width:100%;box-sizing:border-box;overflow:hidden}
