@@ -4,7 +4,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),m=sw.match(/^const HASHES=(\{.+\});$/m);
 assert(m,'SW manifest missing');const hashes=JSON.parse(m[1]);
-assert.equal(Object.keys(hashes).length,69,'CP032 expected 69 integrity entries');
+assert.equal(Object.keys(hashes).length,71,'CP032 updated manifest requires 71 integrity entries');
 for(const [url,expected] of Object.entries(hashes)){
  let p=url.replace(/^\.\//,'').split('?')[0];if(!p||p.endsWith('/'))p+='index.html';
  const filename=path.resolve(root,p);assert(filename.startsWith(root+path.sep),'Traversal');
@@ -110,6 +110,6 @@ const server=http.createServer((req,res)=>{
   assert.match(result.message,/CP032_EXISTING_DATA_PROTECTED/);
   assert.deepEqual(JSON.parse(result.actual),fixture);
   await protectedContext.close();
-  console.log('CP032 JOURNAL PASS · durable synthetic reopen, v2 preserved, quantity no invented pins, final-only no frames, rollback and faults, private keys blocked, 69/69 integrity.');
+  console.log('CP032 JOURNAL PASS · durable synthetic reopen, v2 preserved, quantity no invented pins, final-only no frames, rollback and faults, private keys blocked, 71/71 integrity.');
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
 })().catch(e=>{console.error('CP032 JOURNAL FAIL',e);process.exitCode=1;try{server.close()}catch{}});
