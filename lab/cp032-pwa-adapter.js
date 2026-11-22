@@ -40,7 +40,7 @@
     if(p.links!==undefined){
      assert(isObj(p.links),'CP032_LINK_SHAPE');
      for(const link of Object.values(p.links))
-      assert(isObj(link)&&fake(link.sessionId)&&fake(link.gameId),'CP032_ONLY_FAKE_LINKS');
+      assert(isObj(link)&&[FAKE,'cp015-fake-'].some(p=>link.sessionId.startsWith(p))&&[FAKE,'cp015-fake-'].some(p=>link.gameId.startsWith(p)),'CP032_ONLY_FAKE_LINKS');
     }
    }
   }
