@@ -15,7 +15,7 @@ const F=require('../lab/cp032-fixture.js'),B=require('../integracion/respaldo-lo
  assert.equal(read.totals.best,225);
  assert.equal(read.perMode.oficial.qualifyingGames,2);
  assert.equal(read.perMode.entrenamiento.qualifyingGames,1);
- assert.equal(read.byBall['cp032-fake-ball-strike'].throws,41,'exact bowling ball attributions lost');
+ assert.equal(read.byBall['cp032-fake-ball-strike'].throws,40,'only completed games must enter ball statistics');
  assert.equal(read.byBall['cp032-fake-ball-spare'].countOnly,2,'count-only attributed with unknown pins');
  assert.equal(read.sourceMetadata.photos.length,1);
  assert.equal(read.sourceMetadata.pdfs.length,1);
