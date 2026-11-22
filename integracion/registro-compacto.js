@@ -82,6 +82,13 @@ body.rc-open{overflow:hidden}
 .rc-undo:disabled{color:#48484a}
 .rc-submit{height:64px;border:0;border-radius:32px;background:#f0612d;color:#fff;font-size:21px;font-weight:700;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rc-done{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;gap:12px;overflow:auto}
+.rc-done{position:relative}
+.rc-cheer{margin:6px 0 -4px;font-size:22px;font-weight:800;color:#f0612d;letter-spacing:-.01em;animation:rc-pop .5s cubic-bezier(.2,1.4,.4,1) both}
+.rc-party{position:absolute;inset:-40px 0 auto 0;height:260px;pointer-events:none;overflow:hidden}
+.rc-party i{position:absolute;top:-12px;left:var(--x);width:8px;height:14px;border-radius:2px;background:var(--c);transform:rotate(var(--r));animation:rc-fall 1.6s var(--d) ease-in forwards;opacity:0}
+@keyframes rc-fall{0%{opacity:1;transform:translateY(0) rotate(var(--r))}100%{opacity:0;transform:translateY(240px) rotate(calc(var(--r) + 220deg))}}
+@keyframes rc-pop{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.rc-party{display:none}.rc-cheer{animation:none}}
 .rc-done .big{font-size:clamp(64px,12vh,96px);font-weight:800;line-height:1}
 .rc-share{border:0;border-radius:24px;background:#1c1c1e;color:#f0612d;font-size:19px;font-weight:500;padding:12px 22px;display:flex;align-items:center;gap:10px}
 .rc-share svg{width:22px;height:22px}
@@ -169,9 +176,13 @@ body.rc-open{overflow:hidden}
   const undoBtn=`<button type="button" class="rc-undo" onclick="MiBowlingRegistroCompacto.undo()" ${g.rolls.length||isFinalOnly(g)?'':'disabled'} aria-label="Deshacer">${ICON.undo}</button>`;
   let body;
   if(n.done){
+   const others=db.sessions.filter(x=>x.type===s.type&&!x.leagueOther).flatMap(x=>x.games).filter(x=>x!==g&&complete(x)).map(score);
+   const best=others.length?Math.max(...others):null,record=best!==null&&total>best;
+   const cheer=total===300?'¡Partida perfecta!':record?'¡Tu mejor partida!':total>=250?'¡Partidón!':total>=200?'¡Más de 200!':'';
+   const party=cheer?`<div class="rc-party" aria-hidden="true">${Array.from({length:18},(_,i)=>`<i style="--x:${(i*37)%100}%;--d:${(i%6)*0.12}s;--r:${(i*47)%360}deg;--c:${['#f0612d','#f5f5f7','#ff8a5c'][i%3]}"></i>`).join('')}</div>`:'';
    const nextLabel=ligaReturn?'Guardar y volver a Liga':`Siguiente: partida ${idx+1}${s.leaguePlayer?', '+esc(s.leaguePlayer):''}`;
    body=`${isFinalOnly(g)?'':boardHtml(g,n)}<div class="rc-score"><span>Puntuación</span><b>${total}</b></div>${tabs}
-    <div class="rc-done"><div class="big">${total}</div><button type="button" class="rc-share" onclick="shareSessionImage()">${ICON.share} Compartir</button>
+    <div class="rc-done">${party}${cheer?`<p class="rc-cheer" role="status">${cheer}</p>`:''}<div class="big">${total}</div><button type="button" class="rc-share" onclick="shareSessionImage()">${ICON.share} Compartir</button>
     ${isFinalOnly(g)?'<p class="rc-hint">Partida guardada solo con la puntuación final.</p>':'<p class="rc-hint">Toca un frame de arriba para corregirlo.</p>'}
     ${hideTip||isFinalOnly(g)?'':`<div class="rc-tip"><div><h3>¿Te equivocaste?</h3><p>Toca cualquier frame de la hoja para anotarlo de nuevo.</p></div><button type="button" aria-label="Cerrar aviso" onclick="MiBowlingRegistroCompacto.tip()">✕</button></div>`}</div>
     <div class="rc-foot">${undoBtn}<button type="button" class="rc-submit" id="rc-next" onclick="MiBowlingRegistroCompacto.nextGame()">${nextLabel}</button></div>`;

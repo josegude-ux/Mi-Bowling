@@ -159,3 +159,19 @@ html body .app-main .hm .hm-pill{flex:0 0 auto;padding:5px 10px;border-radius:20
 html body .app-main .hm .hm-empty strong{font-size:18px;color:var(--rc-text)!important}
 html body .app-main .hm .home-start-footer{margin-top:6px;text-align:center;font-size:11px;color:#636366!important}
 html body .app-main .hm button:active{transform:scale(.985)}
+/* Iconos de línea en el texto (3.3.20) */
+html body .ui-line-icon.inl{width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:.15em;color:var(--rc-acc)}
+html body .seg button .ui-line-icon.inl{color:currentColor}
+html body .v25-day-icon .ui-line-icon{width:22px;height:22px;color:var(--rc-acc)}
+html body .finished-icon .ui-line-icon{width:44px;height:44px;color:var(--rc-acc)}
+html body .v25-ring-legend{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--rc-muted)!important;font-size:12px}
+html body .v25-ring-legend span{display:inline-flex;align-items:center;gap:6px;color:var(--rc-muted)!important}
+html body .v25-ring-legend i{display:inline-block;width:10px;height:10px;border-radius:50%}
+/* Pantalla de bienvenida (3.3.20) */
+#mb-splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#000;transition:opacity .45s ease}
+#mb-splash.gone{opacity:0;pointer-events:none}
+#mb-splash .mb-splash-tri{width:96px;height:92px;animation:mb-in .6s ease both}
+#mb-splash .mb-splash-wm{font-size:38px;animation:mb-in .6s .12s ease both}
+@keyframes mb-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#mb-splash .mb-splash-tri,#mb-splash .mb-splash-wm{animation:none}}
+html body .app-main [class*="v25-day"],html body .app-main [class*="v25-day"] *{border-color:var(--rc-line)!important}
