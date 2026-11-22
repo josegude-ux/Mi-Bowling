@@ -22,9 +22,10 @@ const srv=http.createServer((q,r)=>{let rel=decodeURIComponent(new URL(q.url,'ht
   const par=await day('2026-11-14');for(const s of ['CAMPIONATO GALEGO PARELLAS','Resultados · PODIUM','Jose Gude','Hernan Gil','2328','1101 + 1227','Raul Gude','1911'])assert(par.includes(s),'parejas falta: '+s);
   assert(!par.includes('SOLBOWLING'),'solo Celta');
   assert(await p.$('.calendar-day[aria-pressed="true"] .calendar-dot-result'),'marca de resultados en el día');
-  const c11=await day('2026-10-11');assert(c11.includes('Raul Gude')&&c11.includes('Pistas 4A → 2A'),'pistas de Raúl el día 11');
-  const c10=await day('2026-10-10');assert(c10.includes('Primera serie')&&!c10.includes('Tercera serie')&&c11.includes('Tercera serie'),'cada serie en su día');
-  const cir=await day('2027-01-02');assert(cir.includes('Raul Gude')||cir.includes('Guillermo Dopico')||cir.includes('Guille Dopico'),'series del circuito');
+  // Copa Presidente ya jugada: sus horarios no se guardan ni se muestran; los resultados sí.
+  assert.equal(await p.evaluate(()=>liga32.federacion.docs.filter(d=>d.kind==='pistas').length),0,'horario pasado eliminado');
+  const c11=await day('2026-10-11');assert(!c11.includes('Orden de pistas')&&!c11.includes('Pistas 4A')&&c11.includes('Resultados'),'sin horarios pasados');
+  const cir=await day('2027-01-02');assert(cir.includes('Series')&&(cir.includes('Raul Gude')||cir.includes('Guillermo Dopico')||cir.includes('Guille Dopico')),'series futuras del circuito');
   await day('2026-11-14');await p.screenshot({path:'/tmp/fgb1.png'});
   // Ficha de jugador desde el calendario.
   await p.click('.calendar-agenda .fb-link:text-is("Raul Gude")');await p.waitForSelector('.fb-tiles');
