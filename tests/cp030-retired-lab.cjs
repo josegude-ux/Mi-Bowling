@@ -45,10 +45,10 @@ c.catalog100Rows=[{id:'fake-cat',brand:'FICTICIO',model:'REF FICTICIA',approved:
  assert(JSON.stringify(db.sessions)===history,'Historical rolls changed');
  assert(db.balls.map(x=>x.photo).join('|')===photos,'Photos changed');
  assert(app.includes("const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1'"),'Data schema key changed');
- assert(/const RELEASE="[^"]*cachefix2[^"]*cp030-retired-settings-v3320-iconos-y-acabado-prueba"/.test(sw),'Cachefix2 or candidate release marker missing');
+ assert(/const RELEASE="[^"]*cachefix2[^"]*cp030-retired-settings-v3321-copia-nube-prueba"/.test(sw),'Cachefix2 or candidate release marker missing');
  assert(!sw.includes('skipWaiting()'),'Forced SW activation');
  const hashes=JSON.parse(sw.match(/^const HASHES=(\{.*\});$/m)[1]);
- assert(Object.keys(hashes).length===62,'Expected 62 PWA hashes');
+ assert(Object.keys(hashes).length===63,'Expected 63 PWA hashes');
  for(const [url,digest] of Object.entries(hashes)){
   let rel=url.replace(/^\.\//,'').split('?')[0];if(!rel||rel.endsWith('/'))rel+='index.html';
   const file=path.resolve(root,rel);assert(file.startsWith(root+path.sep),'Unsafe path '+rel);
