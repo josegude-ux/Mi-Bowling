@@ -126,8 +126,8 @@ const shot=async(page,name)=>{if(shots)await page.screenshot({path:path.join(sho
   await p2.goto(base);await p2.waitForFunction(()=>!!window.MiBowlingCatalogoLocal,null,{timeout:20000});
   const sw=await p2.evaluate(async()=>{const reg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,rej)=>setTimeout(()=>rej(Error('SW no activado')),30000))]);
    const a=reg.active;if(a.state!=='activated')await new Promise(res=>a.addEventListener('statechange',()=>{if(a.state==='activated')res()}));
-   const names=await caches.keys();const c=await caches.open(names.find(n=>n.includes('v3325-liga-equipos-prueba')));return (await c.keys()).length});
-  assert.equal(sw,64);console.log('RC SERVICE WORKER PASS · 64/64 SHA-256');
+   const names=await caches.keys();const c=await caches.open(names.find(n=>n.includes('v3326-importar-cuadro-prueba')));return (await c.keys()).length});
+  assert.equal(sw,67);console.log('RC SERVICE WORKER PASS · 67/67 SHA-256');
   await ctx2.close();
   console.log('REGISTRO TRES MODOS PASS · bolos, cantidad, solo puntuación, split, bolas strike/spare, corregir, estadísticas, formato conservado, historial intacto.');
  }finally{await browser.close();server.close()}
