@@ -1,6 +1,6 @@
 'use strict';
 /* Mi Bowling · versión analítica local. Sin dependencias ni cuentas. */
-const APP_VERSION='3.3.17-prueba';
+const APP_VERSION='3.3.18-prueba';
 const KEY='mi-bowling-analitica-v2', OLDKEY='mi-bowling-v1';
 const PINS=[1,2,3,4,5,6,7,8,9,10], RACK=[[7,8,9,10],[4,5,6],[2,3],[1]];
 const $=id=>document.getElementById(id);
@@ -205,23 +205,44 @@ function metrics(a){return [{icon:'◉',label:'Media',value:a.totals.length?fmt(
 function tile(icon,label,value,detail=''){return `<div class="stat-tile"><div class="label"><span>${uiMetricIcon(icon,label)}</span> ${label}</div><div class="value${value==='—'?' ui-no-value':''}">${value}</div>${detail?`<div class="detail">${detail}</div>`:''}</div>`}
 function premiumStat(icon,label,val,click='',small=''){return `<button type="button" class="premium-stat" ${click?`onclick="${click}"`:''} ${click?'':'disabled'}><span class="premium-stat-icon">${uiMetricIcon(icon,label)}</span><span class="premium-stat-text"><span class="premium-label">${label}</span><strong>${val}</strong>${small?`<small>${small}</small>`:''}</span></button>`}
 function premiumBars(a){let vals=a.totals.slice(-20);if(!vals.length)return `<div class="premium-empty-chart">Registra partidas de entrenamiento para ver tu evolución.</div>`;const max=300;return `<div class="premium-bars" aria-label="Puntuaciones de las últimas ${vals.length} partidas de entrenamiento">${vals.map((v,i)=>`<div class="premium-bar" title="Partida ${i+1}: ${v} puntos" style="height:${Math.max(5,v/max*100)}%"></div>`).join('')}</div>`}
+// 3.3.18 · Inicio con contenido propio: registrar, última partida, medias y próxima competición.
+const HM_DAYS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],HM_DAYS_S=['dom','lun','mar','mié','jue','vie','sáb'],HM_MONTHS=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],HM_MONTHS_S=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function hmDate(iso){const [y,m,d]=String(iso||'').split('-').map(Number);return new Date(Date.UTC(y||1970,(m||1)-1,d||1))}
+function hmDaysBetween(a,b){return Math.round((hmDate(b)-hmDate(a))/864e5)}
+function hmTitle(t){const small=new Set(['de','del','la','las','el','los','e','y','en','a']);return String(t||'').toLocaleLowerCase('es').split(/\s+/).map((w,i)=>i&&small.has(w)?w:w.charAt(0).toLocaleUpperCase('es')+w.slice(1)).join(' ').replace(/\bMasc\b/g,'Masc.').replace(/\bFem\b/g,'Fem.').replace(/\bSsmm\b/g,'SSMM')}
+function hmSpark(values,bars){if(values.length<2&&!bars)return '';const w=130,h=30,max=Math.max(...values),min=Math.min(...values),span=Math.max(1,max-min);
+ if(bars){const n=values.length,bw=8,gap=n>1?(w-bw*n)/(n-1):0;return `<svg class="hm-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${values.map((v,i)=>{const bh=6+((v-min)/span)*(h-6);return `<rect x="${(i*(bw+gap)).toFixed(1)}" y="${(h-bh).toFixed(1)}" width="${bw}" height="${bh.toFixed(1)}" rx="2"/>`}).join('')}</svg>`}
+ const pts=values.map((v,i)=>[(i*(w-6)/(values.length-1)).toFixed(1),(h-4-((v-min)/span)*(h-8)).toFixed(1)]);const [lx,ly]=pts[pts.length-1];
+ return `<svg class="hm-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${lx}" cy="${ly}" r="3.5"/></svg>`}
+function hmScoreGames(type){const a=aggregate(type);return a.scoreGames.slice().sort((x,y)=>x._session.date.localeCompare(y._session.date))}
+function hmLastGame(){const ss=db.sessions.filter(s=>!s.leagueOther).slice().sort((a,b)=>b.date.localeCompare(a.date));for(const s of ss){const gs=s.games.filter(complete);if(gs.length)return{s,g:gs[gs.length-1],n:s.games.indexOf(gs[gs.length-1])+1}}return null}
 function home(){
- const t=aggregate('entrenamiento'),o=aggregate('oficial');
- return [
-  '<section class="home-start" aria-label="Inicio de Mi Bowling">',
-  '<div class="home-start-intro"><div><h1>Tu juego, bajo control</h1><p>Registra, consulta y analiza tus partidas.</p></div></div>',
-  '<nav class="home-start-menu" aria-label="Menú principal">',
-   '<button type="button" class="home-start-card home-start-primary" data-target="nueva" onclick="go(this.dataset.target)"><span class="home-start-content"><span class="home-start-icon" aria-hidden="true"><svg class="ui-line-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></svg></span><span class="home-start-copy"><strong>Registrar partida</strong><span class="home-start-desc">Entrenamientos y competiciones.</span></span><span class="home-start-arrow" aria-hidden="true"><svg class="ui-line-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></span></button>',
-   '<button type="button" class="home-start-card home-start-history" data-target="historial" onclick="go(this.dataset.target)"><span class="home-start-content"><span class="home-start-icon" aria-hidden="true"><svg class="ui-line-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg></span><span class="home-start-copy"><strong>Consultar partidas</strong><span class="home-start-desc">Revisa tus jornadas y resultados.</span></span><span class="home-start-arrow" aria-hidden="true"><svg class="ui-line-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></span></button>',
-   '<button type="button" class="home-start-card home-start-stats" data-target="estadisticas" onclick="go(this.dataset.target)"><span class="home-start-content"><span class="home-start-icon" aria-hidden="true"><svg class="ui-line-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M13 17V9"/><path d="M18 17V5"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M8 17v-3"/></svg></span><span class="home-start-copy"><strong>Analizar estadísticas</strong><span class="home-start-desc">Mira tu evolución y compara.</span></span><span class="home-start-arrow" aria-hidden="true"><svg class="ui-line-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></span></button>',
-  '</nav>',
-  (t.games.length||o.games.length||t.allGames.some(complete)?'<section class="home-start-results" aria-label="Resumen de resultados"><h2>Tu rendimiento</h2><div class="home-start-result-grid">':'<section class="home-start-empty" aria-label="Primeros pasos"><h2>Aún no hay resultados disponibles</h2><p>Registra una partida para empezar a ver tu rendimiento.</p></section>'),
-   (t.games.length||o.games.length||t.allGames.some(complete)?'<div><span>Media entrenamiento</span><strong>'+(t.games.length?fmt(t.avg):'—')+'</strong><small>'+t.allGames.filter(complete).length+' partidas completadas</small></div>':''),
-   (t.games.length||o.games.length||t.allGames.some(complete)?'<div><span>Media oficial</span><strong>'+(o.games.length?fmt(o.avg):'—')+'</strong><small>'+o.games.length+' partidas</small></div>':''),
-  (t.games.length||o.games.length||t.allGames.some(complete)?'</div></section>':''),
-  '<footer class="home-start-footer">Datos almacenados en este dispositivo · Versión '+esc(APP_VERSION)+'</footer>',
- '</section>'
- ].join('');
+ const now=today(),d=hmDate(now),head=`${HM_DAYS[d.getUTCDay()]}, ${d.getUTCDate()} de ${HM_MONTHS[d.getUTCMonth()]}`;
+ const out=['<section class="hm" aria-label="Inicio de Mi Bowling">'];
+ out.push(`<div class="hm-hello"><p class="hm-date">${esc(head)}</p><h1>Tu juego, bajo control</h1></div>`);
+ out.push(`<button type="button" class="hm-cta" onclick="go('nueva')"><span class="hm-cta-txt"><strong>Registrar partida</strong><span>Bolos, cantidad o solo puntuación</span></span><svg class="hm-tri" viewBox="14 13 72 70" aria-hidden="true">${[[4,22],[3,40],[2,58],[1,76]].map(([n,y])=>Array.from({length:n},(_,i)=>`<circle cx="${50+(i-(n-1)/2)*18}" cy="${y}" r="7"${n===1?' class="hm-one"':''}/>`).join('')).join('')}</svg></button>`);
+ const last=hmLastGame();
+ if(last){const {s,g,n}=last,ld=hmDate(s.date),kind=s.type==='oficial'?'Competición':'Entreno',sc=frameScores(g);
+  const sheet=isFinalOnly(g)?'<p class="hm-note">Anotada solo con la puntuación final.</p>':`<div class="hm-sheet" aria-hidden="true">${Array.from({length:10},(_,i)=>{const f=i+1;return `<span class="hm-cell${f===10?' hm-cell10':''}"><i>${f}</i><b>${esc(frameLabel(g,f)||'·')}</b><em>${sc[i]??''}</em></span>`}).join('')}</div>`;
+  out.push(`<button type="button" class="hm-card hm-last" onclick="activeId=${esc(JSON.stringify(s.id))};go('detalle')" aria-label="Última partida: ${score(g)} puntos, ${esc(kind)} del ${ld.getUTCDate()} de ${HM_MONTHS[ld.getUTCMonth()]}. Ver la sesión"><span class="hm-row"><span class="hm-col"><span class="hm-kicker">Última partida</span><span class="hm-sub">${esc(kind)} · ${HM_DAYS_S[ld.getUTCDay()]} ${ld.getUTCDate()} ${HM_MONTHS_S[ld.getUTCMonth()]}${s.venue?' · '+esc(s.venue):''}${s.games.length>1?' · partida '+n:''}</span></span><span class="hm-big">${score(g)}</span></span>${sheet}</button>`);
+ }else out.push(`<button type="button" class="hm-card hm-empty" onclick="go('nueva')"><span class="hm-kicker">Empieza aquí</span><strong>Aún no hay partidas</strong><span class="hm-sub">Registra la primera y aquí verás tu resultado, tu media y tu evolución.</span></button>`);
+ const tr=hmScoreGames('entrenamiento'),of=hmScoreGames('oficial');
+ if(tr.length||of.length){
+  const avg=a=>a.length?a.reduce((x,g)=>x+score(g),0)/a.length:null,month=now.slice(0,7);
+  const tile=(label,games,line)=>{const av=avg(games);if(av===null)return `<button type="button" class="hm-card hm-tile" onclick="statMode='${label==='Entreno'?'entrenamiento':'oficial'}';go('estadisticas')"><span class="hm-kicker2">${label}</span><span class="hm-big2">—</span><span class="hm-sub">Sin partidas todavía</span></button>`;
+   const recent=games.slice(-12).map(score),cur=games.filter(g=>g._session.date.slice(0,7)===month),prev=games.filter(g=>g._session.date.slice(0,7)<month);
+   let foot=`${games.length} partida${games.length===1?'':'s'}`,cls='';
+   if(line&&cur.length&&prev.length){const dlt=avg(cur)-avg(prev);foot=`${dlt>=0?'+':'−'}${fmt(Math.abs(dlt))} este mes`;cls=dlt>=0?' hm-up':' hm-down'}
+   return `<button type="button" class="hm-card hm-tile" onclick="statMode='${label==='Entreno'?'entrenamiento':'oficial'}';go('estadisticas')" aria-label="Media ${label.toLowerCase()} ${fmt(av)}"><span class="hm-kicker2">${label}</span><span class="hm-big2">${fmt(av)}</span>${hmSpark(recent,!line)}<span class="hm-sub${cls}">${cls?'<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>':''}${foot}</span></button>`};
+  out.push(`<div class="hm-tiles">${tile('Entreno',tr,true)}${tile('Oficial',of,false)}</div>`);
+ }
+ const ev=officialCalendarEvents().filter(e=>e.end>=now).sort((a,b)=>a.start.localeCompare(b.start))[0];
+ if(ev){const sd=hmDate(ev.start),ed=hmDate(ev.end),dd=hmDaysBetween(now,ev.start),when=dd<=0?'hoy':dd===1?'mañana':`en ${dd} días`;
+  const range=ev.start===ev.end?`${sd.getUTCDate()} ${HM_MONTHS_S[sd.getUTCMonth()]}`:sd.getUTCMonth()===ed.getUTCMonth()?`${sd.getUTCDate()}–${ed.getUTCDate()} ${HM_MONTHS_S[sd.getUTCMonth()]}`:`${sd.getUTCDate()} ${HM_MONTHS_S[sd.getUTCMonth()]}–${ed.getUTCDate()} ${HM_MONTHS_S[ed.getUTCMonth()]}`;
+  out.push(`<button type="button" class="hm-card hm-next" onclick="calendarMonth=${esc(JSON.stringify(ev.start.slice(0,7)))};calendarSelected=${esc(JSON.stringify(ev.start))};go('calendario')"><span class="hm-day"><i>${HM_MONTHS_S[sd.getUTCMonth()]}</i><b>${sd.getUTCDate()}</b></span><span class="hm-col hm-grow"><span class="hm-kicker2">Próxima competición</span><strong>${esc(hmTitle(ev.title))}</strong><span class="hm-sub">${esc(hmTitle(ev.venue))} · ${range}</span></span><span class="hm-pill">${when}</span></button>`);
+ }
+ out.push('<footer class="home-start-footer">Datos almacenados en este dispositivo · Versión '+esc(APP_VERSION)+'</footer></section>');
+ return out.join('');
 }
 
 let calendarMonth=today().slice(0,7),calendarSelected=today(),calendarScope='todos';

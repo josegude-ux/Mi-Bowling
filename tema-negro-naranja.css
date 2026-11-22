@@ -115,3 +115,47 @@ html body .brand-mark img{border-radius:9px;display:block}
 html body .brand,html body .brand .wm,html body .design-lab-side-brand .wm{text-transform:none!important;letter-spacing:-.035em!important}
 html body .brand .wm{color:#f5f5f7!important}html body .brand .wm-o,html body .design-lab-side-brand .wm-o{color:#f0612d!important}
 html body .design-lab-motto{color:var(--rc-muted)!important}
+/* Inicio con contenido propio (3.3.18) */
+html body .app-main .hm{display:flex;flex-direction:column;gap:14px;max-width:640px;margin:0 auto;padding:6px 0 8px}
+html body .app-main .hm button{font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+html body .app-main .hm .hm-hello{padding:4px 4px 2px}
+html body .app-main .hm .hm-date{margin:0;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--rc-muted)!important}
+html body .app-main .hm h1{margin:2px 0 0;font-size:28px;line-height:1.15;letter-spacing:-.02em;font-weight:700;color:var(--rc-text)!important}
+html body .app-main .hm .hm-cta{display:flex;align-items:center;gap:14px;width:100%;padding:18px 18px 18px 20px;border:0;border-radius:22px;background:var(--rc-acc)!important;color:#000!important;box-shadow:0 10px 28px rgba(240,97,45,.25)}
+html body .app-main .hm .hm-cta-txt{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+html body .app-main .hm .hm-cta strong{font-size:21px;font-weight:700;color:#000!important}
+html body .app-main .hm .hm-cta-txt span{font-size:14px;font-weight:500;color:rgba(0,0,0,.72)!important}
+html body .app-main .hm .hm-tri{width:58px;height:56px;flex:0 0 auto;fill:#000}
+html body .app-main .hm .hm-tri .hm-one{fill:#fff}
+html body .app-main .hm .hm-card{display:flex;flex-direction:column;gap:12px;width:100%;padding:16px;border:0;border-radius:22px;background:var(--rc-s1)!important;color:var(--rc-text)!important;box-shadow:none}
+html body .app-main .hm .hm-row{display:flex;align-items:center;gap:8px;width:100%}
+html body .app-main .hm .hm-col{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+html body .app-main .hm .hm-kicker{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--rc-acc)!important}
+html body .app-main .hm .hm-kicker2{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--rc-muted)!important}
+html body .app-main .hm .hm-sub{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--rc-muted)!important;line-height:1.35}
+html body .app-main .hm .hm-sub svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+html body .app-main .hm .hm-sub.hm-up{color:var(--rc-text)!important}html body .app-main .hm .hm-sub.hm-up svg{stroke:#30d158}
+html body .app-main .hm .hm-sub.hm-down{color:var(--rc-text)!important}html body .app-main .hm .hm-sub.hm-down svg{stroke:#ff453a;transform:scaleY(-1)}
+html body .app-main .hm .hm-big{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--rc-text)!important}
+html body .app-main .hm .hm-big2{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:var(--rc-text)!important}
+html body .app-main .hm .hm-sheet{display:grid;grid-template-columns:repeat(9,minmax(0,1fr)) 1.55fr;border:1px solid var(--rc-line);border-radius:12px;overflow:hidden;width:100%}
+html body .app-main .hm .hm-cell{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:1px;padding:4px 0 5px;border-right:1px solid var(--rc-line);min-height:56px}
+html body .app-main .hm .hm-cell:last-child{border-right:0}
+html body .app-main .hm .hm-cell i{font-style:normal;font-size:10px;color:var(--rc-muted)!important}
+html body .app-main .hm .hm-cell b{font-size:13px;font-weight:700;white-space:nowrap;letter-spacing:-.02em;color:var(--rc-text)!important}
+html body .app-main .hm .hm-cell em{font-style:normal;font-size:12px;font-weight:600;color:var(--rc-text)!important}
+html body .app-main .hm .hm-note{margin:0;font-size:13px;color:var(--rc-muted)!important}
+html body .app-main .hm .hm-tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+html body .app-main .hm .hm-tile{gap:6px}
+html body .app-main .hm .hm-spark{width:100%;height:30px;overflow:visible}
+html body .app-main .hm .hm-spark polyline{stroke:var(--rc-acc)}html body .app-main .hm .hm-spark circle{fill:var(--rc-acc)}html body .app-main .hm .hm-spark rect{fill:var(--rc-s3)}
+html body .app-main .hm .hm-next{flex-direction:row;align-items:center;gap:14px}
+html body .app-main .hm .hm-grow{flex:1}
+html body .app-main .hm .hm-next strong{font-size:15px;font-weight:600;color:var(--rc-text)!important;line-height:1.3}
+html body .app-main .hm .hm-day{display:flex;flex-direction:column;align-items:center;padding:7px 10px;border-radius:14px;background:var(--rc-s2);min-width:50px}
+html body .app-main .hm .hm-day i{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rc-acc)!important}
+html body .app-main .hm .hm-day b{font-size:24px;font-weight:800;line-height:1.1;color:var(--rc-text)!important}
+html body .app-main .hm .hm-pill{flex:0 0 auto;padding:5px 10px;border-radius:20px;background:rgba(240,97,45,.18);color:var(--rc-acc)!important;font-size:12px;font-weight:600;white-space:nowrap}
+html body .app-main .hm .hm-empty strong{font-size:18px;color:var(--rc-text)!important}
+html body .app-main .hm .home-start-footer{margin-top:6px;text-align:center;font-size:11px;color:#636366!important}
+html body .app-main .hm button:active{transform:scale(.985)}

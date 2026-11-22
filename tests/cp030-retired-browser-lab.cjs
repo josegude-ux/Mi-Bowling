@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{let rel;try{rel=decodeURIComponent(ne
   await page.addInitScript(data=>{if(localStorage.getItem('mi-bowling-analitica-v2')===null)localStorage.setItem('mi-bowling-analitica-v2',JSON.stringify(data))},fixture);
   await page.goto('http://127.0.0.1:'+server.address().port+'/',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>typeof go==='function'&&!!document.querySelector('.home-start-footer'),null,{timeout:30000});
-  assert((await page.locator('.home-start-footer').innerText()).includes('3.3.17-prueba'),'Wrong version running');
+  assert((await page.locator('.home-start-footer').innerText()).includes('3.3.18-prueba'),'Wrong version running');
   await page.evaluate(()=>go('bolas'));await page.waitForSelector('.mis-bolas .ball-card');
   const live=await page.locator('.mis-bolas').innerText();assert(live.includes('ACTIVA CP030')&&!live.includes('RETIRADA CP030'),'Live arsenal leaked retired');
   await page.evaluate(()=>go('ajustes'));await page.waitForSelector('.mb-retired-settings');
