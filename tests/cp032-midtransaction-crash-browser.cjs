@@ -161,7 +161,9 @@ async function crashAt(dir,page,phase){
    assert(first.pending,'Coordinator must retain durable intent');
    await verify(page,phase==='v3'?hashes.before:hashes.after,true,
     phase==='v3'?'before':'after');
-   if(phase==='pdf'){
+   {
+    // Persist the fictional v2/CP004 baseline before SIGKILL. Otherwise a crash
+    // may precede the browser's first LocalStorage flush and confound IDB testing.
     await ctx.close();
     ctx=await launch(dir);page=await ctx.newPage();
     await load(page);await configure(page,false);await lock(page);
