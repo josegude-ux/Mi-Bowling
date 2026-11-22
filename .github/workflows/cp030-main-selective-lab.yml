@@ -1,7 +1,7 @@
-name: MI BOWLING | CP030 integracion selectiva main LAB (ficticios)
+name: MI BOWLING | MI BOWLING | CP031 3.3.13-prueba candidata (ficticios)
 on:
   push:
-    branches: [lab/mi-bowling-cp030-main-selectivo-20261122]
+    branches: [release/mi-bowling-3.3.13-prueba-20261122]
     paths:
       - .github/workflows/cp030-main-selective-lab.yml
       - tests/cp030-retired-lab.cjs
@@ -13,7 +13,7 @@ permissions:
   contents: read
 jobs:
   new-cp030-tests:
-    if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/lab/mi-bowling-cp030-main-selectivo-20261122'
+    if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/release/mi-bowling-3.3.13-prueba-20261122'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
