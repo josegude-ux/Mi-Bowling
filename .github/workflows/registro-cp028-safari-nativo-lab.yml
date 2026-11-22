@@ -1,0 +1,28 @@
+name: MI BOWLING | CP028 Safari nativo macOS LAB (sintético)
+on:
+  push:
+    branches: [ui/mis-bolas-compacto-20261116]
+    paths:
+      - .github/workflows/registro-cp028-safari-nativo-lab.yml
+      - tests/registro-cp028-safari-native-update.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safari-native:
+    if: github.repository == 'josegude-ux/Mi-Bowling' && github.ref == 'refs/heads/ui/mis-bolas-compacto-20261116'
+    runs-on: macos-15
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify CP028 source syntax and macOS runtime
+        run: |
+          python3 -m py_compile tests/registro-cp028-safari-native-update.py
+          sw_vers
+          /usr/bin/safaridriver --version
+      - name: Enable native Safari WebDriver in ephemeral macOS runner
+        run: sudo /usr/bin/safaridriver --enable
+      - name: Test native Safari Service Worker and synthetic PWA update/rollback
+        run: python3 tests/registro-cp028-safari-native-update.py
