@@ -736,7 +736,7 @@ render();
 const LIGA32_KEY='mi-bowling-liga-acta-v32';
 function ligaActaBlank(previous){const m=previous||ligaCurrent();return {id:uid(),date:today(),myTeam:m?.myTeam||'Mi equipo',rival:'Equipo rival',match:1,players:Array.from({length:12},(_,i)=>({name:m?.players?.[i]?.name||((i<6?'Jugador ':'Rival ')+(i%6+1)),trio:i%6<3?1:2,team:i<6?'own':'rival',scores:['',''],names:['','']})),demo:false}}
 let liga32;try{liga32=JSON.parse(localStorage.getItem(LIGA32_KEY)||'null')}catch(e){}
-if(!liga32||!Array.isArray(liga32.matches)||!liga32.matches.length){liga32={matches:[ligaActaBlank()]};const sample=[[205,198],[187,202],[220,214],[194,201],[179,195],[211,207],[198,195],[195,190],[210,208],[200,205],[188,199],[205,203]];liga32.matches[0].players.forEach((p,i)=>p.scores=sample[i].map(String));liga32.matches[0].demo=true;try{window.MiBowlingEscritura.write(LIGA32_KEY,JSON.stringify(liga32))}catch(e){}}
+if(!liga32||!Array.isArray(liga32.matches)||!liga32.matches.length){liga32={matches:[ligaActaBlank()]};const sample=[[205,198],[187,202],[220,214],[194,201],[179,195],[211,207],[198,195],[195,190],[210,208],[200,205],[188,199],[205,203]];liga32.matches[0].players.forEach((p,i)=>p.scores=sample[i].map(String));liga32.matches[0].demo=true;try{if(!window.MiBowlingRegistroCP021?.enabled)window.MiBowlingEscritura.write(LIGA32_KEY,JSON.stringify(liga32))}catch(e){}}
 let liga32Match=0,liga32Game=0;
 function liga32Current(){return liga32.matches[liga32Match]||liga32.matches[0]}
 function liga32Save(){try{window.MiBowlingEscritura.write(LIGA32_KEY,JSON.stringify(liga32))}catch(e){alert('No se pudo guardar la Liga. Exporta una copia.') }}
@@ -780,7 +780,7 @@ function liga33AddPlayer(){const m=liga32Current(),team=$('liga33-team')?.value|
 function liga33Prepare(){liga32.matches.forEach((m,i)=>{m.round=Number(m.round)||1;m.match=Number(m.match)||i%7+1;m.players.forEach(p=>{p.names=Array.isArray(p.names)?p.names:['',''];p.scores=Array.isArray(p.scores)?p.scores:['',''];p.links=p.links||{};if(p.isMe===undefined)p.isMe=false;liga33RosterAdd(p.team==='own'?'own':m.rival,p.name)})});
  for(let r=1;r<=3;r++)for(let j=1;j<=7;j++)if(!liga32.matches.some(x=>x.round===r&&x.match===j)){const m=ligaActaBlank(liga32.matches[0]);m.round=r;m.match=j;m.date='';m.rival='Equipo rival';m.players.forEach(p=>{p.scores=['',''];p.names=['',''];p.links={};p.isMe=false});liga32.matches.push(m)}
  liga32Save()}
-liga33Prepare();
+if(!window.MiBowlingRegistroCP021?.enabled)liga33Prepare();
 function liga33Choose(r,j){const i=liga32.matches.findIndex(x=>x.round===r&&x.match===j);if(i<0)return;liga32Match=i;render()}
 function liga33MarkMe(i){const m=liga32Current();m.players.forEach((p,k)=>{if(p.team==='own')p.isMe=k===i});liga32Save();render()}
 function liga33OpenPersonal(i,g){const m=liga32Current(),p=m.players[i];if(!p)return;let ss=null,gg=null;const old=p.links?.[g];if(old){ss=db.sessions.find(x=>x.id===old.sessionId);gg=ss?.games.find(x=>x.id===old.gameId)}
