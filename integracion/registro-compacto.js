@@ -87,6 +87,8 @@ body.rc-open{overflow:hidden}
 .rc-submit{height:64px;border:0;border-radius:32px;background:#f0612d;color:#fff;font-size:21px;font-weight:700;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rc-done{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;gap:12px;overflow:auto}
 .rc-done{position:relative}
+.rc-tourney-lane{width:94px;max-width:100%;height:44px;padding:5px 9px;border:1px solid #86868f;border-radius:12px;background:#242428;color:#fff;text-align:center;font-size:20px;vertical-align:middle}
+.rc-tourney-hint{font-size:12px;color:#ffab86;text-align:center;line-height:1.3;max-width:330px}
 .rc-cheer{margin:6px 0 -4px;font-size:22px;font-weight:800;color:#f0612d;letter-spacing:-.01em;animation:rc-pop .5s cubic-bezier(.2,1.4,.4,1) both}
 .rc-party{position:absolute;inset:-40px 0 auto 0;height:260px;pointer-events:none;overflow:hidden}
 .rc-party i{position:absolute;top:-12px;left:var(--x);width:8px;height:14px;border-radius:2px;background:var(--c);transform:rotate(var(--r));animation:rc-fall 1.6s var(--d) ease-in forwards;opacity:0}
@@ -179,7 +181,8 @@ body.rc-open{overflow:hidden}
   const s=session();if(!s)return null;
   const g=game(s),n=next(g),mode=modeFor(g,n),total=score(g),idx=s.games.length;
   if(!defaultMode()&&!sheet&&!g.rolls.length&&!isFinalOnly(g))sheet='modo';
-  const who=s.leaguePlayer?esc(s.leaguePlayer)+', partida '+idx:'Partida '+idx;
+  const torneoDay=window.MiBowlingParejas2026Plan?.dayOf(s)||null;
+  const who=torneoDay?(torneoDay==='2026-11-28'?'Sáb':'Dom')+' · Partida '+idx+'/6 · Pista '+(g.startLane||'—'):s.leaguePlayer?esc(s.leaguePlayer)+', partida '+idx:'Partida '+idx;
   const back=ligaReturn?'ligaBack()':"go('historial')";
   const head=`<div class="rc-head"><button type="button" class="rc-round" onclick="${back}" aria-label="${ligaReturn?'Volver a Liga':'Salir del registro'}">${ICON.back}</button><div class="rc-title">${who}</div><button type="button" class="rc-round" onclick="MiBowlingRegistroCompacto.openSheet('opciones')" aria-label="Opciones de la partida">${ICON.opts}</button></div>`;
   const tabs=`<div class="rc-mode" role="tablist" aria-label="Forma de anotar">${[['bolos','Bolos'],['cantidad','Cantidad'],['final','Solo puntuación']].map(([m,l])=>{const dis=n.done||(m==='bolos'&&!n.available)||(m==='final'&&g.rolls.length>0);return `<button type="button" role="tab" data-mode="${m}" aria-selected="${mode===m}" ${dis&&mode!==m?'disabled':''} onclick="MiBowlingRegistroCompacto.mode('${m}')">${l}</button>`}).join('')}</div>`;
@@ -190,12 +193,15 @@ body.rc-open{overflow:hidden}
    const best=others.length?Math.max(...others):null,record=best!==null&&total>best;
    const cheer=total===300?'¡Partida perfecta!':record?'¡Tu mejor partida!':total>=250?'¡Partidón!':total>=200?'¡Más de 200!':'';
    const party=cheer?`<div class="rc-party" aria-hidden="true">${Array.from({length:18},(_,i)=>`<i style="--x:${(i*37)%100}%;--d:${(i%6)*0.12}s;--r:${(i*47)%360}deg;--c:${['#f0612d','#f5f5f7','#ff8a5c'][i%3]}"></i>`).join('')}</div>`:'';
-   const nextLabel=ligaReturn?'Guardar y volver a Liga':`Siguiente: partida ${idx+1}${s.leaguePlayer?', '+esc(s.leaguePlayer):''}`;
+   const tourCompleted=!!torneoDay&&idx>=6;
+   const nextLabel=tourCompleted?'Serie completa · Resumen':torneoDay?'Siguiente · partida '+(idx+1)+'/6':ligaReturn?'Guardar y volver a Liga':`Siguiente: partida ${idx+1}${s.leaguePlayer?', '+esc(s.leaguePlayer):''}`;
+   const tourLane=torneoDay&&!tourCompleted?`<label class="rc-tourney-hint">Pista siguiente (propuesta +2; confirma o corrige)<br><input id="rc-tournament-next-lane" class="rc-tourney-lane" type="number" min="1" max="999" inputmode="numeric" value="${window.MiBowlingParejas2026Plan?.suggestedNextLane(g)||''}"></label>`:'';
+   const tourAction=tourCompleted?'MiBowlingRegistroCompacto.finishTournament()':'MiBowlingRegistroCompacto.nextGame()';
    body=`${isFinalOnly(g)?'':boardHtml(g,n)}<div class="rc-score"><span>Puntuación</span><b>${total}</b></div>${tabs}
-    <div class="rc-done">${party}${cheer?`<p class="rc-cheer" role="status">${cheer}</p>`:''}<div class="big">${total}</div><button type="button" class="rc-share" onclick="shareSessionImage()">${ICON.share} Compartir</button>
+    <div class="rc-done">${party}${cheer?`<p class="rc-cheer" role="status">${cheer}</p>`:''}<div class="big">${total}</div>${tourLane}<button type="button" class="rc-share" onclick="shareSessionImage()">${ICON.share} Compartir</button>
     ${isFinalOnly(g)?'<p class="rc-hint">Partida guardada solo con la puntuación final.</p>':'<p class="rc-hint">Toca un frame de arriba para corregirlo.</p>'}
     ${hideTip||isFinalOnly(g)?'':`<div class="rc-tip"><div><h3>¿Te equivocaste?</h3><p>Toca cualquier frame de la hoja para anotarlo de nuevo.</p></div><button type="button" aria-label="Cerrar aviso" onclick="MiBowlingRegistroCompacto.tip()">✕</button></div>`}</div>
-    <div class="rc-foot">${undoBtn}<button type="button" class="rc-submit" id="rc-next" onclick="MiBowlingRegistroCompacto.nextGame()">${nextLabel}</button></div>`;
+    <div class="rc-foot">${undoBtn}<button type="button" class="rc-submit" id="rc-next" onclick="${tourAction}">${nextLabel}</button></div>`;
   }else if(mode==='final'){
    body=`${tabs}<div class="rc-panel"><div class="rc-final"><input id="rc-final-input" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" placeholder="Puntuación final" aria-label="Puntuación final de 0 a 300" oninput="MiBowlingRegistroCompacto.finalInput(this)"><button type="button" class="rc-save" id="rc-final-save" disabled onclick="MiBowlingRegistroCompacto.saveFinal()">Guardar puntuación</button><p>Las partidas con solo la puntuación final cuentan únicamente para el promedio y las mejores marcas.</p></div></div>
     <div class="rc-foot">${undoBtn}<span></span></div>`;
@@ -235,6 +241,7 @@ body.rc-open{overflow:hidden}
   undo(){if(undoLast())rerender()},
   fix(f){const s=session();if(!s)return;const g=game(s);if(!rollsIn(g,f).length)return;if(!confirm(`¿Corregir el frame ${f}? Se borrarán sus tiradas y las posteriores para anotarlas de nuevo.`))return;if(rewindFrame(f))rerender()},
   nextGame(){if(ligaReturn){ligaBack();return}if(nextGameQuick())rerender()},
+  finishTournament(){sheet=null;classicGameId=null;abrirTorneoParejas()},
   tip(){hideTip=true;rerender()}
  };
  window.MiBowlingRegistroCompacto=Object.freeze(api);
