@@ -370,7 +370,7 @@ function calendarView(){
  for(const event of selectedCompetitions){
   const where=event.venue||'Sede no indicada en el PDF';
   const span=event.start===event.end?event.start.split('-').reverse().join('/'):(event.start.split('-').reverse().join('/')+' – '+event.end.split('-').reverse().join('/'));
-  html+='<article class="calendar-official '+(event.category==='gallego'?'calendar-official-gallego':'calendar-official-nacional')+(event.confirmed?' calendar-official-confirmed':'')+'"><div><span class="calendar-category">'+(event.category==='gallego'?'Gallego':'Nacional')+'</span><strong>'+esc(event.title)+'</strong><small>'+esc(span)+' · '+esc(where)+'</small>'+(event.confirmed?(event.changed?'<small class="calendar-changed">'+esc(event.changed)+'</small>':'')+'<details class="calendar-more"><summary>Horario y detalles</summary>'+(event.details||[]).map(d=>'<small class="calendar-detail">'+esc(d)+'</small>').join('')+'</details><a class="calendar-circular" href="'+esc(event.url)+'" target="_blank" rel="noopener">'+esc(event.source)+' ↗</a>':'')+fbCalendarBlock(event,selected)+'</div><span class="calendar-provisional'+(event.confirmed?' calendar-confirmed':'')+'">'+(event.confirmed?'Oficial':'Provisional')+'</span></article>';
+  html+='<article class="calendar-official '+(event.category==='gallego'?'calendar-official-gallego':'calendar-official-nacional')+(event.confirmed?' calendar-official-confirmed':'')+'"><div><span class="calendar-category">'+(event.category==='gallego'?'Gallego':'Nacional')+'</span><strong>'+esc(event.title)+'</strong><small>'+esc(span)+' · '+esc(where)+'</small>'+(event.confirmed?(event.changed?'<small class="calendar-changed">'+esc(event.changed)+'</small>':'')+'<details class="calendar-more"><summary>Horario y detalles</summary>'+(event.details||[]).map(d=>'<small class="calendar-detail">'+esc(d)+'</small>').join('')+'</details><a class="calendar-circular" href="'+esc(event.url)+'" target="_blank" rel="noopener">'+esc(event.source)+' ↗</a>':'')+(event.id==='FGB-2627-10'?'<button type="button" class="btn outline" onclick="abrirTorneoParejas()">Preparar mi torneo · 6+6</button>':'')+fbCalendarBlock(event,selected)+'</div><span class="calendar-provisional'+(event.confirmed?' calendar-confirmed':'')+'">'+(event.confirmed?'Oficial':'Provisional')+'</span></article>';
  }
  html+='</section>';
  html+='<p class="calendar-source">Fuente: Federación Galega de Bolos · calendario provisional de 17/07/2026. Las fechas pueden cambiar. No son inscripciones ni partidos creados en tu historial.</p>';
@@ -387,8 +387,39 @@ let newMode='entrenamiento';let competitionFormat='habitual';function startWith(
 function chooseSessionType(v){newMode=v;const t=$('s-type');if(t)t.value=v;document.querySelectorAll('.nw-seg button').forEach((b,i)=>{const on=(i===1)===(v==='oficial');b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});const h=$('nw-mode-hint');if(h)h.textContent=v==='oficial'?'Cuenta para tus estadísticas oficiales.':'No modifica tus estadísticas oficiales.';const m=$('nw-more');if(m){if(v==='oficial')m.open=true;const sm=m.querySelector('summary small');if(sm)sm.textContent='Patrón · '+(v==='oficial'?'pistas':'objetivo · pistas')+' · notas · bolas'}updateSessionFields()}
 function chooseCompetitionFormat(v){competitionFormat=v;updateSessionFields()}
 function launchLeagueFromNew(){ligaGame=0;ligaSelected=0;go('liga')}
+
+/* FEB 6249 · Torneo 6+6, sesiones v2, sin cambios en almacenamiento histórico. */
+function torneoPlan(){return window.MiBowlingParejas2026Plan||null}
+function esSesionParejas(s){return !!torneoPlan()?.dayOf(s)}
+function abrirTorneoParejas(){newMode='oficial';competitionFormat='parejas2026';go('nueva')}
+function torneoParejasCard(){
+ const P=torneoPlan();if(!P)return '<p class="hint">Módulo del torneo no disponible.</p>';
+ const detail=['<details class="card" '+(competitionFormat==='parejas2026'?'open':'')+'><summary>España Parejas 2026 · 6+6 partidas</summary>'];
+ const totals=[];
+ for(const day of P.DAYS){
+  const s=P.sameDay(db.sessions,day),v=s?P.summary(s,complete,score):null;
+  if(v)totals.push(v);
+  detail.push('<div class="card" style="padding:12px;margin:10px 0"><h3>'+P.TITLE[day]+'</h3><p class="hint">'+(v?(v.played+'/6 · '+v.total+' bolos · media '+(v.average===null?'—':fmt(v.average))):'6 partidas pendientes')+'</p>');
+  if(s)detail.push('<button class="btn primary block" type="button" onclick="openSession('+JSON.stringify(s.id)+')">Continuar jornada →</button>');
+  else detail.push('<label class="field">Pista inicial '+(day==='2026-11-28'?'(oficial 17)':'(pendiente de asignar)')+'</label><input class="input" type="number" min="1" max="999" id="parejas-lane-'+day+'" value="'+(day==='2026-11-28'?'17':'')+'" inputmode="numeric"><button class="btn primary block mt12" type="button" onclick="iniciarTorneoParejas('+JSON.stringify(day)+')">Preparar '+(day==='2026-11-28'?'sábado':'domingo')+' →</button>');
+  detail.push('</div>');
+ }
+ const n=totals.reduce((x,v)=>x+v.played,0),total=totals.reduce((x,v)=>x+v.total,0);
+ detail.splice(1,0,'<p class="hint">CELTA XUNTA · José Gude / Lázaro Galguera · X-Madrid · Kegel IKON, 41 pies y 26,5 ml. Solo se registran tus partidas; tus estadísticas oficiales se mantienen en el sistema actual.</p><p class="hint">Acumulado: '+n+'/12 · '+total+' bolos'+(n?' · media '+fmt(total/n):'')+'</p>');
+ detail.push('<p class="hint">La circular ordena avanzar 2 pistas tras cada partida, no 2 pares. Las propuestas de pista son editables: no se conoce el límite ni el retorno. El domingo no tiene pista inicial confirmada. CELTA XUNTA aparece con turno 0 pese al encabezado 09:00; confirmar con la organización.</p>');
+ detail.push('<p class="hint">La Cutting Edge Solid está en reparación; no se asigna ni altera automáticamente tu arsenal.</p></details>');
+ return detail.join('');
+}
+function iniciarTorneoParejas(day){
+ const P=torneoPlan();if(!P)return;
+ const saved=P.sameDay(db.sessions,day);if(saved){activeId=saved.id;go('registro');return}
+ try{const lane=$('parejas-lane-'+day)?.value||'',s=P.draft(day,lane,uid);db.sessions.push(s);activeId=s.id;save();transferBallSelectionToSession(s.id);go('registro')}
+ catch(e){alert(e.message==='PISTA_INICIAL_PENDIENTE'?'Indica la pista inicial antes de comenzar.':String(e.message))}
+}
+
 function newSessionView(){const of=newMode==='oficial';return `${head('Empezar partida','')}
- <div class="card nw"><form id="newSessionForm" onsubmit="createSession(event)"><input type="hidden" id="s-type" name="type" value="${of?'oficial':'entrenamiento'}">
+ ${of?torneoParejasCard():''}
+ <div class="card nw" style="${of&&competitionFormat==='parejas2026'?'display:none':''}"><form id="newSessionForm" onsubmit="createSession(event)"><input type="hidden" id="s-type" name="type" value="${of?'oficial':'entrenamiento'}">
  <div class="nw-seg" role="group" aria-label="Modalidad"><button type="button" class="${of?'':'active'}" aria-pressed="${!of}" onclick="chooseSessionType('entrenamiento')">Entrenamiento</button><button type="button" class="${of?'active':''}" aria-pressed="${of}" onclick="chooseSessionType('oficial')">Competición</button></div>
  <p class="hint nw-mode-hint" id="nw-mode-hint">${of?'Cuenta para tus estadísticas oficiales.':'No modifica tus estadísticas oficiales.'}</p>
  <div id="competition-format"></div><div id="normal-session-fields"><div class="form-grid"><div><label class="field" for="s-date">Fecha</label><input id="s-date" type="date" class="input" required name="date" value="${today()}"></div><div><label class="field" for="s-venue">Bolera</label><input id="s-venue" class="input" name="venue" placeholder="Opcional"></div></div>
@@ -408,7 +439,7 @@ function ballSelect(id,name,selected){
  const chosen=scope?selectedBallsFor(scope):null;
  return `<select class="input" id="${id}" name="${name}"><option value="">Sin asignar</option>${db.balls.filter(b=>chosen===null?(!b.retired||b.id===selected):chosen.includes(b.id)).map(b=>`<option value="${esc(b.id)}" ${selected===b.id?'selected':''}>${esc(b.brand+' '+b.model)}</option>`).join('')}</select>`;
 }
-function createSession(e){e.preventDefault();if(newMode==='oficial'&&competitionFormat==='liga'){launchLeagueFromNew();return}const f=new FormData(e.currentTarget);const typ=f.get('type');const pair=normalPair(f.get('pair')),start=pair?(intLane(f.get('startLane'))||pair[0]):null;
+function createSession(e){e.preventDefault();if(newMode==='oficial'&&competitionFormat==='parejas2026')return;if(newMode==='oficial'&&competitionFormat==='liga'){launchLeagueFromNew();return}const f=new FormData(e.currentTarget);const typ=f.get('type');const pair=normalPair(f.get('pair')),start=pair?(intLane(f.get('startLane'))||pair[0]):null;
  if(pair&&!pair.includes(start))return alert('La pista inicial debe pertenecer al par elegido.');
  const requestedBallId=String(f.get('ballId')||''),allowedBalls=selectedBallsFor(BALL_SELECTION_NEXT);
  const initialBallId=allowedBalls!==null&&!allowedBalls.includes(requestedBallId)?'':requestedBallId;
@@ -587,14 +618,39 @@ function setFinalOnly(value){const s=session();if(!s)return false;const g=game(s
 function undoLast(){const s=session();if(!s)return false;const g=game(s);if(isFinalOnly(g)){delete g.finalOnly}else if(g.rolls.length){g.rolls.pop()}else return false;selection=[];save();return true}
 function rewindFrame(f){const s=session();if(!s)return false;const g=game(s);if(isFinalOnly(g))return false;const i=g.rolls.findIndex(r=>r.frame===f);if(i<0)return false;const r=g.rolls[i];g.rolls=g.rolls.slice(0,i);if(r.ballId&&r.ball===1)s.currentBallId=r.ballId;s.currentLine=cleanLine(r.line);selection=[];save();return true}
 function maxPossible(g){if(isFinalOnly(g))return g.finalOnly;const sim={rolls:g.rolls.map(r=>({frame:r.frame,ball:r.ball,pins:[],count:kn(r),pinDetail:'count'}))};for(let i=0;i<24;i++){const n=next(sim);if(n.done)break;sim.rolls.push({frame:n.frame,ball:n.ball,pins:[],count:n.capacity,pinDetail:'count'})}return score(sim)}
-function nextGameQuick(){const s=session();if(!s)return false;const prev=game(s);if(!complete(prev))return false;s.games.push(newGame(s,prev));selection=[];showNext=false;save();return true}
+function nextGameQuick(){const s=session();if(!s)return false;const prev=game(s);if(!complete(prev))return false;
+ const P=torneoPlan();
+ if(P?.dayOf(s)){
+  if(!P.canNext(s)){alert('Serie de 6 partidas completa. Vuelve al resumen del torneo.');return false}
+  const el=$('rc-tournament-next-lane');
+  if(!el)return false;
+  try{const cfg=P.nextConfig(s,el.value),g=newGame(s,prev);g.pair=cfg.pair;g.startLane=cfg.startLane;s.games.push(g)}
+  catch(e){alert('Confirma la pista siguiente, corrigiendo la propuesta si fuera necesario.');return false}
+ }else s.games.push(newGame(s,prev));
+ selection=[];showNext=false;save();return true}
 function setSpareBall(id){const s=session();if(!s)return;s.spareBallId=id||'';save()}
 function rewindRoll(index){const g=game(session());if(!confirm(`¿Volver a la tirada ${index+1}? Se eliminará esa tirada y todas las posteriores de esta partida para que puedas corregir los bolos.`))return;const r=g.rolls[index];if(r){const s=session(),oldBall=r.ballId||'',chosen=selectedBallsFor(s.id);s.currentBallId=chosen!==null&&!chosen.includes(oldBall)?'':oldBall;s.currentLine=cleanLine(r.line);}g.rolls=g.rolls.slice(0,index);selection=[];save();render()}
 function rollLog(g){return `<div class="card"><div class="card-head"><h2>Historial de lanzamientos</h2><span class="pill gray">${g.rolls.length} tiradas</span></div>${g.rolls.length?`<div class="roll-log">${g.rolls.map((r,i)=>{const b=db.balls.find(b=>b.id===r.ballId);return `<div class="list-item"><div><div class="item-title">F${r.frame} · T${r.ball} · ${kn(r)} bolos ${kn(r)===10?'✕':''}</div><div class="item-subtitle">${!exactRoll(r)?'Posiciones no anotadas':kn(r)?r.pins.join(' · '):'Ninguno'}${r.lane?' · Pista '+r.lane:''}${b?' · '+esc(b.model):''}${r.line?.approach?' · Salida '+esc(r.line.approach):''}${r.line?.arrow?' · Flechas '+esc(r.line.arrow):''}${r.line?.breakpoint?' · Break '+esc(r.line.breakpoint):''}</div></div><button class="btn outline" onclick="rewindRoll(${i})" title="Corregir esta tirada">↶</button></div>`}).reverse().join('')}</div>`:'<p class="hint">Los tiros aparecerán aquí a medida que los registres.</p>'}</div>`}
 function finishedGame(s,g,completed){return `<div class="card" style="text-align:center"><div class="finished-icon">${uiLineIcon('ball')}</div><h2>Partida terminada</h2><div style="font-size:53px;font-weight:830;color:var(--teal2)">${score(g)}</div><p class="muted">Puntuación sin hándicap · ${completed} partida(s) completas en esta sesión.</p><div class="actions">${ligaReturn?'<button class="btn primary" onclick="ligaBack()">✓ Guardar y volver a Liga</button>':'<button class="btn primary" onclick="showNext=!showNext;render()">＋ Siguiente partida</button><button class="btn outline" onclick="go(\'historial\')">Guardar y salir</button>'}</div>${showNext?nextGameForm(s,g):''}</div>`}
-function nextGameForm(s,g){const w=currentLane(g,10);const p=w.pair;const suggested=p?.find(x=>x!==w.lane)||p?.[0];return `<div class="card" style="text-align:left;margin:14px 0 0;background:#f3fafb"><h3>Configurar siguiente partida</h3><p class="hint">Puedes continuar en el mismo par o indicar otro. Esto no altera las partidas anteriores.</p>${g.pair?`<div class="form-grid"><div><label class="field">Par siguiente (primera pista)</label><input class="input" type="number" id="next-pair" placeholder="Ej. 9" value="${p?.[0]||''}" oninput="fillNextPair()"></div><div><label class="field">Pista de salida</label><select class="input" id="next-start">${p?p.map(v=>`<option value="${v}" ${v===suggested?'selected':''}>Pista ${v}</option>`).join(''):'<option value="">Sin pista</option>'}</select></div></div>`:`<label class="field">Pista (opcional)</label><input id="next-lane" class="input" type="number" value="${g.startLane||''}">`}<button class="btn primary block mt12" onclick="addGame()">Empezar siguiente partida →</button></div>`}
+function nextGameForm(s,g){
+ const P=torneoPlan();
+ if(P?.dayOf(s)){
+  if(!P.canNext(s))return '<div class="card"><p>Serie de 6 partidas completa.</p><button class="btn primary block" onclick="abrirTorneoParejas()">Resumen del fin de semana →</button></div>';
+  const predicted=P.suggestedNextLane(g);
+  return '<div class="card"><h3>Siguiente partida · avance 2 pistas</h3><p class="hint">Propuesta editable. Confirma la pista real; la circular no fija el retorno.</p><label class="field">Pista siguiente</label><input id="next-tournament-lane" class="input" type="number" min="1" max="999" inputmode="numeric" value="'+(predicted||'')+'"><button class="btn primary block mt12" onclick="addGame()">Partida '+(s.games.length+1)+' de 6 →</button></div>';
+ }
+ const w=currentLane(g,10);const p=w.pair;const suggested=p?.find(x=>x!==w.lane)||p?.[0];return `<div class="card" style="text-align:left;margin:14px 0 0;background:#f3fafb"><h3>Configurar siguiente partida</h3><p class="hint">Puedes continuar en el mismo par o indicar otro. Esto no altera las partidas anteriores.</p>${g.pair?`<div class="form-grid"><div><label class="field">Par siguiente (primera pista)</label><input class="input" type="number" id="next-pair" placeholder="Ej. 9" value="${p?.[0]||''}" oninput="fillNextPair()"></div><div><label class="field">Pista de salida</label><select class="input" id="next-start">${p?p.map(v=>`<option value="${v}" ${v===suggested?'selected':''}>Pista ${v}</option>`).join(''):'<option value="">Sin pista</option>'}</select></div></div>`:`<label class="field">Pista (opcional)</label><input id="next-lane" class="input" type="number" value="${g.startLane||''}">`}<button class="btn primary block mt12" onclick="addGame()">Empezar siguiente partida →</button></div>`}
 function fillNextPair(){const pair=normalPair($('next-pair')?.value);$('next-start').innerHTML=pair?pair.map(x=>`<option value="${x}">Pista ${x}</option>`).join(''):'<option value="">Sin pista</option>'}
-function addGame(){const s=session(),prev=game(s);if(!complete(prev))return alert('Termina la partida primero.');const g=newGame(s,prev);
+function addGame(){const s=session(),prev=game(s);if(!complete(prev))return alert('Termina la partida primero.');
+ const P=torneoPlan();
+ if(P?.dayOf(s)){
+  if(!P.canNext(s))return alert('Serie completa. Abre el resumen del torneo.');
+  try{
+   const cfg=P.nextConfig(s,$('next-tournament-lane')?.value),g=newGame(s,prev);
+   g.pair=cfg.pair;g.startLane=cfg.startLane;s.games.push(g);save();selection=[];showNext=false;render();return;
+  }catch(e){return alert('Confirma la pista siguiente antes de comenzar la próxima partida.')}
+ }
+ const g=newGame(s,prev);
  if(g.pair){const entered=$('next-pair')?.value||'',p=entered?normalPair(entered):null;if(entered&&!p)return alert('Par inválido');g.pair=p;g.startLane=p?(intLane($('next-start')?.value)||p[0]):null;if(p&&!p.includes(g.startLane))return alert('La pista inicial no pertenece al par indicado.')}else g.startLane=intLane($('next-lane')?.value)||null;
  s.games.push(g);save();selection=[];showNext=false;render()}
 let historyOpenDay='';
