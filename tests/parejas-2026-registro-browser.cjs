@@ -1,7 +1,7 @@
 'use strict';
 /* Nuevo caso específico; SOLO registros ficticios en contexto Chromium desechable. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
-const {chromium}=require('playwright');
+const {chromium,webkit}=require('playwright');
 const root=path.resolve(__dirname,'..');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.mjs':'text/javascript; charset=utf-8'};
 const server=http.createServer((req,res)=>{
@@ -13,7 +13,7 @@ const server=http.createServer((req,res)=>{
 });
 (async()=>{
  await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
- const browser=await chromium.launch();
+ const browser=await (process.env.BOWLING_BROWSER==='webkit'?webkit:chromium).launch();
  try{
   const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,serviceWorkers:'block'});
   const KEY='mi-bowling-analitica-v2';
@@ -85,7 +85,7 @@ const server=http.createServer((req,res)=>{
   assert((await page.locator('main').innerText()).includes('7/12'));
   assert.equal((await read()).sessions.length,2,'Sin duplicados tras recargar');
   assert(errors.length===0,'Errores JS: '+errors.join(' || '));
-  console.log('PAREJAS-2026-BROWSER PASS · 6+6, S 17, avance +2 editable, domingo 13, bloqueo 7ª, recarga, sin duplicados; avisos previstos='+warnings.length);
+  console.log('PAREJAS-2026-BROWSER '+(process.env.BOWLING_BROWSER==='webkit'?'WEBKIT':'CHROMIUM')+' PASS · 6+6, S 17, avance +2 editable, domingo 13, bloqueo 7ª, recarga, sin duplicados; avisos previstos='+warnings.length);
   await ctx.close();
  }finally{await browser.close();await new Promise(ok=>server.close(ok))}
 })().catch(e=>{console.error(e);process.exitCode=1});
