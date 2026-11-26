@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{
   const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,serviceWorkers:'block'});
   const KEY='mi-bowling-analitica-v2';
   const seed={version:2,hand:'diestro',balls:[],patterns:[],sessions:[]};
-  await ctx.addInitScript(([key,value])=>{if(!sessionStorage.getItem('bowling-test-initialized')){localStorage.setItem(key,value);sessionStorage.setItem('bowling-test-initialized','yes')}},[KEY,JSON.stringify(seed)]);
+  await ctx.addInitScript(([key,value])=>{if(!sessionStorage.getItem('bowling-test-initialized')){localStorage.setItem(key,value);localStorage.setItem('mibowling.pref.registro-modo','bolos');sessionStorage.setItem('bowling-test-initialized','yes')}},[KEY,JSON.stringify(seed)]);
   const page=await ctx.newPage(),errors=[],warnings=[];
   page.on('pageerror',e=>errors.push(e.message));
   page.on('dialog',d=>{warnings.push(d.message());d.accept()});
