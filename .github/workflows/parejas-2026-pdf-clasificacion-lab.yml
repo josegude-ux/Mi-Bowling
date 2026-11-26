@@ -42,3 +42,7 @@ jobs:
         run: node tests/parejas-2026-pdf-browser.cjs
       - name: 'WebKit: PDF ficticio, revision, Lázaro y versiones'
         run: BOWLING_BROWSER=webkit node tests/parejas-2026-pdf-browser.cjs
+      - name: 'Chromium: regresion previa 6+6 y cambio de pistas'
+        run: node tests/parejas-2026-registro-browser.cjs
+      - name: 'WebKit: regresion previa 6+6 y cambio de pistas'
+        run: BOWLING_BROWSER=webkit node tests/parejas-2026-registro-browser.cjs
