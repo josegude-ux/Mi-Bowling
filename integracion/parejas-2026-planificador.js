@@ -60,7 +60,7 @@
  function nextConfig(s,lane){
   if(!canNext(s))throw Error('SERIE_COMPLETA_O_NO_VALIDA');
   const last=s.games[s.games.length-1];
-  const n=lane===undefined||lane===null||lane===''?suggestedNextLane(last):Number(lane);
+  const n=lane===undefined||lane===null?suggestedNextLane(last):Number(lane);
   if(!validLane(n))throw Error('CONFIRMAR_PISTA_SIGUIENTE');
   return{pair:pairFor(n),startLane:Number(n)};
  }
