@@ -1,0 +1,23 @@
+name: FEB 6249 - LAB circular y patrones
+on:
+  push:
+    branches:
+      - lab/circular-6249-parejas-20261126
+    paths:
+      - .github/workflows/feb-6249-lab.yml
+      - data/circular-feb-6249-parejas-2026.json
+      - integracion/calendario-circulares.js
+      - integracion/parejas-2026-6249.html
+      - sw.js
+      - tests/calendario-circulares.test.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  datos-circulares:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node y SHA de los recursos
+        run: node tests/calendario-circulares.test.cjs
