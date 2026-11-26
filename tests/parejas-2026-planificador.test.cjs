@@ -14,6 +14,7 @@ assert.equal(P.dayOf(sat),'2026-11-28');
 assert.equal(P.suggestedNextLane(sat.games[0]),19);
 assert.deepEqual(P.nextConfig(sat,undefined),{pair:[19,20],startLane:19});
 assert.deepEqual(P.nextConfig(sat,'20'),{pair:[19,20],startLane:20});
+assert.throws(()=>P.nextConfig(sat,''),/CONFIRMAR_PISTA_SIGUIENTE/);
 assert.throws(()=>P.draft('2026-11-29','',make),/PISTA_INICIAL_PENDIENTE/);
 assert.throws(()=>P.draft('2026-11-30',17,make),/DIA_NO_PERMITIDO/);
 const sun=P.draft('2026-11-29',13,make);
