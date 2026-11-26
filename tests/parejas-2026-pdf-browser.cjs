@@ -43,7 +43,11 @@ const seed={version:2,hand:'diestro',balls:[],patterns:[],sessions:[oldSession]}
   await page.waitForSelector('#parejas-pdf-file');
   async function upload(buffer,name){
    await page.locator('#parejas-pdf-file').setInputFiles({name,mimeType:'application/pdf',buffer});
-   await page.waitForSelector('[data-parejas-pdf-row]',{timeout:20000});
+   await page.waitForFunction(()=>document.querySelector('[data-parejas-pdf-row]')||document.querySelector('[role="alert"]'),null,{timeout:16000}).catch(()=>{});
+   if(!(await page.locator('[data-parejas-pdf-row]').count())){
+    const diag=await page.evaluate(()=>({visible:document.body.innerText.slice(-1600),pdfError:document.querySelector('[role="alert"]')?.textContent,hasReader:typeof MiBowlingParejasClasificacion?.pdfLines,hasPdfScript:[...document.scripts].some(x=>x.src?.includes('pdfjs'))}));
+    throw Error('WEBKIT_PDF_DIAGNOSTIC '+JSON.stringify(diag)+' PAGE_ERRORS '+errors.join(' | '));
+   }
   }
   await upload(pdfA,'parejas-ficticio-1.pdf');
   assert.equal(await page.locator('[data-parejas-pdf-row]').count(),3);
