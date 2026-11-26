@@ -16,12 +16,16 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch();
  try{
   const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,serviceWorkers:'block'});
+  const KEY='mi-bowling-analitica-v2';
+  const seed={version:2,hand:'diestro',balls:[],patterns:[],sessions:[]};
+  await ctx.addInitScript(([key,value])=>{if(!sessionStorage.getItem('bowling-test-initialized')){localStorage.setItem(key,value);sessionStorage.setItem('bowling-test-initialized','yes')}},[KEY,JSON.stringify(seed)]);
   const page=await ctx.newPage(),errors=[],warnings=[];
   page.on('pageerror',e=>errors.push(e.message));
   page.on('dialog',d=>{warnings.push(d.message());d.accept()});
   const site='http://localhost:'+server.address().port+'/';
   await page.goto(site,{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>typeof abrirTorneoParejas==='function'&&window.MiBowlingParejas2026Plan&&typeof window.MiBowlingRegistroCompacto?.nextGame==='function',{timeout:20000});
+  try{await page.waitForFunction(()=>typeof abrirTorneoParejas==='function'&&!!window.MiBowlingParejas2026Plan&&typeof window.MiBowlingRegistroCompacto?.nextGame==='function',null,{timeout:12000})}
+  catch(e){const diagnosis=await page.evaluate(()=>({block:document.querySelector('#f1-blocked')?.innerText,hasPlan:!!window.MiBowlingParejas2026Plan,hasCompact:!!window.MiBowlingRegistroCompacto,hasBoot:!!window.MiBowlingCatalogoLocal,hasStart:typeof abrirTorneoParejas,app:document.querySelector('#app')?.innerText?.slice(0,250)}));throw Error('BOOT_DIAGNOSTIC '+JSON.stringify(diagnosis)+' PAGE_ERRORS '+errors.join(' || '))}
   const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')||'null'));
   await page.evaluate(()=>abrirTorneoParejas());
   await page.waitForSelector('#parejas-lane-2026-11-28');
