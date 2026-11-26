@@ -46,7 +46,13 @@ const seed={version:2,hand:'diestro',balls:[],patterns:[],sessions:[oldSession]}
    await page.waitForFunction(()=>document.querySelector('[data-parejas-pdf-row]')||document.querySelector('[role="alert"]'),null,{timeout:16000}).catch(()=>{});
    if(!(await page.locator('[data-parejas-pdf-row]').count())){
     const diag=await page.evaluate(()=>({visible:document.body.innerText.slice(-1600),pdfError:document.querySelector('[role="alert"]')?.textContent,hasReader:typeof MiBowlingParejasClasificacion?.pdfLines,hasPdfScript:[...document.scripts].some(x=>x.src?.includes('pdfjs'))}));
-    throw Error('WEBKIT_PDF_DIAGNOSTIC '+JSON.stringify(diag)+' PAGE_ERRORS '+errors.join(' | '));
+    const probe=await page.evaluate(async b64=>{
+     const bytes=Uint8Array.from(atob(b64),ch=>ch.charCodeAt(0));
+     const f=new File([bytes],'fixture.pdf',{type:'application/pdf'});
+     try{const rows=await MiBowlingParejasClasificacion.pdfLines(f,new URL('./',document.baseURI).href);return {rows:rows.slice(0,3),hasSubtle:!!crypto.subtle?.digest}}
+     catch(e){return{message:e?.message,stack:e?.stack,hasSubtle:!!crypto.subtle?.digest}}
+    },pdfA.toString('base64'));
+    throw Error('WEBKIT_PDF_DIAGNOSTIC '+JSON.stringify(diag)+' PROBE '+JSON.stringify(probe)+' PAGE_ERRORS '+errors.join(' | '));
    }
   }
   await upload(pdfA,'parejas-ficticio-1.pdf');
