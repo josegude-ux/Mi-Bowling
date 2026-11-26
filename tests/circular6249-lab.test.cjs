@@ -15,7 +15,7 @@ for(const [id,num] of Object.entries({'FGB-2627-09':40,'FGB-2627-10':32,'FGB-262
 }
 assert.equal(JSON.stringify(ctx.BOWLING_OFFICIAL_CALENDAR_2026_27),baseline,'Calendario FGB original intacto');
 const c=C.participants.filter(x=>x.event==='FGB-2627-10'&&x.pair==='CELTA XUNTA');
-assert.deepEqual(c.map(x=>x.code).sort(),['ES 0147','ES 1046']);
+assert.deepEqual(Array.from(c,x=>x.code).sort(),['ES 0147','ES 1046']);
 assert(c.every(x=>x.lane===17&&x.turn===0),'Turno impreso 0 debe quedar sin normalizar');
 assert.equal(C.patterns['FGB-2627-10'].oil_distance_ft,41);
 assert.equal(C.patterns['FGB-2627-10'].volume_ml,26.5);
