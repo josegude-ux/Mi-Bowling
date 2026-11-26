@@ -400,8 +400,8 @@ function torneoParejasCard(){
   const s=P.sameDay(db.sessions,day),v=s?P.summary(s,complete,score):null;
   if(v)totals.push(v);
   detail.push('<div class="card" style="padding:12px;margin:10px 0"><h3>'+P.TITLE[day]+'</h3><p class="hint">'+(v?(v.played+'/6 · '+v.total+' bolos · media '+(v.average===null?'—':fmt(v.average))):'6 partidas pendientes')+'</p>');
-  if(s)detail.push('<button class="btn primary block" type="button" onclick="openSession('+JSON.stringify(s.id)+')">Continuar jornada →</button>');
-  else detail.push('<label class="field">Pista inicial '+(day==='2026-11-28'?'(oficial 17)':'(pendiente de asignar)')+'</label><input class="input" type="number" min="1" max="999" id="parejas-lane-'+day+'" value="'+(day==='2026-11-28'?'17':'')+'" inputmode="numeric"><button class="btn primary block mt12" type="button" onclick="iniciarTorneoParejas('+JSON.stringify(day)+')">Preparar '+(day==='2026-11-28'?'sábado':'domingo')+' →</button>');
+  if(s)detail.push('<button class="btn primary block" type="button" onclick="openSession('+JSON.stringify(s.id).replace(/"/g,'&quot;')+')">Continuar jornada →</button>');
+  else detail.push('<label class="field">Pista inicial '+(day==='2026-11-28'?'(oficial 17)':'(pendiente de asignar)')+'</label><input class="input" type="number" min="1" max="999" id="parejas-lane-'+day+'" value="'+(day==='2026-11-28'?'17':'')+'" inputmode="numeric"><button class="btn primary block mt12" type="button" onclick="iniciarTorneoParejas('+JSON.stringify(day).replace(/"/g,'&quot;')+')">Preparar '+(day==='2026-11-28'?'sábado':'domingo')+' →</button>');
   detail.push('</div>');
  }
  const n=totals.reduce((x,v)=>x+v.played,0),total=totals.reduce((x,v)=>x+v.total,0);
