@@ -1,6 +1,7 @@
 # MI BOWLING · Campeonato de España Parejas 2026 · Preparador 6+6
 **Checkpoint:** MI-BOWLING-PAREJAS-REGISTRO-LAB-CP001-20261126  
-**Fecha:** 26 noviembre 2026 · **Únicamente LAB; no publicado**
+**Fecha:** 26 noviembre 2026 · **Únicamente LAB; no publicado**  
+**Homologación:** MI-BOWLING-PAREJAS-REGISTRO-LAB-CP002-20261126 · Chromium + WebKit automatizados PASS
 
 ## Recuperación y continuidad
 - Base exacta de producción antes del trabajo: `main ec9d63c69388c304682b7477250fcd859aec296c` (PR #83 Circular 6249 ya publicada).
@@ -21,10 +22,14 @@
 
 ## Verificaciones
 - **PASS:** prueba de dominio `tests/parejas-2026-planificador.test.cjs` en workflow GitHub Actions (sintaxis y contratos).
-- **FAIL pendiente de corrección:** caso Chromium `tests/parejas-2026-registro-browser.cjs`: una ejecución inicial agotó el tiempo al arrancar y otra alcanzó el asistente, pero agotó el tiempo al pasar de «Preparar sábado» al marcador (run 45800725564). Se ha incorporado inicialización ficticia y diagnóstico de navegación; el run 45801256218 aún está en curso, **sin adjudicar PASS**. La serie 6+6, pistas +2 editables, domingo, recuperación y no duplicados aún no están homologados en navegador real.
+- **PASS Chromium real (automatizado con datos ficticios):** [run 45804113096](https://github.com/josegude-ux/Mi-Bowling/actions/runs/45804113096), job `torneo-ficticio` SUCCESS. Confirmados: arranque sábado pista 17, avance +2 editable (19 corregida a 21), anotación de 6 partidas, bloqueo 7.ª, domingo pendiente de pista, domingo con pista 13 ficticia, 7/12 y recarga sin duplicados. Detectado y corregido previamente un defecto de comillas en el `onclick` de creación, seguido de ajuste del test para simular elección inicial de modo del registro compacto.
+- **PASS WebKit / motor Safari (automatizado en runner Ubuntu, datos ficticios):** [run 45804376389](https://github.com/josegude-ux/Mi-Bowling/actions/runs/45804376389), job `torneo-ficticio` SUCCESS; recorrido completo equivalente 6+6, pistas confirmables, jornada domingo, reinicio y persistencia sin duplicados.
+- **PASS integridad:** versión v2 y SHA-256 de los recursos del Service Worker, incluyendo el nuevo módulo, registro compacto e índice, en ambos workflows.
+- **Límite de la prueba:** los resultados automatizados NO son homologación en Safari de un iPhone físico; esta queda pendiente.
 - Workflow de LAB `.github/workflows/parejas-2026-registro-lab.yml`, sin secretos, sin publicación, sin acceso a la base remota.
 - **NO EJECUTADA:** homologación Safari de iPhone físico, protección efectiva de las 12 partidas reales en dispositivo, comparación con backups reales.
-- **NO GO publicación** hasta homologación mínima automatizada y autorización de publicar específicamente esta función.
+- **GO de LAB:** pruebas automatizadas Chromium y WebKit aprobadas sobre registros exclusivamente ficticios.
+- **NO GO publicación:** queda pendiente autorización específica para publicar esta función, plan de rollback del despliegue y, para homologación completa, validación con Safari en iPhone físico; jamás dar por probadas fotos y partidas reales en el runner.
 
 ## Límites funcionales
 - El protocolo oficial no indica la pista inicial del domingo ni el límite/vuelta de los desplazamientos; el usuario debe confirmar al cambiar de pista.
