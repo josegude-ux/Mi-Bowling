@@ -1,0 +1,55 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const P=require('../integracion/parejas-2026-planificador.js');
+assert.deepEqual(P.DAYS,['2026-11-28','2026-11-29']);
+assert.equal(P.MAX_GAMES,6);
+let n=0;
+const make=()=>String(++n);
+const sat=P.draft('2026-11-28',undefined,make);
+assert.equal(sat.type,'oficial');
+assert.deepEqual(sat.games[0].pair,[17,18]);
+assert.equal(sat.games[0].startLane,17);
+assert.equal(P.dayOf(sat),'2026-11-28');
+assert.equal(P.suggestedNextLane(sat.games[0]),19);
+assert.deepEqual(P.nextConfig(sat,undefined),{pair:[19,20],startLane:19});
+assert.deepEqual(P.nextConfig(sat,'20'),{pair:[19,20],startLane:20});
+assert.throws(()=>P.nextConfig(sat,''),/CONFIRMAR_PISTA_SIGUIENTE/);
+assert.throws(()=>P.draft('2026-11-29','',make),/PISTA_INICIAL_PENDIENTE/);
+assert.throws(()=>P.draft('2026-11-30',17,make),/DIA_NO_PERMITIDO/);
+const sun=P.draft('2026-11-29',13,make);
+assert.equal(sun.games[0].startLane,13);
+assert.deepEqual(sun.games[0].pair,[13,14]);
+assert.equal(P.sameDay([sat,sun],'2026-11-28'),sat);
+assert.equal(P.sameDay([sat,sun],'2026-11-29'),sun);
+assert.equal(P.dayOf({...sat,type:'entrenamiento'}),null);
+assert.equal(P.dayOf({...sat,notes:sat.notes.replace(P.marker('2026-11-28'),'') }),null);
+assert.equal(P.dayOf({...sat,date:'2026-11-29'}),null);
+for(let i=1;i<6;i++){
+ const prev=sat.games.at(-1),cfg=P.nextConfig(sat);
+ sat.games.push({id:make(),includeStats:true,rolls:[],segments:[],pair:cfg.pair,startLane:cfg.startLane,finalOnly:150+i});
+}
+assert.equal(sat.games.length,6);
+assert.deepEqual(sat.games.map(g=>g.startLane),[17,19,21,23,25,27]);
+assert.equal(P.canNext(sat),false);
+assert.throws(()=>P.nextConfig(sat,29),/SERIE_COMPLETA/);
+assert.equal(P.summary(sat,g=>Number.isInteger(g.finalOnly),g=>g.finalOnly).played,5);
+assert.equal(P.summary(sat,g=>Number.isInteger(g.finalOnly),g=>g.finalOnly).remaining,1);
+sat.games[0].finalOnly=200;
+assert.equal(P.summary(sat,g=>Number.isInteger(g.finalOnly),g=>g.finalOnly).played,6);
+const index=read('index.html'),app=read('releases/catalogo-local-f1-fotos1/app.js'),compact=read('integracion/registro-compacto.js'),sw=read('sw.js');
+assert(index.includes('integracion/parejas-2026-planificador.js'));
+assert(app.includes('abrirTorneoParejas'));
+assert(app.includes('P.nextConfig(s,el.value)'));
+assert(app.includes(`JSON.stringify(day).replace(/"/g,'&quot;')`),'Botón sábado/domingo debe usar HTML entity para comillas');
+assert(app.includes(`JSON.stringify(s.id).replace(/"/g,'&quot;')`),'Botón continuar debe usar HTML entity para comillas');
+assert(compact.includes('rc-tournament-next-lane'));
+assert(compact.includes('finishTournament()'));
+const maps=sw.match(/const HASHES=(\{[\s\S]*?\});/);assert(maps);
+const hashes=JSON.parse(maps[1]);
+for(const p of ['index.html','integracion/parejas-2026-planificador.js','integracion/registro-compacto.js','releases/catalogo-local-f1-fotos1/app.js']){
+ const hash=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,p))).digest('hex');
+ assert.equal(hashes['./'+p],hash,'Hash '+p);
+}
+assert.equal(hashes['./'],hashes['./index.html']);
+console.log('PAREJAS-2026-DOMAIN PASS · sábado y domingo 6+6, +2 editables, sin duplicación ni séptima partida, 5 SHA');
