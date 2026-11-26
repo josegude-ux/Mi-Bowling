@@ -33,9 +33,9 @@ jobs:
           node --check tests/parejas-2026-planificador.test.cjs
           node --check tests/parejas-2026-registro-browser.cjs
           node tests/parejas-2026-planificador.test.cjs
-      - name: Chromium aislado
+      - name: WebKit aislado para Safari iPhone emulado
         run: |
           npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps chromium
-      - name: Anotar jornada ficticia 6+6 y recuperar tras recarga
-        run: node tests/parejas-2026-registro-browser.cjs
+          npx playwright install --with-deps webkit
+      - name: WebKit: anotar 6+6, cambios de pista y recarga
+        run: BOWLING_BROWSER=webkit node tests/parejas-2026-registro-browser.cjs
