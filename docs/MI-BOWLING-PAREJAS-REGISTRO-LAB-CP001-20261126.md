@@ -21,7 +21,7 @@
 
 ## Verificaciones
 - **PASS:** prueba de dominio `tests/parejas-2026-planificador.test.cjs` en workflow GitHub Actions (sintaxis y contratos).
-- **PENDIENTE DE EJECUCIÓN VERIFICADA:** `tests/parejas-2026-registro-browser.cjs` — Chromium auténtico sobre servidor localhost con registro ficticio completo, inicio sábado 17, cambio editable 19→21, 6/6, séptima bloqueada, domingo no creado sin pista, domingo pista 13 como ejemplo ficticio, persistencia tras recarga, no duplicados.
+- **FAIL pendiente de corrección:** caso Chromium `tests/parejas-2026-registro-browser.cjs`: una ejecución inicial agotó el tiempo al arrancar y otra alcanzó el asistente, pero agotó el tiempo al pasar de «Preparar sábado» al marcador (run 45800725564). Se ha incorporado inicialización ficticia y diagnóstico de navegación; el run 45801256218 aún está en curso, **sin adjudicar PASS**. La serie 6+6, pistas +2 editables, domingo, recuperación y no duplicados aún no están homologados en navegador real.
 - Workflow de LAB `.github/workflows/parejas-2026-registro-lab.yml`, sin secretos, sin publicación, sin acceso a la base remota.
 - **NO EJECUTADA:** homologación Safari de iPhone físico, protección efectiva de las 12 partidas reales en dispositivo, comparación con backups reales.
 - **NO GO publicación** hasta homologación mínima automatizada y autorización de publicar específicamente esta función.
