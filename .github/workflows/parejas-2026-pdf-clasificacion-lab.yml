@@ -1,0 +1,48 @@
+name: MI BOWLING - Parejas 2026 PDF clasificacion LAB
+on:
+  push:
+    branches: [lab/parejas-2026-pdf-clasificacion-20261126]
+    paths:
+      - .github/workflows/parejas-2026-pdf-clasificacion-lab.yml
+      - integracion/parejas-2026-clasificacion.js
+      - integracion/registro-compacto.js
+      - releases/catalogo-local-f1-fotos1/app.js
+      - index.html
+      - sw.js
+      - tests/parejas-2026-clasificacion.test.cjs
+      - tests/parejas-2026-pdf-browser.cjs
+      - tests/parejas-2026-fixture-pdf.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  clasificacion-ficticia:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis, migracion v2, pruebas puras y hashes
+        run: |
+          node --check integracion/parejas-2026-clasificacion.js
+          node --check integracion/registro-compacto.js
+          node --check releases/catalogo-local-f1-fotos1/app.js
+          node --check tests/parejas-2026-clasificacion.test.cjs
+          node --check tests/parejas-2026-pdf-browser.cjs
+          node tests/parejas-2026-clasificacion.test.cjs
+      - name: Instalar navegadores aislados para PDF y Safari
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: 'Chromium: PDF ficticio, revision, Lázaro y versiones'
+        run: node tests/parejas-2026-pdf-browser.cjs
+      - name: 'WebKit: PDF ficticio, revision, Lázaro y versiones'
+        run: BOWLING_BROWSER=webkit node tests/parejas-2026-pdf-browser.cjs
+      - name: 'Chromium: regresion previa 6+6 y cambio de pistas'
+        run: node tests/parejas-2026-registro-browser.cjs
+      - name: 'WebKit: regresion previa 6+6 y cambio de pistas'
+        run: BOWLING_BROWSER=webkit node tests/parejas-2026-registro-browser.cjs

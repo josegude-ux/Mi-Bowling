@@ -196,9 +196,12 @@ body.rc-open{overflow:hidden}
    const tourCompleted=!!torneoDay&&idx>=6;
    const nextLabel=tourCompleted?'Serie completa · Resumen':torneoDay?'Siguiente · partida '+(idx+1)+'/6':ligaReturn?'Guardar y volver a Liga':`Siguiente: partida ${idx+1}${s.leaguePlayer?', '+esc(s.leaguePlayer):''}`;
    const tourLane=torneoDay&&!tourCompleted?`<label class="rc-tourney-hint">Pista siguiente (propuesta +2; confirma o corrige)<br><input id="rc-tournament-next-lane" class="rc-tourney-lane" type="number" min="1" max="999" inputmode="numeric" value="${window.MiBowlingParejas2026Plan?.suggestedNextLane(g)||''}"></label>`:'';
+   const pairModel=window.MiBowlingParejasClasificacion;
+   const lazaroValue=torneoDay&&pairModel?(pairModel.cleanState(s.parejas2026)?.lazaro[idx-1]??null):null;
+   const tourPartner=torneoDay?'<div class="rc-tourney-hint" style="display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;max-width:100%"><label for="rc-lazaro-score">Lázaro</label><input id="rc-lazaro-score" class="rc-tourney-lane" type="number" min="0" max="300" style="width:72px;height:42px" inputmode="numeric" value="'+(lazaroValue===null?'':lazaroValue)+'"><button type="button" class="rc-save" style="height:42px;padding:0 10px" onclick="guardarLazaroPartidaActual()">Guardar</button><span>Pareja '+(lazaroValue===null?'—':(total+lazaroValue))+'</span></div>':'';
    const tourAction=tourCompleted?'MiBowlingRegistroCompacto.finishTournament()':'MiBowlingRegistroCompacto.nextGame()';
    body=`${isFinalOnly(g)?'':boardHtml(g,n)}<div class="rc-score"><span>Puntuación</span><b>${total}</b></div>${tabs}
-    <div class="rc-done">${party}${cheer?`<p class="rc-cheer" role="status">${cheer}</p>`:''}<div class="big">${total}</div>${tourLane}<button type="button" class="rc-share" onclick="shareSessionImage()">${ICON.share} Compartir</button>
+    <div class="rc-done">${party}${cheer?`<p class="rc-cheer" role="status">${cheer}</p>`:''}<div class="big">${total}</div>${tourPartner}${tourLane}<button type="button" class="rc-share" onclick="shareSessionImage()">${ICON.share} Compartir</button>
     ${isFinalOnly(g)?'<p class="rc-hint">Partida guardada solo con la puntuación final.</p>':'<p class="rc-hint">Toca un frame de arriba para corregirlo.</p>'}
     ${hideTip||isFinalOnly(g)?'':`<div class="rc-tip"><div><h3>¿Te equivocaste?</h3><p>Toca cualquier frame de la hoja para anotarlo de nuevo.</p></div><button type="button" aria-label="Cerrar aviso" onclick="MiBowlingRegistroCompacto.tip()">✕</button></div>`}</div>
     <div class="rc-foot">${undoBtn}<button type="button" class="rc-submit" id="rc-next" onclick="${tourAction}">${nextLabel}</button></div>`;
