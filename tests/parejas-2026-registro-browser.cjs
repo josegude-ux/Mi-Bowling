@@ -32,7 +32,10 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#parejas-lane-2026-11-28').inputValue(),'17');
   assert.equal(await page.locator('#parejas-lane-2026-11-29').inputValue(),'');
   await page.getByRole('button',{name:'Preparar sábado'}).click();
-  await page.waitForFunction(()=>document.querySelector('.rc-root')||document.querySelector('.registry-v4'),{timeout:12000});
+  await page.waitForTimeout(600);
+  const launchDiag=await page.evaluate(()=>({tab:typeof tab==='undefined'?'undefined':tab,active:typeof activeId==='undefined'?'undefined':activeId,sessions:typeof db==='undefined'?'undefined':db.sessions?.length,blocked:document.querySelector('#f1-blocked')?.innerText,body:document.querySelector('#app')?.innerText?.slice(0,360),compact:!!document.querySelector('.rc-root'),registry:!!document.querySelector('.registry-v4')}));
+  console.log('TORNEO_LAUNCH_DIAG',JSON.stringify(launchDiag),'ERRORS',errors.join(' | '),'DIALOGS',warnings.join(' | '));
+  await page.waitForFunction(()=>!!document.querySelector('.rc-root')||!!document.querySelector('.registry-v4'),null,{timeout:4500});
   let state=await read();
   assert.equal(state.sessions.length,1);
   assert.equal(state.sessions[0].type,'oficial');
