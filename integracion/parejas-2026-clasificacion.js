@@ -88,11 +88,21 @@
    if(doc.numPages<1||doc.numPages>MAX_PAGES)throw Error('PAGINAS_FUERA_LIMITE');
    const lines=[];
    for(let p=1;p<=doc.numPages;p++){
-    const page=await doc.getPage(p),text=await page.getTextContent(),groups=[];
-    for(const item of text.items){if(!item.str||!item.str.trim()||!item.transform)continue;
-     const y=item.transform[5],x=item.transform[4];let row=groups.find(r=>Math.abs(r.y-y)<3);
-     if(!row)groups.push(row={y,items:[]});row.items.push({x,value:item.str});
-    }
+    const page=await doc.getPage(p),groups=[];
+    // WebKit (Safari) puede no exponer ReadableStream[Symbol.asyncIterator].
+    // pdf.js getTextContent() usa for-await interno y falla en esas versiones.
+    // Leer explícitamente con getReader() evita tocar pdf.js y conserva el orden.
+    const reader=page.streamTextContent().getReader();
+    try{
+     for(;;){
+      const part=await reader.read();if(part.done)break;
+      for(const item of part.value?.items||[]){
+       if(!item.str||!item.str.trim()||!item.transform)continue;
+       const y=item.transform[5],x=item.transform[4];let row=groups.find(r=>Math.abs(r.y-y)<3);
+       if(!row)groups.push(row={y,items:[]});row.items.push({x,value:item.str});
+      }
+     }
+    }finally{try{reader.releaseLock()}catch(_){}}
     groups.sort((a,b)=>b.y-a.y).forEach(r=>lines.push(r.items.sort((a,b)=>a.x-b.x).map(t=>t.value).join(' ')));
    }
    if(lines.length===0)throw Error('PDF_SIN_CAPA_TEXTO');
