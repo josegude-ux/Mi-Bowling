@@ -16,6 +16,7 @@ const emptyDB=()=>({version:2,hand:'diestro',balls:[],patterns:[],sessions:[]});
 function migrate(data){const o=emptyDB();if(!data||typeof data!=='object')return o;o.hand=data.hand==='zurdo'?'zurdo':'diestro';o.balls=Array.isArray(data.balls)?data.balls.filter(b=>b&&b.id):[];o.patterns=Array.isArray(data.patterns)?data.patterns.filter(p=>p&&p.id).map(p=>({...p})):[];
  o.sessions=(Array.isArray(data.sessions)?data.sessions:[]).filter(s=>s&&Array.isArray(s.games)).map(s=>({
  id:s.id||uid(),type:s.type==='oficial'?'oficial':'entrenamiento',date:s.date||today(),title:s.title||'',venue:s.venue||'',notes:s.notes||'',pattern:s.pattern||'',patternId:s.patternId||'',patternNotes:s.patternNotes||'',competition:s.competition||'',leagueOther:!!s.leagueOther,leaguePlayer:s.leaguePlayer||'',goal:s.type==='oficial'?null:(s.goal&&typeof s.goal==='object'?{kind:String(s.goal.kind||''),target:Number(s.goal.target)||0}:null),
+ ...(s.parejas2026&&window.MiBowlingParejasClasificacion?{parejas2026:window.MiBowlingParejasClasificacion.cleanState(s.parejas2026)}:{}),
  currentBallId:s.currentBallId||'',...(typeof s.spareBallId==='string'&&s.spareBallId?{spareBallId:s.spareBallId}:{}),currentLine:cleanLine(s.currentLine),lane:intLane(s.lane)||null,
  games:s.games.map(g=>({id:g.id||uid(),...(validFinalOnly(g.finalOnly)?{finalOnly:g.finalOnly}:{}),pair:Array.isArray(g.pair)&&g.pair.length===2?g.pair.map(Number):null,startLane:intLane(g.startLane)||null,
  includeStats:g.includeStats!==false,segments:Array.isArray(g.segments)?g.segments.filter(e=>e&&e.pair&&e.fromFrame).map(e=>({fromFrame:+e.fromFrame,pair:e.pair.map(Number),startLane:+e.startLane})):[],
@@ -244,7 +245,7 @@ function uiLineIcon(key){return `<svg class="ui-line-icon" viewBox="0 0 24 24" w
 function uiMetricIcon(icon,label){const s=String(label).toLowerCase();if(s.includes('strike'))return uiLineIcon('zap');if(s.includes('spare')||s.includes('clean')||s.includes('resultado'))return uiLineIcon('check');if(s.includes('mejor'))return uiLineIcon('trophy');if(s.includes('partidas'))return uiLineIcon('list');if(s.includes('media'))return uiLineIcon('bars');if(s.includes('falta'))return uiLineIcon('flag');return uiLineIcon('target');}
 function nav(){const names=[['inicio',uiLineIcon('home'),'Inicio'],['historial',uiLineIcon('list'),'Partidas'],['nueva',uiLineIcon('plus'),'Nueva'],['estadisticas',uiLineIcon('bars'),'Estadísticas'],['calendario',uiLineIcon('calendar'),'Calendario']];$('bottom-nav').innerHTML=names.map(([t,i,v])=>`<button type="button" aria-label="${v}" ${tab===t||tab==='registro'&&t==='nueva'?'aria-current="page"':''} class="${tab===t||tab==='registro'&&t==='nueva'?'active':''} ${t==='nueva'?'fab':''}" onclick="go('${t}')"><span class="nav-icon">${i}</span>${v}</button>`).join('')}
 function go(t){if(t==='bolas')arsenalPanel='list';if(t==='bolas'&&!ballPickerOpening){ballPickTarget=BALL_SELECTION_NEXT;ballPickReturn='inicio';ballPickPins=null;}tab=t;editPair=false;showNext=false;noticeText='';selection=[];render();window.scrollTo({top:0,behavior:'instant'})}
-function render(){const sp=document.getElementById('mb-splash');if(sp&&!sp.classList.contains('gone')){sp.classList.add('gone');setTimeout(()=>sp.remove(),600)}window.MiBowlingRegistroCompacto?.syncBody(false);document.body.classList.toggle('home-screen',tab==='inicio');document.body.classList.toggle('registry-screen',tab==='registro');nav();$('app').innerHTML=tab==='inicio'?home():tab==='nueva'?newSessionView():tab==='registro'?registry():tab==='historial'?history():tab==='detalle'?detail():tab==='estadisticas'?stats():tab==='bolas'?ballsView():tab==='calendario'?calendarView():tab==='patrones'?patternsView():tab==='liga'?ligaView():tab==='federacion'?federacionView():settings();if(tab==='estadisticas'){renderCharts();uiRevealStatsPane(false);}if(tab==='liga')ligaShowFrame();if(tab==='nueva')updateSessionFields();if(tab==='registro'){const strip=document.querySelector('.score-strip'),curr=strip?.querySelector('.frame-cell.current');if(curr)strip.scrollLeft=Math.max(0,curr.offsetLeft-strip.offsetLeft-strip.clientWidth/2+curr.clientWidth/2)}}
+function render(){const sp=document.getElementById('mb-splash');if(sp&&!sp.classList.contains('gone')){sp.classList.add('gone');setTimeout(()=>sp.remove(),600)}window.MiBowlingRegistroCompacto?.syncBody(false);document.body.classList.toggle('home-screen',tab==='inicio');document.body.classList.toggle('registry-screen',tab==='registro');nav();$('app').innerHTML=tab==='inicio'?home():tab==='nueva'?newSessionView():tab==='registro'?registry():tab==='historial'?history():tab==='detalle'?detail():tab==='estadisticas'?stats():tab==='bolas'?ballsView():tab==='calendario'?calendarView():tab==='patrones'?patternsView():tab==='liga'?ligaView():tab==='federacion'?federacionView():tab==='parejas-pdf'?clasificacionParejasPdfView():settings();if(tab==='estadisticas'){renderCharts();uiRevealStatsPane(false);}if(tab==='liga')ligaShowFrame();if(tab==='nueva')updateSessionFields();if(tab==='registro'){const strip=document.querySelector('.score-strip'),curr=strip?.querySelector('.frame-cell.current');if(curr)strip.scrollLeft=Math.max(0,curr.offsetLeft-strip.offsetLeft-strip.clientWidth/2+curr.clientWidth/2)}}
 function head(title,sub,extra=''){return `<div class="section-head"><div><h1>${esc(title)}</h1>${sub?`<p>${esc(sub)}</p>`:''}</div>${extra}</div>`}
 function metrics(a){return [{icon:'◉',label:'Media',value:a.totals.length?fmt(a.avg):'—'},{icon:'▥',label:'Partidas',value:a.totals.length},{icon:'♛',label:'Mejor partida',value:a.totals.length?Math.max(...a.totals):'—'},{icon:'✦',label:'Strikes',value:p100(a.strikes.length,a.first.length)},{icon:'✓',label:'Spare',value:p100(a.spare,a.opportunities.length)}]}
 function tile(icon,label,value,detail=''){return `<div class="stat-tile"><div class="label"><span>${uiMetricIcon(icon,label)}</span> ${label}</div><div class="value${value==='—'?' ui-no-value':''}">${value}</div>${detail?`<div class="detail">${detail}</div>`:''}</div>`}
@@ -402,15 +403,157 @@ function torneoParejasCard(){
   detail.push('<div class="card" style="padding:12px;margin:10px 0"><h3>'+P.TITLE[day]+'</h3><p class="hint">'+(v?(v.played+'/6 · '+v.total+' bolos · media '+(v.average===null?'—':fmt(v.average))):'6 partidas pendientes')+'</p>');
   if(s)detail.push('<button class="btn primary block" type="button" onclick="openSession('+JSON.stringify(s.id).replace(/"/g,'&quot;')+')">Continuar jornada →</button>');
   else detail.push('<label class="field">Pista inicial '+(day==='2026-11-28'?'(oficial 17)':'(pendiente de asignar)')+'</label><input class="input" type="number" min="1" max="999" id="parejas-lane-'+day+'" value="'+(day==='2026-11-28'?'17':'')+'" inputmode="numeric"><button class="btn primary block mt12" type="button" onclick="iniciarTorneoParejas('+JSON.stringify(day).replace(/"/g,'&quot;')+')">Preparar '+(day==='2026-11-28'?'sábado':'domingo')+' →</button>');
+   if(s)detail.push(torneoLazaroPanel(day,s));
   detail.push('</div>');
  }
  const n=totals.reduce((x,v)=>x+v.played,0),total=totals.reduce((x,v)=>x+v.total,0);
  detail.splice(1,0,'<p class="hint">CELTA XUNTA · José Gude / Lázaro Galguera · X-Madrid · Kegel IKON, 41 pies y 26,5 ml. Solo se registran tus partidas; tus estadísticas oficiales se mantienen en el sistema actual.</p><p class="hint">Acumulado: '+n+'/12 · '+total+' bolos'+(n?' · media '+fmt(total/n):'')+'</p>');
  detail.push('<p class="hint">La circular ordena avanzar 2 pistas tras cada partida, no 2 pares. Las propuestas de pista son editables: no se conoce el límite ni el retorno. El domingo no tiene pista inicial confirmada. CELTA XUNTA aparece con turno 0 pese al encabezado 09:00; confirmar con la organización.</p>');
- detail.push('<p class="hint">La Cutting Edge Solid está en reparación; no se asigna ni altera automáticamente tu arsenal.</p><button class="btn outline block" type="button" onclick="salirTorneoParejas()">Registrar otra competición</button></details>');
+ detail.push('<p class="hint">La Cutting Edge Solid está en reparación; no se asigna ni altera automáticamente tu arsenal.</p><button type="button" class="btn primary block" onclick="abrirClasificacionParejasPdf()">Clasificación general · Importar PDF</button><button class="btn outline block" type="button" onclick="salirTorneoParejas()">Registrar otra competición</button></details>');
  return detail.join('');
 }
 function salirTorneoParejas(){competitionFormat='habitual';render()}
+
+/* Clasificación y puntuación del compañero: solo sesiones FEB 6249.
+ * Todos los cambios se guardan por el escritor exclusivo y journal ya existente.
+ * La PWA no guarda el PDF binario ni envía clasificaciones a un endpoint.
+ */
+let parejasPdfDraft=null,parejasPdfError='',parejasPdfBusy=false;
+function torneoClasificacion(){return window.MiBowlingParejasClasificacion||null}
+function sesionesParejas2026(){
+ const P=torneoPlan();return P?P.DAYS.map(d=>P.sameDay(db.sessions,d)).filter(Boolean):[];
+}
+function rankingSnapshots2026(){
+ const C=torneoClasificacion();if(!C)return[];
+ return sesionesParejas2026().flatMap(s=>(C.cleanState(s.parejas2026)?.rankings||[]))
+  .sort((a,b)=>a.day.localeCompare(b.day)||a.game-b.game||a.version-b.version);
+}
+function torneoLazaroPanel(day,s){
+ const C=torneoClasificacion();if(!C)return '<p class="hint">Marcador de pareja no disponible.</p>';
+ const state=C.cleanState(s.parejas2026)||C.blank(),rows=C.pairs([s],complete,score).find(x=>x.day===day)?.rows||[];
+ let html='<details style="margin:8px 0"><summary>Puntuaciones de Lázaro y total de pareja</summary><div style="overflow-x:auto"><table class="table" style="width:100%"><thead><tr><th>Partida</th><th>José</th><th>Lázaro</th><th>Total pareja</th><th></th></tr></thead><tbody>';
+ for(let i=0;i<6;i++){
+  const row=rows[i],mine=row?.jose??null,other=state.lazaro[i],total=mine!==null&&other!==null?mine+other:null;
+  const inputId='parejas-score-'+day+'-'+i;
+  html+='<tr><td>'+(i+1)+'</td><td>'+(mine===null?'—':mine)+'</td><td><input id="'+inputId+'" class="input" aria-label="Lázaro partida '+(i+1)+'" type="number" min="0" max="300" inputmode="numeric" style="width:75px;min-width:66px" value="'+(other===null?'':other)+'"></td><td>'+(total===null?'—':total)+'</td><td><button type="button" class="btn outline" onclick="guardarLazaroParejas(\''+day+'\','+i+')">Guardar</button></td></tr>';
+ }
+ html+='</tbody></table></div><p class="hint">Solo tus partidas modifican tus estadísticas personales. La puntuación de Lázaro se conserva aparte; para corregirla introduce otro valor. Para dejarla sin resultado, borra el campo y guarda.</p></details>';
+ return html;
+}
+function escribirTorneo2026(sessionId,patch){
+ const existing=db.sessions.find(s=>s.id===sessionId);
+ if(!existing||!torneoPlan()?.dayOf(existing))throw Error('JORNADA_NO_EXISTENTE');
+ const copy=JSON.parse(JSON.stringify(db)),target=copy.sessions.find(s=>s.id===sessionId);
+ const C=torneoClasificacion();if(!C)throw Error('MODULO_NO_CARGADO');
+ target.parejas2026=patch(C.cleanState(target.parejas2026)||C.blank(),C);
+ // La copia solo sustituye db tras confirmar persistencia con el lock/journal actual.
+ window.MiBowlingEscritura.write(KEY,JSON.stringify(copy));
+ db=copy;saveError=false;window.MiBowlingNube?.programar();
+ return target;
+}
+function guardarLazaroParejas(day,index){
+ const P=torneoPlan(),C=torneoClasificacion(),s=P?.sameDay(db.sessions,day);
+ if(!s||!C)return alert('Primero prepara la jornada.');
+ const el=$('parejas-score-'+day+'-'+index),raw=el?.value?.trim();
+ if(raw===undefined)return alert('No se ha encontrado la puntuación a guardar.');
+ const v=raw===''?null:Number(raw);
+ try{
+  escribirTorneo2026(s.id,state=>C.updateLazaro(state,index,v));
+  render();
+ }catch(e){alert(e.message==='PUNTUACION_0_300'?'La puntuación debe ser un entero entre 0 y 300.':'No se ha guardado el resultado de Lázaro. Comprueba el espacio disponible y el estado de las copias.')}
+}
+function guardarLazaroPartidaActual(){
+ const s=session(),C=torneoClasificacion(),P=torneoPlan();
+ if(!s||!P?.dayOf(s)||!C)return;
+ const index=s.games.length-1,v=$('rc-lazaro-score')?.value?.trim();
+ if(v===undefined)return;
+ try{
+  escribirTorneo2026(s.id,st=>C.updateLazaro(st,index,v===''?null:Number(v)));
+  render();
+ }catch(_){alert('No se ha guardado la puntuación de Lázaro. Comprueba la cifra (0–300) y el espacio disponible.')}
+}
+function abrirClasificacionParejasPdf(){parejasPdfError='';go('parejas-pdf')}
+function clasificacionParejasPdfView(){
+ const C=torneoClasificacion(),P=torneoPlan();
+ if(!C||!P)return head('Clasificaciones del campeonato','Módulo PDF no cargado');
+ const sessions=sesionesParejas2026(),snaps=rankingSnapshots2026();
+ let html=head('Clasificación oficial · Parejas 2026','PDF local y revisión antes de guardar; resultados de CELTA XUNTA separados de tus partidas.');
+ html+='<section class="card"><p>Importa el PDF que entregue la organización después de cada cambio de pistas. Solo se leen PDFs con texto. No se envían ni se guardan archivos originales; se conserva el contenido que tú confirmes.</p>';
+ html+='<button class="btn outline" onclick="abrirTorneoParejas()">← Resumen del torneo</button>';
+ html+='<label class="field" for="parejas-pdf-file">Seleccionar clasificación PDF del iPhone</label><input class="input" id="parejas-pdf-file" type="file" accept=".pdf,application/pdf" onchange="leerClasificacionParejasPdf(this)">';
+ if(parejasPdfBusy)html+='<p role="status">Leyendo PDF local…</p>';
+ if(parejasPdfError)html+='<p role="alert" class="hint">'+esc(parejasPdfError)+'</p>';
+ html+='</section>';
+ if(parejasPdfDraft){
+  const d=parejasPdfDraft;
+  html+='<section class="card"><h2>Revisión antes de guardar</h2><p class="hint">Archivo: '+esc(d.name)+' · '+d.rows.length+' filas reconocidas. Corrige todos los datos necesarios; las categorías y puntuaciones no se completan automáticamente si faltan.</p>';
+  html+='<div class="form-grid"><label class="field">Jornada<select class="input" id="parejas-pdf-day">'+P.DAYS.map(x=>'<option value="'+x+'" '+(x===d.day?'selected':'')+'>'+esc(P.TITLE[x])+'</option>').join('')+'</select></label>';
+  html+='<label class="field">Clasificación de nuestra categoría<select class="input" id="parejas-pdf-category">'+C.CATEGORIES.map(x=>'<option value="'+x+'" '+(x===d.category?'selected':'')+'>'+x+' masculina</option>').join('')+'</select></label>';
+  html+='<label class="field">Después de la partida<select class="input" id="parejas-pdf-game">'+Array.from({length:6},(_,i)=>'<option value="'+(i+1)+'" '+(i+1===d.game?'selected':'')+'>'+(i+1)+'</option>').join('')+'</select></label></div>';
+  html+='<div style="overflow-x:auto"><table class="table" style="min-width:540px"><thead><tr><th>Incl.</th><th>Pos.</th><th>Pareja / equipo</th><th>Cat.</th><th>Bolos acumulados</th></tr></thead><tbody>';
+  d.rows.forEach((x,i)=>{
+   html+='<tr data-parejas-pdf-row="'+i+'"><td><input type="checkbox" data-field="include" checked aria-label="Incluir fila '+(i+1)+'"></td>';
+   html+='<td><input class="input" data-field="pos" type="number" min="1" max="100" value="'+x.pos+'" style="width:65px"></td>';
+   html+='<td><input class="input" data-field="team" maxlength="110" value="'+esc(x.team)+'" style="min-width:150px"></td>';
+   html+='<td><select class="input" data-field="cat"><option value="">Revisar</option>'+C.CATEGORIES.map(k=>'<option value="'+k+'" '+(x.cat===k?'selected':'')+'>'+k+'</option>').join('')+'</select></td>';
+   html+='<td><input class="input" data-field="bolos" type="number" min="0" max="7200" value="'+x.bolos+'" style="width:95px"></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  html+='<label class="field"><input id="parejas-pdf-reviewed" type="checkbox"> He comprobado la categoría, el orden, los bolos y que la fila CELTA XUNTA corresponde a nuestra pareja.</label>';
+  html+='<button type="button" class="btn primary block" onclick="guardarClasificacionParejasPdf()">Guardar esta versión revisada</button></section>';
+ }
+ const categories=C.CATEGORIES;
+ for(const cat of categories){
+  const all=snaps.filter(x=>x.category===cat);
+  if(!all.length)continue;
+  const latest=all.at(-1),view=C.rankingView(snaps,cat,latest.day,latest.game);
+  html+='<section class="card"><h2>Clasificación '+cat+' · '+all.length+' versión(es)</h2>';
+  if(view)html+='<p><strong>CELTA XUNTA · '+view.me.pos+'.ª posición · '+view.me.bolos+' bolos</strong></p><p class="hint">Respecto al líder: '+(view.gapLeader===null?'—':view.gapLeader)+' bolos · al 3.º: '+(view.gapPodium===null?'—':view.gapPodium)+' · al anterior: '+(view.gapAbove===null?'—':view.gapAbove)+' · cambio de puestos: '+(view.change===null?'—':(view.change>0?'+':'')+view.change)+'. Estas diferencias reflejan únicamente el PDF revisado, no resultados en directo.</p>';
+  for(const sn of all.slice().reverse())html+='<p class="hint">'+esc(P.TITLE[sn.day])+' tras partida '+sn.game+' · versión '+sn.version+' · '+esc(sn.fileName)+' · '+sn.rows.length+' filas confirmadas</p>';
+  html+='</section>';
+ }
+ if(!sessions.length)html+='<p class="hint">Para guardar la primera clasificación, prepara antes la jornada correspondiente desde el torneo.</p>';
+ return html;
+}
+async function leerClasificacionParejasPdf(input){
+ const file=input?.files?.[0],C=torneoClasificacion(),P=torneoPlan();
+ parejasPdfDraft=null;parejasPdfError='';if(!file||!C||!P)return;
+ parejasPdfBusy=true;render();
+ try{
+  if(file.size>C.MAX_PDF_BYTES||file.size<8)throw Error('PDF demasiado grande o vacío (máximo 8 MB).');
+  const digestArray=new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer()));
+  const digest=Array.from(digestArray).map(x=>x.toString(16).padStart(2,'0')).join('');
+  const lines=await C.pdfLines(file,new URL('./',document.baseURI).href);
+  const parsed=C.parseTextLines(lines);
+  if(parsed.rows.length<2)throw Error('No se reconoció una tabla de clasificación. El PDF puede ser escaneado o tener otro formato; no se guardará ningún dato.');
+  const active=P.DAYS.find(d=>P.sameDay(db.sessions,d))||P.DAYS[0];
+  const used=P.sameDay(db.sessions,active);
+  parejasPdfDraft={name:String(file.name||'clasificacion.pdf').slice(0,150),digest,day:active,game:Math.max(1,Math.min(6,used?.games?.filter(complete)?.length||1)),category:'2ª',rows:parsed.rows};
+ }catch(err){
+  parejasPdfError=err?.message==='PDF_SIN_CAPA_TEXTO'?'Este PDF no contiene texto seleccionable. Solicita a la organización un PDF original con texto. No se ha guardado nada.':String(err?.message||'No se puede leer el PDF');
+ }finally{parejasPdfBusy=false;render()}
+}
+function guardarClasificacionParejasPdf(){
+ const C=torneoClasificacion(),P=torneoPlan(),d=parejasPdfDraft;
+ if(!C||!P||!d)return;
+ if(!$('parejas-pdf-reviewed')?.checked)return alert('Marca la revisión después de comprobar todas las filas.');
+ const day=$('parejas-pdf-day')?.value,game=Number($('parejas-pdf-game')?.value),cat=$('parejas-pdf-category')?.value;
+ const s=P.sameDay(db.sessions,day);
+ if(!s)return alert('Primero prepara esa jornada del torneo; no se creará una sesión automáticamente.');
+ const rows=Array.from(document.querySelectorAll('[data-parejas-pdf-row]')).filter(row=>row.querySelector('[data-field="include"]')?.checked).map(row=>({
+  pos:Number(row.querySelector('[data-field="pos"]')?.value),team:row.querySelector('[data-field="team"]')?.value||'',
+  cat:row.querySelector('[data-field="cat"]')?.value||null,bolos:Number(row.querySelector('[data-field="bolos"]')?.value)
+ }));
+ try{
+  C.validateRows(rows,cat);
+  escribirTorneo2026(s.id,state=>C.addSnapshot(state,{schema:1,day,game,category:cat,digest:d.digest,fileName:d.name,savedAt:new Date().toISOString(),rows}));
+  parejasPdfDraft=null;parejasPdfError='';render();
+ }catch(e){
+  const messages={CATEGORIA_OBLIGATORIA:'Selecciona 2.ª o 3.ª masculina.',IDENTIFICAR_CELTA_XUNTA:'Confirma exactamente una fila CELTA XUNTA en nuestra categoría.',CATEGORIA_INCOMPLETA:'No hay suficientes equipos identificados en esa categoría.',POSICION_DUPLICADA:'Hay posiciones duplicadas dentro de una categoría.',REVISAR_FILA:'Revisa posiciones, categorías y bolos (0–7200).',PDF_YA_GUARDADO:'Este mismo PDF ya está registrado para esta jornada y partida.',LIMITE_VERSIONES:'Se alcanzó el límite de versiones del torneo.'};
+  alert(messages[e.message]||'No se pudo guardar de forma segura. No se ha modificado el registro anterior.');
+ }
+}
+
 function iniciarTorneoParejas(day){
  const P=torneoPlan();if(!P)return;
  const saved=P.sameDay(db.sessions,day);if(saved){activeId=saved.id;go('registro');return}
