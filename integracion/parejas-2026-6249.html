@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#111115">
+<title>MI BOWLING LAB · Circular 6249 · Parejas 2026</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#111115;color:#f7f6f4}
+*{box-sizing:border-box}body{margin:0}main{max-width:980px;padding:16px max(14px,env(safe-area-inset-right)) 32px max(14px,env(safe-area-inset-left));margin:auto}
+h1{font-size:clamp(22px,5vw,30px);line-height:1.13;margin:6px 0 12px}h2{font-size:18px;margin:0 0 12px}
+small,.sub{color:#bebcc5}a{color:#ff916b}.tag{display:inline-block;padding:5px 9px;border-radius:999px;background:#40271f;color:#ffb08c;font-size:12px;font-weight:700}
+.panel{background:#1b1b20;border:1px solid #36353d;border-radius:16px;padding:15px;margin-top:12px}
+form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}label{display:grid;gap:6px;font-weight:600;font-size:14px}select,input{width:100%;padding:12px;border:1px solid #66616a;border-radius:12px;color:#fff;background:#292930;font:inherit}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}a.back{text-decoration:none;font-size:14px}
+.metric{display:inline-flex;flex-direction:column;background:#2c2b31;border-radius:10px;padding:9px 12px;margin:3px 5px 3px 0}.metric b{font-size:19px}.metric small{font-size:11px}.hint{color:#f3c5ab;border-left:3px solid #ef7b43;padding:8px 12px;background:#32241e;border-radius:4px;margin:12px 0}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 8px;border-bottom:1px solid #3b3a42;text-align:left;vertical-align:top}th{position:sticky;top:0;background:#25242b;z-index:1}tbody tr:nth-child(even){background:#222127}tbody tr.spotlight{background:#55301e;color:#fff}td.num{font-variant-numeric:tabular-nums}
+#status{margin:8px 0;font-size:14px}footer{font-size:12px;color:#a9a8ae;line-height:1.55;margin-top:16px}
+@media(max-width:540px){form{grid-template-columns:1fr}th,td{padding:7px 6px;font-size:12px}.table-wrap{margin:0 -6px}.hide-mobile{display:none}}
+</style>
+</head>
+<body><main>
+<header><span class="tag">MI BOWLING · LAB · OFICIAL</span><a class="back" href="../index.html">Volver a MI BOWLING</a></header>
+<h1>Campeonato de España de Parejas 2026</h1>
+<p class="sub">Orden de juego y patrones · Federación Española de Bolos, Circular 6249 (26/11/2026). Esta pantalla es informativa: no crea partidas, no modifica inscripciones ni lee tus datos personales.</p>
+<section class="panel" aria-label="Filtro"><form>
+<label>Categoría<select id="category" aria-label="Categoría del campeonato">
+<option value="masculino_2_3">2.ª y 3.ª masculina</option>
+<option value="masculino_absoluto">Absoluto masculino</option>
+<option value="masculino_senior">Sénior masculino</option>
+<option value="femenino">Femenino</option>
+</select></label>
+<label>Buscar equipo, jugador, pista o código<input id="search" type="search" autocomplete="off" placeholder="Ej. CELTA XUNTA, ES 0147, 17"></label>
+</form></section>
+<section class="panel" aria-labelledby="details-title"><h2 id="details-title">Datos de la categoría</h2><div id="details"></div></section>
+<section class="panel" aria-labelledby="roster-title"><h2 id="roster-title">Orden de juego</h2><p id="status" role="status" aria-live="polite">Cargando datos oficiales…</p><div class="table-wrap"><table><thead><tr><th>Pareja / club</th><th>Turno</th><th>Pista</th><th>Código</th><th>Jugador/a</th></tr></thead><tbody id="roster"></tbody></table></div></section>
+<footer>Fuente documental: Circular FEB 6249, 11 páginas, referencia SHA-256 5735a5f11e113921ff465c0002df27cf4365db03a17a6e9da5a29de401a9584c. Las fechas 28–29/11 proceden del calendario existente, documentado con la Circular 6246. Los nombres, turnos y pistas se mantienen como aparecen en el PDF; una inconsistencia se señala, nunca se corrige automáticamente.</footer>
+</main>
+<script>
+(function(){'use strict';
+ const q=id=>document.getElementById(id),category=q('category'),search=q('search'),status=q('status'),roster=q('roster'),details=q('details');let data;
+ const str=x=>x===null||x===undefined?'No indicado':String(x);
+ function node(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e}
+ function render(){
+  if(!data)return;const cat=data.categorias.find(x=>x.id===category.value);if(!cat)return;
+  document.getElementById('details-title').textContent=cat.nombre;
+  details.replaceChildren();
+  const summary=node('p',cat.sede+' · '+(Array.isArray(cat.turnos)?cat.turnos.map(t=>'Turno '+t.numero+' '+t.hora+' ('+t.inscritos+')').join(' · '):'Inicio '+cat.hora_inicio+' h')+' · '+cat.inscritos+' participantes');
+  details.append(summary);
+  const p=cat.patron;
+  const metrics=[['Patrón',p.titulo],['Longitud',p.longitud_pies===null?'No indicada':p.longitud_pies+' pies'],['Volumen',p.volumen_ml===null?'No indicado':p.volumen_ml+' ml']];
+  for(const [k,v] of metrics){const m=node('span','','metric');m.append(node('small',k),node('b',String(v)));details.append(m)}
+  if(p.aceite_adelante_ml!==undefined)details.append(node('p','Aceite adelante '+p.aceite_adelante_ml+' ml · retorno '+p.aceite_retorno_ml+' ml.'));
+  if(p.ratio)details.append(node('p','Ratio del patrón: '+p.ratio));
+  if(cat.desplazamiento)details.append(node('p','Desplazamiento: '+cat.desplazamiento+'.'));
+  if(cat.domingo)details.append(node('p','Domingo: '+cat.domingo));
+  if(cat.incidencia)details.append(node('p',cat.incidencia,'hint'));
+  if(p.nota)details.append(node('p',p.nota,'sub'));
+  const src=node('small','Orden: página '+str(cat.pagina_orden)+' · Patrón: página '+str(cat.pagina_patron)+' de Circular 6249.');details.append(src);
+  const filter=search.value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const members=data.participantes.filter(x=>x.categoria===cat.id).filter(x=>[x.pareja,x.jugador,x.codigo,x.pista,x.turno_tabla].some(y=>str(y).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(filter)));
+  roster.replaceChildren();for(const m of members){const tr=document.createElement('tr');if(cat.id==='masculino_2_3'&&m.pareja==='CELTA XUNTA')tr.className='spotlight';for(const val of [m.pareja,m.turno_tabla,m.pista,m.codigo,m.jugador])tr.append(node('td',String(val)));roster.append(tr)}
+  status.textContent='Mostrando '+members.length+' de '+cat.inscritos+' participantes. Pista inicial, no pista de cada partida.';
+ }
+ const valid=['femenino','masculino_absoluto','masculino_2_3','masculino_senior'];const hash=location.hash.slice(1);if(valid.includes(hash))category.value=hash;
+ category.addEventListener('change',()=>{location.hash=category.value;search.value='';render()});search.addEventListener('input',render);
+ fetch('../data/circular-feb-6249-parejas-2026.json').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(d=>{
+  if(d.schema!=='mi-bowling-circular-feb-6249-v1'||d.inscritos_total!==161||!Array.isArray(d.participantes)||d.participantes.length!==161)throw Error('Contrato de datos no coincide');
+  data=d;render();
+ }).catch(e=>{status.textContent='No se han podido cargar los datos oficiales ('+e.message+'). No se ha modificado ningún registro.'});
+})();
+</script></body></html>

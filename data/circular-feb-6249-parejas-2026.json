@@ -1,0 +1,1574 @@
+{
+  "schema": "mi-bowling-circular-feb-6249-v1",
+  "circular": 6249,
+  "publicacion": "2026-11-26",
+  "organismo": "Federación Española de Bolos",
+  "fuente_pdf": "CIRCULAR 6249 ORDEN DE JUEGO Y PATRONES CTO DE ESPAÑA DE PAREJAS 2026.pdf",
+  "fuente_sha256": "5735a5f11e113921ff465c0002df27cf4365db03a17a6e9da5a29de401a9584c",
+  "evento": "Campeonato de España de Parejas 2026",
+  "fechas_de_calendario_preexistente": [
+    "2026-11-28",
+    "2026-11-29"
+  ],
+  "nota_fecha": "Fechas tomadas del evento del calendario previo confirmado por Circular 6246; la Circular 6249 entrega horarios, orden y patrones.",
+  "inscritos_total": 161,
+  "categorias": [
+    {
+      "id": "femenino",
+      "calendar_id": "FGB-2627-12",
+      "nombre": "Parejas Femenino",
+      "sede": "Ozone Bowling Torrevieja",
+      "hora_inicio": "11:00",
+      "turnos": "único",
+      "desplazamiento": "2 pares de pistas a la derecha tras cada partida",
+      "pagina_orden": 2,
+      "pagina_patron": 3,
+      "inscritos": 34,
+      "patron": {
+        "titulo": "PAREJAS 2026 TORREVIEJA",
+        "equipo": "KEGEL",
+        "longitud_pies": 44,
+        "volumen_ml": 25.65,
+        "aceite_adelante_ml": 14.2,
+        "aceite_retorno_ml": 11.45,
+        "ratio": "1.94:1",
+        "drop_brush_pies": 44,
+        "pump_microlitros": 50
+      }
+    },
+    {
+      "id": "masculino_absoluto",
+      "calendar_id": "FGB-2627-09",
+      "nombre": "Absoluto Parejas Masculino",
+      "sede": "Ozone Bowling Zaragoza",
+      "hora_inicio": "11:00",
+      "turnos": "único",
+      "desplazamiento": "2 pares de pistas a la derecha tras cada partida",
+      "pagina_orden": 4,
+      "pagina_patron": 5,
+      "inscritos": 40,
+      "patron": {
+        "titulo": "PAREJAS 2026 · ZARAGOZA",
+        "equipo": "QubicaAMF HVO Summit",
+        "longitud_pies": null,
+        "volumen_ml": null,
+        "nota": "La hoja recoge distancias de las dos pasadas del buffer, no una longitud única verificable.",
+        "distancias_buffer_pies": {
+          "pasada_1_adelante": 43,
+          "pasada_1_retorno": 39,
+          "pasada_2_adelante": 35,
+          "pasada_2_retorno": 22
+        }
+      }
+    },
+    {
+      "id": "masculino_2_3",
+      "calendar_id": "FGB-2627-10",
+      "nombre": "2.ª y 3.ª Parejas Masculino",
+      "sede": "Ozone Bowling X-Madrid",
+      "hora_inicio": "09:00",
+      "turnos": "único según encabezado; la tabla marca 0 para CELTA XUNTA",
+      "desplazamiento": "2 pistas a la derecha tras cada partida",
+      "pagina_orden": 6,
+      "pagina_patron": 7,
+      "inscritos": 32,
+      "incidencia": "La columna TURNO muestra 0 en las dos inscripciones de CELTA XUNTA, aunque el encabezado indica turno único a las 09:00; pendiente de confirmación organizativa.",
+      "patron": {
+        "titulo": "PAREJAS 2026",
+        "equipo": "KEGEL IKON",
+        "longitud_pies": 41,
+        "volumen_ml": 26.5,
+        "aceite_adelante_ml": 18.85,
+        "aceite_retorno_ml": 7.65,
+        "reverse_brush_drop_pies": 34,
+        "aceite_por_tabla_microlitros": 50,
+        "nota": "Diferentes proporciones por zona. No asimilar a patrón de liga recreativa."
+      }
+    },
+    {
+      "id": "masculino_senior",
+      "calendar_id": "FGB-2627-11",
+      "nombre": "Sénior Parejas Masculino",
+      "sede": "Bowling Chamartín · Madrid",
+      "hora_inicio": null,
+      "turnos": [
+        {
+          "numero": 1,
+          "hora": "09:00",
+          "inscritos": 36
+        },
+        {
+          "numero": 2,
+          "hora": "12:30",
+          "inscritos": 19
+        }
+      ],
+      "desplazamiento": "Turno 1: 2 pares de pistas; turno 2: 1 par de pistas a la derecha tras cada partida",
+      "pagina_orden": [
+        8,
+        9
+      ],
+      "pagina_patron": 10,
+      "inscritos": 55,
+      "domingo": "Las 10 mejores parejas jugarán la segunda serie, considerando excepciones; los demás, la primera.",
+      "patron": {
+        "titulo": "CTOPARSEN26",
+        "equipo": "No indicado con certeza en la hoja",
+        "longitud_pies": null,
+        "volumen_ml": 27.21,
+        "nota": "La hoja muestra configuración por zonas, sin longitud total explícita."
+      }
+    }
+  ],
+  "participantes": [
+    {
+      "categoria": "femenino",
+      "pareja": "CAPITAL BOWLING \"B\"",
+      "turno_tabla": 1,
+      "pista": 3,
+      "codigo": "ES 0120",
+      "jugador": "GARCIA HERRERO, Vanesa",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "CAPITAL BOWLING \"B\"",
+      "turno_tabla": 1,
+      "pista": 3,
+      "codigo": "ES 0421",
+      "jugador": "PASCOAL GONCALVES, M.ª Teresa",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "FUSION \"B\"",
+      "turno_tabla": 1,
+      "pista": 4,
+      "codigo": "ES 0321",
+      "jugador": "SANZ MORENO, Cristina",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "FUSION \"B\"",
+      "turno_tabla": 1,
+      "pista": 4,
+      "codigo": "ES 0172",
+      "jugador": "JULIA INGLES, Ingrid",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "FUSION \"A\"",
+      "turno_tabla": 1,
+      "pista": 5,
+      "codigo": "ES 0245",
+      "jugador": "MUÑOZ HUERTA, Carolina",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "FUSION \"A\"",
+      "turno_tabla": 1,
+      "pista": 5,
+      "codigo": "ES 0338",
+      "jugador": "THORTENSEN, Heidi",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "MONKEY BOWLING \"A\"",
+      "turno_tabla": 1,
+      "pista": 6,
+      "codigo": "ES 0905",
+      "jugador": "BRACUTO MARTIN, Endrina de J.",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "MONKEY BOWLING \"A\"",
+      "turno_tabla": 1,
+      "pista": 6,
+      "codigo": "ES 0067",
+      "jugador": "CIOTTI, Patricia",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "COSTA DEL SOL \"B\"",
+      "turno_tabla": 1,
+      "pista": 7,
+      "codigo": "ES 0359",
+      "jugador": "MOJARRO POSTIGO, Lia",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "COSTA DEL SOL \"B\"",
+      "turno_tabla": 1,
+      "pista": 7,
+      "codigo": "ES 0171",
+      "jugador": "JIMENEZ MARIN, Lucía",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "TORREJON",
+      "turno_tabla": 1,
+      "pista": 8,
+      "codigo": "ES 0086",
+      "jugador": "DEL OLMO DE LA FUENTE, Sara",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "TORREJON",
+      "turno_tabla": 1,
+      "pista": 8,
+      "codigo": "ES 0317",
+      "jugador": "SANCHEZ MONTERO, Mª Angeles",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "MONKEY BOWLING \"B\"",
+      "turno_tabla": 1,
+      "pista": 9,
+      "codigo": "ES 0169",
+      "jugador": "JIMENEZ GONZALEZ, Mónica",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "MONKEY BOWLING \"B\"",
+      "turno_tabla": 1,
+      "pista": 9,
+      "codigo": "ES 0341",
+      "jugador": "URBISTAZU MECQ, Mª Gabriela",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "COSTA DEL SOL \"C\"",
+      "turno_tabla": 1,
+      "pista": 10,
+      "codigo": "ES 0841",
+      "jugador": "DE VROEY, Myriam",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "COSTA DEL SOL \"C\"",
+      "turno_tabla": 1,
+      "pista": 10,
+      "codigo": "ES 0176",
+      "jugador": "KRAUS TAPIA, Luz Graciela",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "ACCASOR",
+      "turno_tabla": 1,
+      "pista": 11,
+      "codigo": "ES 0132",
+      "jugador": "GONZALEZ ALVAREZ, Rosa Marta",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "ACCASOR",
+      "turno_tabla": 1,
+      "pista": 11,
+      "codigo": "ES 0574",
+      "jugador": "NOSEI, Monica Rosanna G.",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "SARAKOSTA",
+      "turno_tabla": 1,
+      "pista": 12,
+      "codigo": "ES 0654",
+      "jugador": "BALLESTIN FANDOS, María José",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "SARAKOSTA",
+      "turno_tabla": 1,
+      "pista": 12,
+      "codigo": "ES 0801",
+      "jugador": "FURIOL FURIOL, Adriana",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "LEVANTE \"A\"",
+      "turno_tabla": 1,
+      "pista": 13,
+      "codigo": "ES 0008",
+      "jugador": "ALBERT PORTA, Milagros",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "LEVANTE \"A\"",
+      "turno_tabla": 1,
+      "pista": 13,
+      "codigo": "ES 0104",
+      "jugador": "FERNANDEZ DOMINGUEZ, Mª Aurora",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "COSTA DEL SOL \"A\"",
+      "turno_tabla": 1,
+      "pista": 14,
+      "codigo": "ES 0200",
+      "jugador": "MARIN GUTIERREZ, Lola",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "COSTA DEL SOL \"A\"",
+      "turno_tabla": 1,
+      "pista": 14,
+      "codigo": "ES 0212",
+      "jugador": "MATEO MELERO, Antonia",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "CAPITAL BOWLING \"A\"",
+      "turno_tabla": 1,
+      "pista": 15,
+      "codigo": "ES 0110",
+      "jugador": "BARRIOPEDRO PEREZ, Teresa F.",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "CAPITAL BOWLING \"A\"",
+      "turno_tabla": 1,
+      "pista": 15,
+      "codigo": "ES 0099",
+      "jugador": "ESTEBAN ALONSO, Virginia",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "LEVANTE \"B\"",
+      "turno_tabla": 1,
+      "pista": 16,
+      "codigo": "ES 0603",
+      "jugador": "LANCIEN, Marine",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "LEVANTE \"B\"",
+      "turno_tabla": 1,
+      "pista": 16,
+      "codigo": "ES 0226",
+      "jugador": "MOLLA MOYA, Alicia",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "VAGUADA",
+      "turno_tabla": 1,
+      "pista": 17,
+      "codigo": "ES 0189",
+      "jugador": "LOZANO ORTIZ, Carmen",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "VAGUADA",
+      "turno_tabla": 1,
+      "pista": 17,
+      "codigo": "ES 0197",
+      "jugador": "MARAZUELA GALINDO, Encarna",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "ZINDIVIDUAL",
+      "turno_tabla": 1,
+      "pista": 18,
+      "codigo": "ES 0704",
+      "jugador": "FUENTES RIVERA, Silvia",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "ZINDIVIDUAL",
+      "turno_tabla": 1,
+      "pista": 19,
+      "codigo": "ES 0101",
+      "jugador": "ESTEVE MARTÍNEZ, María Dolores",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "ZINDIVIDUAL",
+      "turno_tabla": 1,
+      "pista": 19,
+      "codigo": "ES 0792",
+      "jugador": "CALZON HORCAJO, Andrea",
+      "pagina": 2
+    },
+    {
+      "categoria": "femenino",
+      "pareja": "ZINDIVIDUAL",
+      "turno_tabla": 1,
+      "pista": 20,
+      "codigo": "ES 0747",
+      "jugador": "JUST ZAVALA, Johanna Barbra",
+      "pagina": 2
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLOTOMIZADOS \"D\"",
+      "turno_tabla": 1,
+      "pista": 3,
+      "codigo": "ES 0217",
+      "jugador": "MERELLES SANCHIDRIAN, Javier",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLOTOMIZADOS \"D\"",
+      "turno_tabla": 1,
+      "pista": 3,
+      "codigo": "ES 0907",
+      "jugador": "RAMIREZ VILAR, Haytor",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "FUSION",
+      "turno_tabla": 1,
+      "pista": 4,
+      "codigo": "ES 0755",
+      "jugador": "BOURRICAUDY OJEDA, Jensen",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "FUSION",
+      "turno_tabla": 1,
+      "pista": 4,
+      "codigo": "ES 0573",
+      "jugador": "VINACUA MUÑOZ, Erik",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CAPITAL BOWLING \"C\"",
+      "turno_tabla": 1,
+      "pista": 5,
+      "codigo": "ES 0575",
+      "jugador": "NUÑEZ ALVAREZ, Carlos Arquimedes Sr.",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CAPITAL BOWLING \"C\"",
+      "turno_tabla": 1,
+      "pista": 5,
+      "codigo": "ES 0430",
+      "jugador": "STOYANOV DOBRIKOV, Rayko",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLOTOMIZADOS \"C\"",
+      "turno_tabla": 1,
+      "pista": 6,
+      "codigo": "ES 0714",
+      "jugador": "GONZALEZ GOMEZ, Nicolás",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLOTOMIZADOS \"C\"",
+      "turno_tabla": 1,
+      "pista": 6,
+      "codigo": "ES 0327",
+      "jugador": "SERRANO GARCÍA, Oscar",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CAPITAL BOWLING \"A\"",
+      "turno_tabla": 1,
+      "pista": 7,
+      "codigo": "ES 0013",
+      "jugador": "ALONSO PERLA, Juan Pablo",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CAPITAL BOWLING \"A\"",
+      "turno_tabla": 1,
+      "pista": 7,
+      "codigo": "ES 0033",
+      "jugador": "BARRIOPEDRO GARNACHO, José",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLOTOMIZADOS \"B\"",
+      "turno_tabla": 1,
+      "pista": 8,
+      "codigo": "ES 0158",
+      "jugador": "HOANG NGUYEN, Minh Phong",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLOTOMIZADOS \"B\"",
+      "turno_tabla": 1,
+      "pista": 8,
+      "codigo": "ES 0834",
+      "jugador": "MARQUEZ FURIOL, Fernando",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "DE REBOTE \"A\"",
+      "turno_tabla": 1,
+      "pista": 11,
+      "codigo": "ES 0448",
+      "jugador": "AYUSO SEGURA, Alberto",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "DE REBOTE \"A\"",
+      "turno_tabla": 1,
+      "pista": 11,
+      "codigo": "ES 0038",
+      "jugador": "BENITO DE PABLO, Borja",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "TOMAHAWK",
+      "turno_tabla": 1,
+      "pista": 12,
+      "codigo": "ES 0876",
+      "jugador": "GARCIA CUERVO, Erick",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "TOMAHAWK",
+      "turno_tabla": 1,
+      "pista": 12,
+      "codigo": "ES 0623",
+      "jugador": "GUIU GOMEZ, Javier",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "DE REBOTE \"B\"",
+      "turno_tabla": 1,
+      "pista": 13,
+      "codigo": "ES 0838",
+      "jugador": "PUERTAS FRAILE, Santiago",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "DE REBOTE \"B\"",
+      "turno_tabla": 1,
+      "pista": 13,
+      "codigo": "ES 0759",
+      "jugador": "BARCENAS GARCIA-SAAVEDRA, Jesús",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "ZINDIVIDUAL",
+      "turno_tabla": 1,
+      "pista": 14,
+      "codigo": "ES 0011",
+      "jugador": "ALONSO FARRACES, Daniel",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "ZINDIVIDUAL",
+      "turno_tabla": 1,
+      "pista": 14,
+      "codigo": "ES 0278",
+      "jugador": "PICCARI SANTANA, Michael Antonio",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLICHES \"A\"",
+      "turno_tabla": 1,
+      "pista": 15,
+      "codigo": "ES 0118",
+      "jugador": "GARCIA GONZALEZ, Iñigo",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLICHES \"A\"",
+      "turno_tabla": 1,
+      "pista": 15,
+      "codigo": "ES 0167",
+      "jugador": "JIMÉNEZ CARRIÓN, Raúl",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CELTA XUNTA \"A\"",
+      "turno_tabla": 1,
+      "pista": 16,
+      "codigo": "ES 0047",
+      "jugador": "BRICEÑO CAÑIZO, Jesus Daniel",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CELTA XUNTA \"A\"",
+      "turno_tabla": 1,
+      "pista": 16,
+      "codigo": "ES 0048",
+      "jugador": "BRICEÑO CAÑIZO, Luis",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLICHES \"C\"",
+      "turno_tabla": 1,
+      "pista": 17,
+      "codigo": "ES 0002",
+      "jugador": "ACIN SAMANES, Ion",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLICHES \"C\"",
+      "turno_tabla": 1,
+      "pista": 17,
+      "codigo": "ES 0059",
+      "jugador": "CARDONA BURGUES, Alvar",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CELTA XUNTA \"C\"",
+      "turno_tabla": 1,
+      "pista": 18,
+      "codigo": "ES 0148",
+      "jugador": "GUIMO MIRANDA, Axel",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CELTA XUNTA \"C\"",
+      "turno_tabla": 1,
+      "pista": 18,
+      "codigo": "ES 0251",
+      "jugador": "ORCHE RODRÍGUEZ, Rubén",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CELTA XUNTA \"B\"",
+      "turno_tabla": 1,
+      "pista": 19,
+      "codigo": "ES 0269",
+      "jugador": "PEREZ IBAÑEZ, Moisés",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CELTA XUNTA \"B\"",
+      "turno_tabla": 1,
+      "pista": 19,
+      "codigo": "ES 0299",
+      "jugador": "RODRÍGUEZ SUANZES, Francisco",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLOTOMIZADOS \"A\"",
+      "turno_tabla": 1,
+      "pista": 20,
+      "codigo": "ES 0397",
+      "jugador": "BOADA DE FREITAS, Carlos Jr.",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLOTOMIZADOS \"A\"",
+      "turno_tabla": 1,
+      "pista": 20,
+      "codigo": "ES 1044",
+      "jugador": "MIROSHNYCHENKO, Viktor",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "MEDITERRANIA",
+      "turno_tabla": 1,
+      "pista": 21,
+      "codigo": "ES 0815",
+      "jugador": "CAYUELA PUNZANO, Oliver",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "MEDITERRANIA",
+      "turno_tabla": 1,
+      "pista": 21,
+      "codigo": "ES 0619",
+      "jugador": "GARCIA ROMERO, Carlos",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLICHES \"B\"",
+      "turno_tabla": 1,
+      "pista": 22,
+      "codigo": "ES 0585",
+      "jugador": "FUENTES SANCHEZ, Rubén",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLICHES \"B\"",
+      "turno_tabla": 1,
+      "pista": 22,
+      "codigo": "ES 0673",
+      "jugador": "MERA FERNANDEZ, Angel",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLICHES \"D\"",
+      "turno_tabla": 1,
+      "pista": 23,
+      "codigo": "ES 0193",
+      "jugador": "MACHÓN GARCÍA, Daniel",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "BOLICHES \"D\"",
+      "turno_tabla": 1,
+      "pista": 23,
+      "codigo": "ES 0260",
+      "jugador": "PASCUAL POTOT, Erwin",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CAPITAL BOWLING \"B\"",
+      "turno_tabla": 1,
+      "pista": 24,
+      "codigo": "ES 0114",
+      "jugador": "GAMAZO BARRETO, Noe Ramón",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_absoluto",
+      "pareja": "CAPITAL BOWLING \"B\"",
+      "turno_tabla": 1,
+      "pista": 24,
+      "codigo": "ES 0744",
+      "jugador": "GONZALEZ SIERRA, Víctor",
+      "pagina": 4
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MAGERIT \"B\"",
+      "turno_tabla": 1,
+      "pista": 5,
+      "codigo": "ES 0056",
+      "jugador": "CAPMANY FRANCOY, Carlos",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MAGERIT \"B\"",
+      "turno_tabla": 1,
+      "pista": 5,
+      "codigo": "ES 0384",
+      "jugador": "ROMAN ROMAN, Jose Luis",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "ALA-X \"C\"",
+      "turno_tabla": 1,
+      "pista": 6,
+      "codigo": "ES 0160",
+      "jugador": "HSU SOON, José",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "ALA-X \"C\"",
+      "turno_tabla": 1,
+      "pista": 6,
+      "codigo": "ES 0400",
+      "jugador": "NAVARRETE CABANIEL, Juan Jose",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "CAPITAL BOWLING",
+      "turno_tabla": 1,
+      "pista": 7,
+      "codigo": "ES 1045",
+      "jugador": "PALOMARES NUÑEZ, Javier",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "CAPITAL BOWLING",
+      "turno_tabla": 1,
+      "pista": 7,
+      "codigo": "ES 0713",
+      "jugador": "GONZALEZ BELTRAN, Henry",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MAGERIT \"D\"",
+      "turno_tabla": 1,
+      "pista": 8,
+      "codigo": "ES 0728",
+      "jugador": "JAUREGUI BEJARANO, Carlos",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MAGERIT \"D\"",
+      "turno_tabla": 1,
+      "pista": 8,
+      "codigo": "ES 0725",
+      "jugador": "FRANCO MOLINA, Angel Agustin",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "BOLICHES \"A\"",
+      "turno_tabla": 1,
+      "pista": 9,
+      "codigo": "ES 0697",
+      "jugador": "LUSANTA MEDRANO, Sam",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "BOLICHES \"A\"",
+      "turno_tabla": 1,
+      "pista": 9,
+      "codigo": "ES 0315",
+      "jugador": "SÁNCHEZ LÓPEZ, José Antonio",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "BOLICHES \"B\"",
+      "turno_tabla": 1,
+      "pista": 10,
+      "codigo": "ES 0586",
+      "jugador": "ALMAGRO GARCIA, Alejandro",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "BOLICHES \"B\"",
+      "turno_tabla": 1,
+      "pista": 10,
+      "codigo": "ES 0337",
+      "jugador": "TAYARA RODRÍGUEZ, Amin",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MAGERIT \"C\"",
+      "turno_tabla": 1,
+      "pista": 11,
+      "codigo": "ES 0781",
+      "jugador": "URUTEGUI LA RIVA, Aitor Joseba",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MAGERIT \"C\"",
+      "turno_tabla": 1,
+      "pista": 11,
+      "codigo": "ES 0724",
+      "jugador": "URUTEGUI LA RIVA, Andoni",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "BAT-ROLLAN \"A\"",
+      "turno_tabla": 1,
+      "pista": 12,
+      "codigo": "ES 0085",
+      "jugador": "DE BARROS PIRABAN, Francisco",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "BAT-ROLLAN \"A\"",
+      "turno_tabla": 1,
+      "pista": 12,
+      "codigo": "ES 0310",
+      "jugador": "SAMPEDRO TRELLES, Manuel",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "BAT-ROLLAN \"B\"",
+      "turno_tabla": 1,
+      "pista": 13,
+      "codigo": "ES 0737",
+      "jugador": "RODRÍGUEZ FLEITAS, Victor Emanuel",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "BAT-ROLLAN \"B\"",
+      "turno_tabla": 1,
+      "pista": 13,
+      "codigo": "ES 0578",
+      "jugador": "ROLLÁN GARCÍA, Juan José",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "X-MADRID",
+      "turno_tabla": 1,
+      "pista": 14,
+      "codigo": "ES 0771",
+      "jugador": "MOLINA MARTIN, Guillermo",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "X-MADRID",
+      "turno_tabla": 1,
+      "pista": 14,
+      "codigo": "ES 0204",
+      "jugador": "MARTÍN TORRES, Emilio José",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "PIN OCHO",
+      "turno_tabla": 1,
+      "pista": 15,
+      "codigo": "ES 0833",
+      "jugador": "BRAVO GOMEZ, Carlos",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "PIN OCHO",
+      "turno_tabla": 1,
+      "pista": 15,
+      "codigo": "ES 0657",
+      "jugador": "HERNANDEZ MARTIN, Enrique",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MAGERIT \"A\"",
+      "turno_tabla": 1,
+      "pista": 16,
+      "codigo": "ES 0080",
+      "jugador": "DE ANDRÉS BERMEJO, Ricardo",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MAGERIT \"A\"",
+      "turno_tabla": 1,
+      "pista": 16,
+      "codigo": "ES 0972",
+      "jugador": "FERNANDEZ VINAGRE, Sergio",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "CELTA XUNTA",
+      "turno_tabla": 0,
+      "pista": 17,
+      "codigo": "ES 1046",
+      "jugador": "GALGUERA GOMEZ, Lazaro",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "CELTA XUNTA",
+      "turno_tabla": 0,
+      "pista": 17,
+      "codigo": "ES 0147",
+      "jugador": "GUDE BERMUDEZ, José",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "ALA-X \"A\"",
+      "turno_tabla": 1,
+      "pista": 18,
+      "codigo": "ES 0030",
+      "jugador": "BARGUES HERNÁNDEZ, Álvaro",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "ALA-X \"A\"",
+      "turno_tabla": 1,
+      "pista": 18,
+      "codigo": "ES 0598",
+      "jugador": "SEGURA BLANCO, Esteban Domingo",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "ALA-X \"B\"",
+      "turno_tabla": 1,
+      "pista": 19,
+      "codigo": "ES 0345",
+      "jugador": "VALLET DE EUGENIO, Juan",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "ALA-X \"B\"",
+      "turno_tabla": 1,
+      "pista": 19,
+      "codigo": "ES 0346",
+      "jugador": "VALLET REGI, Juan",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MOREAGA",
+      "turno_tabla": 1,
+      "pista": 20,
+      "codigo": "ES 0629",
+      "jugador": "JIMENEZ ROBLES, Xabier",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_2_3",
+      "pareja": "MOREAGA",
+      "turno_tabla": 1,
+      "pista": 20,
+      "codigo": "ES 0628",
+      "jugador": "JIMENEZ SEISAS, Jesús Maria",
+      "pagina": 6
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "ALA-X",
+      "turno_tabla": 1,
+      "pista": 3,
+      "codigo": "ES 0404",
+      "jugador": "CID SANCHEZ, Marcial",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "ALA-X",
+      "turno_tabla": 1,
+      "pista": 3,
+      "codigo": "ES 0161",
+      "jugador": "HUERTA MARTÍNEZ, Gustavo",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"B\"",
+      "turno_tabla": 1,
+      "pista": 4,
+      "codigo": "ES 0078",
+      "jugador": "CUEVAS PARIS, Olegario",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"B\"",
+      "turno_tabla": 1,
+      "pista": 4,
+      "codigo": "ES 0018",
+      "jugador": "ÁLVAREZ HERNÁNDEZ, Juan Carlos",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "PIN OCHO",
+      "turno_tabla": 1,
+      "pista": 5,
+      "codigo": "ES 0130",
+      "jugador": "GONZALEZ ABAJO, Jose Luis",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "PIN OCHO",
+      "turno_tabla": 1,
+      "pista": 5,
+      "codigo": "ES 0588",
+      "jugador": "HERNANDEZ MORENO, José Enrique",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"C\"",
+      "turno_tabla": 1,
+      "pista": 6,
+      "codigo": "ES 0268",
+      "jugador": "PÉREZ FLORENTINO, Bienvenido. E.",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"C\"",
+      "turno_tabla": 1,
+      "pista": 6,
+      "codigo": "ES 0387",
+      "jugador": "VALERA MORALES, Julio",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "COMARCAL \"A\"",
+      "turno_tabla": 1,
+      "pista": 7,
+      "codigo": "ES 0425",
+      "jugador": "AMBROS LATORRE, Jorge",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "COMARCAL \"A\"",
+      "turno_tabla": 1,
+      "pista": 7,
+      "codigo": "ES 0329",
+      "jugador": "SERRANO ROMERO, Juan",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "MAGERIT \"B\"",
+      "turno_tabla": 1,
+      "pista": 8,
+      "codigo": "ES 0211",
+      "jugador": "MASEGOSA SIMÓN, Roque",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "MAGERIT \"B\"",
+      "turno_tabla": 1,
+      "pista": 8,
+      "codigo": "ES 0402",
+      "jugador": "RODRIGUEZ VALDIVIELSO, Pablo",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"D\"",
+      "turno_tabla": 1,
+      "pista": 9,
+      "codigo": "ES 0561",
+      "jugador": "GONZALEZ CUETO, José Antonio",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"D\"",
+      "turno_tabla": 1,
+      "pista": 9,
+      "codigo": "ES 0205",
+      "jugador": "MARTÍNEZ HERRERO, Jose Alberto",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "COMARCAL \"B\"",
+      "turno_tabla": 1,
+      "pista": 10,
+      "codigo": "ES 0308",
+      "jugador": "RUIZ RODRIGUEZ, Antonio",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "COMARCAL \"B\"",
+      "turno_tabla": 1,
+      "pista": 10,
+      "codigo": "ES 0044",
+      "jugador": "BOIRA BUISAN, Benito",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"E\"",
+      "turno_tabla": 1,
+      "pista": 11,
+      "codigo": "ES 0380",
+      "jugador": "DE LA TORRE MONTERO, Pedro",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"E\"",
+      "turno_tabla": 1,
+      "pista": 11,
+      "codigo": "ES 0386",
+      "jugador": "TERRERO VILLAMARIN, Miguel Angel",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "ZINDIVIDUAL",
+      "turno_tabla": 1,
+      "pista": 12,
+      "codigo": "ES 0300",
+      "jugador": "ROIG QUINCE, Juan Carlos",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "ZINDIVIDUAL",
+      "turno_tabla": 1,
+      "pista": 12,
+      "codigo": "ES 0144",
+      "jugador": "GONZALO REDONDO, José",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "CAPITAL BOWLING",
+      "turno_tabla": 1,
+      "pista": 13,
+      "codigo": "ES 0406",
+      "jugador": "BALLESTEROS MARCOS, Jesus Pedro",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "CAPITAL BOWLING",
+      "turno_tabla": 1,
+      "pista": 13,
+      "codigo": "ES 0034",
+      "jugador": "BARRIOPEDRO GARNACHO, Pablo",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "BOLOTOMIZADOS \"C\"",
+      "turno_tabla": 1,
+      "pista": 14,
+      "codigo": "ES 0810",
+      "jugador": "MARTINEZ FERNANDEZ, Pedro",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "BOLOTOMIZADOS \"C\"",
+      "turno_tabla": 1,
+      "pista": 14,
+      "codigo": "ES 0328",
+      "jugador": "SERRANO MASA, Rafael",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "MOREAGA",
+      "turno_tabla": 1,
+      "pista": 15,
+      "codigo": "ES 0075",
+      "jugador": "CRUZ TENA, Juan María",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "MOREAGA",
+      "turno_tabla": 1,
+      "pista": 15,
+      "codigo": "ES 0520",
+      "jugador": "PÉREZ CONSUEGRA, Mario",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"A\"",
+      "turno_tabla": 1,
+      "pista": 16,
+      "codigo": "ES 0083",
+      "jugador": "DE CARVAJAL BALLESTER, Jaime",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "VAGUADA \"A\"",
+      "turno_tabla": 1,
+      "pista": 16,
+      "codigo": "ES 0290",
+      "jugador": "RICOTE ANDRAY, José Luis",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "SARAKOSTA \"A\"",
+      "turno_tabla": 1,
+      "pista": 17,
+      "codigo": "ES 0307",
+      "jugador": "RUBIO MAESTRE, Eliseo",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "SARAKOSTA \"A\"",
+      "turno_tabla": 1,
+      "pista": 17,
+      "codigo": "ES 0399",
+      "jugador": "ESPINOSA ROSA, Miguel Angel",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "COMARCAL \"C\"",
+      "turno_tabla": 1,
+      "pista": 18,
+      "codigo": "ES 0041",
+      "jugador": "BERGANZA GARCIA, Guillermo",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "COMARCAL \"C\"",
+      "turno_tabla": 1,
+      "pista": 18,
+      "codigo": "ES 0183",
+      "jugador": "LOPEZ ENRIQUEZ, Manuel",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "MAGERIT \"A\"",
+      "turno_tabla": 1,
+      "pista": 19,
+      "codigo": "ES 0398",
+      "jugador": "BONACASA FERNANDEZ, Julian Enrique",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "MAGERIT \"A\"",
+      "turno_tabla": 1,
+      "pista": 19,
+      "codigo": "ES 0209",
+      "jugador": "MARTÍNEZ SÁNCHEZ, Joaquin",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "SARAKOSTA \"B\"",
+      "turno_tabla": 1,
+      "pista": 20,
+      "codigo": "ES 0026",
+      "jugador": "ASO ARIÑO, Antonio",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "SARAKOSTA \"B\"",
+      "turno_tabla": 1,
+      "pista": 20,
+      "codigo": "ES 0093",
+      "jugador": "DIEZ DE DIEGO, Juan Manuel",
+      "pagina": 8
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "ISBILYA",
+      "turno_tabla": 2,
+      "pista": 11,
+      "codigo": "ES 0896",
+      "jugador": "FELTRERO PEREZ, Manuel",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "ISBILYA",
+      "turno_tabla": 2,
+      "pista": 11,
+      "codigo": "ES 1132",
+      "jugador": "MARTIN NOGUERA, Carlos",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "ZINDIVIDUAL",
+      "turno_tabla": 2,
+      "pista": 12,
+      "codigo": "ES 0182",
+      "jugador": "LEDESMA LÓPEZ, Pedro",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "CELTA XUNTA",
+      "turno_tabla": 2,
+      "pista": 13,
+      "codigo": "ES 0016",
+      "jugador": "ALVAREZ CABALEIRO, Cirilo",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "CELTA XUNTA",
+      "turno_tabla": 2,
+      "pista": 13,
+      "codigo": "ES 0111",
+      "jugador": "FROUVELLE, Serge",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "TOMAHAWK",
+      "turno_tabla": 2,
+      "pista": 14,
+      "codigo": "ES 0289",
+      "jugador": "REYNOLDS, Luis",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "TOMAHAWK",
+      "turno_tabla": 2,
+      "pista": 14,
+      "codigo": "ES 0418",
+      "jugador": "VILLARROYA HERRERO,Daniel",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "BOLOTOMIZADOS \"D\"",
+      "turno_tabla": 2,
+      "pista": 15,
+      "codigo": "ES 0072",
+      "jugador": "CRESPO COUSIDO, Luis",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "BOLOTOMIZADOS \"D\"",
+      "turno_tabla": 2,
+      "pista": 15,
+      "codigo": "ES 0663",
+      "jugador": "CALVA ANDION, Juan Carlos",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "HALCONES \"B\"",
+      "turno_tabla": 2,
+      "pista": 16,
+      "codigo": "ES 0285",
+      "jugador": "RAMIREZ ESTEBAN, Jose Antonio",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "HALCONES \"B\"",
+      "turno_tabla": 2,
+      "pista": 16,
+      "codigo": "ES 0246",
+      "jugador": "NAVARRO CHINER, Ivan",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "BOLOTOMIZADOS \"B\"",
+      "turno_tabla": 2,
+      "pista": 17,
+      "codigo": "ES 0140",
+      "jugador": "GONZALEZ SUAREZ, Pedro",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "BOLOTOMIZADOS \"B\"",
+      "turno_tabla": 2,
+      "pista": 17,
+      "codigo": "ES 0188",
+      "jugador": "LOZANO DUEÑAS, Lorenzo",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "BOLOTOMIZADOS \"A\"",
+      "turno_tabla": 2,
+      "pista": 18,
+      "codigo": "ES 0518",
+      "jugador": "STRICKER, Daniel Edward",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "BOLOTOMIZADOS \"A\"",
+      "turno_tabla": 2,
+      "pista": 18,
+      "codigo": "ES 0283",
+      "jugador": "PUENTE RIVADOMAR, Jesus",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "HALCONES \"A\"",
+      "turno_tabla": 2,
+      "pista": 19,
+      "codigo": "ES 0206",
+      "jugador": "MARTINEZ LLORIA, Manuel",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "HALCONES \"A\"",
+      "turno_tabla": 2,
+      "pista": 19,
+      "codigo": "ES 0149",
+      "jugador": "HERMOSILLA RIOS, Pablo",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "COSTA DEL SOL",
+      "turno_tabla": 2,
+      "pista": 20,
+      "codigo": "ES 0415",
+      "jugador": "MARTINEZ MEDÍN, Francisco Oscar",
+      "pagina": 9
+    },
+    {
+      "categoria": "masculino_senior",
+      "pareja": "COSTA DEL SOL",
+      "turno_tabla": 2,
+      "pista": 20,
+      "codigo": "ES 0800",
+      "jugador": "VAN GOETHEM, Hendrik",
+      "pagina": 9
+    }
+  ]
+}
