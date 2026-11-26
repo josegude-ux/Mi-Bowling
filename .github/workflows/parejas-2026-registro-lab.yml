@@ -1,0 +1,41 @@
+name: MI BOWLING - Parejas 2026 registro LAB
+on:
+  push:
+    branches: [lab/parejas-2026-registro-20261126]
+    paths:
+      - .github/workflows/parejas-2026-registro-lab.yml
+      - integracion/parejas-2026-planificador.js
+      - integracion/registro-compacto.js
+      - releases/catalogo-local-f1-fotos1/app.js
+      - index.html
+      - sw.js
+      - tests/parejas-2026-planificador.test.cjs
+      - tests/parejas-2026-registro-browser.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  torneo-ficticio:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar sintaxis y contrato v2
+        run: |
+          node --check integracion/parejas-2026-planificador.js
+          node --check integracion/registro-compacto.js
+          node --check releases/catalogo-local-f1-fotos1/app.js
+          node --check tests/parejas-2026-planificador.test.cjs
+          node --check tests/parejas-2026-registro-browser.cjs
+          node tests/parejas-2026-planificador.test.cjs
+      - name: Chromium aislado
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Anotar jornada ficticia 6+6 y recuperar tras recarga
+        run: node tests/parejas-2026-registro-browser.cjs
