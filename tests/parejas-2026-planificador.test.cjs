@@ -41,6 +41,8 @@ const index=read('index.html'),app=read('releases/catalogo-local-f1-fotos1/app.j
 assert(index.includes('integracion/parejas-2026-planificador.js'));
 assert(app.includes('abrirTorneoParejas'));
 assert(app.includes('P.nextConfig(s,el.value)'));
+assert(app.includes(`JSON.stringify(day).replace(/"/g,'&quot;')`),'Botón sábado/domingo debe usar HTML entity para comillas');
+assert(app.includes(`JSON.stringify(s.id).replace(/"/g,'&quot;')`),'Botón continuar debe usar HTML entity para comillas');
 assert(compact.includes('rc-tournament-next-lane'));
 assert(compact.includes('finishTournament()'));
 const maps=sw.match(/const HASHES=(\{[\s\S]*?\});/);assert(maps);
