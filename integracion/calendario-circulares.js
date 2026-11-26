@@ -24,7 +24,7 @@ const participants=[{"event":"FGB-2627-09","category":"absoluto_masculino","turn
 const patterns=Object.freeze({
  'FGB-2627-09':Object.freeze({name:'HVO Summit / PAREJAS 2026',supplier:'QubicaAMF',oil_distance_ft:null,buffer_forward_ft:43,buffer_reverse_ft:39,source_page:5,note:'El documento presenta varias pasadas; no identificar 43 ft de buffer como longitud única de aceite'}),
  'FGB-2627-10':Object.freeze({name:'IKON · PAREJAS 2026',supplier:'Kegel',oil_distance_ft:41,volume_ml:26.5,forward_ml:18.85,reverse_ml:7.65,reverse_brush_drop_ft:34,source_page:7}),
- 'FGB-2627-11':Object.freeze({name:'CTOPARSEN26',supplier:'Logic',oil_distance_ft:null,volume_ml:27.21,source_page:10,note:'No consta longitud única inequívoca en la lámina'}),
+ 'FGB-2627-11':Object.freeze({name:'CTOPARSEN26',conditioner:'Logic',oil_distance_ft:null,volume_ml:27.21,source_page:10,note:'No consta longitud única inequívoca en la lámina'}),
  'FGB-2627-12':Object.freeze({name:'PAREJAS 2026 TORREVIEJA',supplier:'Kegel',oil_distance_ft:44,volume_ml:25.65,ratio:'1.94:1',drop_brush_ft:44,source_page:3})
 });
 const details={
@@ -33,6 +33,19 @@ const details={
  'FGB-2627-11':['Circular FEB 6249 (26/11): 55 jugadores; primer turno 09:00 (36), segundo 12:30 (19).','Primer turno: dos pares de pistas a la derecha; segundo: un par de pistas a la derecha tras cada partida.','Domingo: diez mejores parejas a la segunda serie según las excepciones comunicadas; resto, primera.','Patrón: CTOPARSEN26 · Logic · volumen 27,21 ml (pág. 10).'],
  'FGB-2627-12':['Circular FEB 6249 (26/11): 34 jugadoras; turno único 11:00.','Desplazamiento tras cada partida: dos pares de pistas a la derecha.','Patrón Kegel Torrevieja · 44 ft · 25,65 ml · ratio 1,94:1 (pág. 3).']
 };
+// Listado oficial accesible en el desplegable de cada competición, sin crear partidas.
+for(const id of Object.keys(details)){
+ const groups=new Map();
+ for(const p of participants.filter(p=>p.event===id)){
+  const key=[p.time,p.turn,p.lane,p.pair].join('|');
+  if(!groups.has(key))groups.set(key,{time:p.time,turn:p.turn,lane:p.lane,pair:p.pair,players:[]});
+  groups.get(key).players.push(p.player+' ('+p.code+')');
+ }
+ details[id].push('ORDEN OFICIAL DE JUEGO — Circular 6249:');
+ for(const g of groups.values()){
+  details[id].push((id==='FGB-2627-11'?'Turno '+g.turn+' · ':'')+'Pista '+g.lane+' · '+g.pair+': '+g.players.join(' / '));
+ }
+}
 const former=root.BOWLING_CALENDAR_CONFIRMED||{};
 root.BOWLING_CALENDAR_CONFIRMED=Object.freeze(Object.fromEntries(Object.entries(former).map(([id,e])=>
  [id,details[id]?Object.freeze({...e,details:Object.freeze(details[id])}):e])));
