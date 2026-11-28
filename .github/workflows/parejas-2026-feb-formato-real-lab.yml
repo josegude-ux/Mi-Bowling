@@ -1,0 +1,38 @@
+name: MI BOWLING - FEB 2026 PDF formato real LAB
+on:
+  push:
+    branches: [lab/parejas-2026-clasificacion-feb-real-20261128]
+    paths:
+      - .github/workflows/parejas-2026-feb-formato-real-lab.yml
+      - integracion/parejas-2026-clasificacion.js
+      - tests/parejas-2026-clasificacion.test.cjs
+      - tests/parejas-2026-pdf-browser.cjs
+      - sw.js
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pdf-tabla-feb-sintetica:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validar parser FEB y hashes sin leer datos reales
+        run: |
+          node --check integracion/parejas-2026-clasificacion.js
+          node --check tests/parejas-2026-clasificacion.test.cjs
+          node --check tests/parejas-2026-pdf-browser.cjs
+          node tests/parejas-2026-clasificacion.test.cjs
+      - name: Instalar Chromium y WebKit
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: 'Chromium: comprobar tabla FEB ficticia y filas vacias'
+        run: node tests/parejas-2026-pdf-browser.cjs
+      - name: 'WebKit: comprobar tabla FEB ficticia y filas vacias'
+        run: BOWLING_BROWSER=webkit node tests/parejas-2026-pdf-browser.cjs
