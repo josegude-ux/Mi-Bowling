@@ -1,27 +1,31 @@
 'use strict';
-/* MI BOWLING · Lectura real del pocket (trayectoria observada, no bolos caídos).
- * Sin I/O ni escritura. Datos anteriores sin marca se consideran DESCONOCIDOS.
+/* MI BOWLING · Pocket estimado con una sola excepción manual.
+ * Por acuerdo: primera bola sin check => pocket supuesto 1–3 (diestro);
+ * check «Entró 1–2» => cruce no pocket. Para zurdos se invierte el lado.
+ * Nunca se infiere trayectoria a partir de los bolos derribados.
+ * Puro, sin persistencia ni efectos externos.
  */
 (function(root,factory){
  const api=factory();
  if(typeof module==='object'&&module.exports)module.exports=api;
  else root.MiBowlingPocketReal=Object.freeze(api);
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
- const CHOICES=Object.freeze(['1-3','1-2','other']);
- function clean(value){return CHOICES.includes(value)?value:null}
- function pocketSide(hand){return hand==='zurdo'?'1-2':'1-3'}
- function otherSide(hand){return hand==='zurdo'?'1-3':'1-2'}
+ const CHOICES=Object.freeze(['1-3','1-2']);
+ const clean=value=>CHOICES.includes(value)?value:null;
+ const pocketSide=hand=>hand==='zurdo'?'1-2':'1-3';
+ const crossSide=hand=>hand==='zurdo'?'1-3':'1-2';
  function analyze(throws,hand){
   const first=(Array.isArray(throws)?throws:[]).filter(r=>r&&r.ball===1&&r.frame>=1&&r.frame<=10&&!r.foul);
-  const target=pocketSide(hand);
-  const confirmed=first.filter(r=>clean(r.impactSide)!==null);
-  const hit=confirmed.filter(r=>r.impactSide===target).length;
-  const cross=confirmed.filter(r=>r.impactSide===otherSide(hand)).length;
-  const other=confirmed.filter(r=>r.impactSide==='other').length;
-  // El indicador histórico NO cuenta entradas reales: solo caída de 1 y lateral.
+  const target=pocketSide(hand),crossSideValue=crossSide(hand);
+  const crosses=first.filter(r=>clean(r.impactSide)===crossSideValue);
+  const assumed=first.filter(r=>clean(r.impactSide)===null);
+  const explicit=first.filter(r=>clean(r.impactSide)===target);
+  const hit=assumed.length+explicit.length;
+  // Diagnóstico antiguo: los bolos 1 y 3 derribados NO prueban pocket.
   const legacyHits=first.filter(r=>Array.isArray(r.pins)&&r.pins.includes(1)&&r.pins.includes(hand==='zurdo'?2:3)).length;
-  return {hit,confirmed:confirmed.length,unknown:first.length-confirmed.length,total:first.length,
-   cross,other,target,legacyHits,rate:confirmed.length?Math.round(100*hit/confirmed.length):null};
+  return {hit,total:first.length,rate:first.length?Math.round(100*hit/first.length):null,
+   cross:crosses.length,assumed:assumed.length,confirmed:explicit.length,
+   target,crossSide:crossSideValue,legacyHits};
  }
- return Object.freeze({CHOICES,clean,pocketSide,otherSide,analyze});
+ return Object.freeze({CHOICES,clean,pocketSide,crossSide,analyze});
 });
