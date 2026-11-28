@@ -52,13 +52,14 @@ const seed={version:2,hand:'diestro',balls:[],patterns:[],sessions:[session('202
   const check=await page.evaluate(async()=>{
    if(!window.__lastSharedPdf)throw Error('Web Share File no recibido');
    const f=window.__lastSharedPdf,bytes=new Uint8Array(await f.arrayBuffer());
+   const header=String.fromCharCode(...bytes.slice(0,8));
    const lib=await import('./vendor/pdfjs/pdf.min.mjs');
    lib.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.min.mjs',location.href).href;
    const doc=await lib.getDocument({data:bytes}).promise;
    const page1=await doc.getPage(1),vp=page1.getViewport({scale:1});
    const canvas=document.createElement('canvas');canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);
    await page1.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
-   return {name:f.name,size:f.size,type:f.type,pages:doc.numPages,media:[vp.width,vp.height],header:String.fromCharCode(...bytes.slice(0,8)),shareCount:window.__shareCount||0,
+   return {name:f.name,size:f.size,type:f.type,pages:doc.numPages,media:[vp.width,vp.height],header,shareCount:window.__shareCount||0,
     rgba:Array.from(canvas.getContext('2d').getImageData(170,94,1,1).data)};
   });
   assert.equal(check.pages,2,'12 partidas, seis por página');
