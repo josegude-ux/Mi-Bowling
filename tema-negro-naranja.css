@@ -281,3 +281,26 @@ html body .sd-row .switch.stats-checkbox{background:transparent!important;border
 html body .sd-row .btn{min-height:32px!important;padding:5px 12px!important;font-size:13px!important;margin:0!important}
 html body .sd-row>*{margin:0}
 html body details.sd-more>summary{font-size:13px;color:#a1a1a6;padding:8px 2px;cursor:pointer}
+
+/* 3.3.38 · Estadísticas: navegación visible, gráficos y mapa de bolos */
+html body .st-filter{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+html body .st-filter label{color:#a1a1a6;font-weight:600;font-size:14px}
+html body .st-filter select{flex:1;min-width:0;min-height:40px!important}
+html body .st-filter .textlink{white-space:nowrap;color:#ff6a2b!important;font-weight:700;font-size:13px}
+html body .st-nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 14px}
+html body .st-nav-b{min-height:40px;border-radius:10px;border:1px solid #2c2c2e;background:#1c1c1e;color:#d1d1d6;font-weight:600;font-size:13px;padding:6px 4px}
+html body .st-nav-b.active{background:#ff6a2b;border-color:#ff6a2b;color:#fff}
+html body .st-seg button{min-height:34px}
+html body .st-key{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle}
+html body .st-key-ma{background:#ff9f0a}
+html body .st-key-avg{background:#a1a1a6}
+html body .st-up{color:#30d158}
+html body .st-down{color:#ff453a}
+html body .st-table>summary{cursor:pointer;color:#a1a1a6;padding:8px 2px;font-size:13px}
+html body details.card.st-table>summary{color:#fff;font-size:15px}
+html body .map-circle.st-pin{background:#1c1c1e!important;border:3px solid var(--pc)!important;color:#fff!important}
+html body .st-legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
+html body .st-legend .lg-r{background:#f05b56!important}
+html body .st-legend .lg-o{background:#f69d41!important}
+html body .st-legend .lg-y{background:#efc539!important}
+html body .st-legend .lg-g{background:#25b98d!important}
