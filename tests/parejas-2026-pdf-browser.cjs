@@ -14,6 +14,22 @@ const server=http.createServer((req,res)=>{
 });
 const pdfA=pdfFixture(['CLASIFICACION PAREJAS 2026','SEGUNDA CATEGORIA','POS CAT PAREJA PARTIDAS BOLOS','1 2M EQUIPO UNO 1 400','2 2M CELTA XUNTA 1 380','3 2M EQUIPO TRES 1 360']);
 const pdfB=pdfFixture(['CLASIFICACION PAREJAS 2026','SEGUNDA CATEGORIA','POS CAT PAREJA PARTIDAS BOLOS','1 2M CELTA XUNTA 2 800','2 2M EQUIPO UNO 2 790','3 2M EQUIPO TRES 2 735']);
+// Formato FEB/Excel de la primera serie, con todos los nombres ficticios salvo
+// la pareja que el importador debe identificar. Ningún PDF real se sube a CI.
+const pdfFeb=pdfFixture([
+ 'FEDERACION ESPANOLA DE BOLOS',
+ 'CLASIFICACION 2A MASCULINA',
+ '1A SERIE',
+ 'ORD PAREJA CODG JUGADORES 1A PART 2A PART 3A PART 4A PART 5A PART 6A PART PART BOLOS PROMEDIO MAXPT',
+ '1 Total CLUB FICTICIO ALFA 400 450 320 380 430 410 12 2390 199,167 450',
+ '2 Total CELTA XUNTA 401 399 389 372 400 398 12 2359 196,583 401',
+ '3 Total CLUB FICTICIO BETA 360 400 390 360 370 400 12 2280 190,000 400',
+ 'CLASIFICACION 3A MASCULINA',
+ '1 Total CLUB FICTICIO GAMMA 310 320 300 290 310 280 12 1810 150,833 320',
+ '2 Total CLUB FICTICIO DELTA 300 320 280 290 305 275 12 1770 147,500 320',
+ '8 Total CELTA XUNTA',
+ '9 Total 0'
+]);
 const pdfWrong=pdfFixture(['FOLIO DE INFORMACION','SIN TABLA DE CLASIFICACION']);
 const oldSession={id:'old-synthetic',type:'entrenamiento',date:'2026-11-01',title:'Partida ficticia anterior',venue:'LAB',notes:'',pattern:'',patternId:'',patternNotes:'',currentBallId:'',currentLine:{approach:'',arrow:'',breakpoint:''},lane:5,games:[{id:'g-old',includeStats:true,finalOnly:165,pair:[5,6],startLane:5,segments:[],rolls:[]}]};
 const seed={version:2,hand:'diestro',balls:[],patterns:[],sessions:[oldSession]};
@@ -81,10 +97,27 @@ const seed={version:2,hand:'diestro',balls:[],patterns:[],sessions:[oldSession]}
   const view=await page.evaluate(()=>{const C=MiBowlingParejasClasificacion;const s=JSON.parse(localStorage.getItem('mi-bowling-analitica-v2')).sessions.find(s=>s.date==='2026-11-28');return C.rankingView(s.parejas2026.rankings,'2ª','2026-11-28',2)});
   assert.equal(view.me.pos,1);assert.equal(view.me.bolos,800);assert.equal(view.change,1);
   assert.equal(view.gapLeader,0);
+  // El PDF oficial real posee filas Total con seis resultados, 12 partidas
+  // individuales y promedio. Réplica ficticia en ambos motores.
+  await upload(pdfFeb,'clasificacion-feb-ficticia.pdf');
+  assert.equal(await page.locator('[data-parejas-pdf-row]').count(),5);
+  assert.equal(await page.locator('[data-parejas-pdf-row]').nth(1).locator('[data-field="team"]').inputValue(),'CELTA XUNTA');
+  assert.equal(await page.locator('[data-parejas-pdf-row]').nth(1).locator('[data-field="cat"]').inputValue(),'2ª');
+  assert.equal(await page.locator('[data-parejas-pdf-row]').nth(1).locator('[data-field="bolos"]').inputValue(),'2359');
+  assert.equal(await page.locator('[data-parejas-pdf-row]').nth(4).locator('[data-field="cat"]').inputValue(),'3ª');
+  assert.equal(await page.locator('[data-parejas-pdf-row]').filter({has:page.locator('[data-field="team"][value="CELTA XUNTA"]')}).count(),1);
+  assert.equal((await db()).sessions.find(s=>s.date==='2026-11-28').parejas2026.rankings.length,2,'Vista previa FEB no guarda automáticamente');
+  await page.locator('#parejas-pdf-game').selectOption('3');
+  await page.locator('#parejas-pdf-reviewed').check();
+  await page.getByRole('button',{name:'Guardar esta versión revisada'}).click();
+  data=await db();assert.equal(sat().parejas2026.rankings.length,3);
+  assert.equal(sat().parejas2026.rankings[2].version,3);
+  assert.equal(sat().parejas2026.rankings[2].game,3);
+  assert.equal(sat().parejas2026.rankings[2].rows.find(r=>r.team==='CELTA XUNTA').bolos,2359);
   // Archivo sin tabla: no debe alterar ninguna clasificación anterior.
   await page.locator('#parejas-pdf-file').setInputFiles({name:'sin-tabla.pdf',mimeType:'application/pdf',buffer:pdfWrong});
   await page.waitForFunction(()=>document.body.textContent.includes('No se reconoció una tabla'),null,{timeout:16000});
-  assert.equal((await db()).sessions.find(s=>s.date==='2026-11-28').parejas2026.rankings.length,2);
+  assert.equal((await db()).sessions.find(s=>s.date==='2026-11-28').parejas2026.rankings.length,3);
   // Mismo usuario, dos sesiones independientes; segundo día no existe hasta indicarse pista.
   await page.evaluate(()=>abrirTorneoParejas());
   await page.locator('#parejas-lane-2026-11-29').fill('13');
@@ -99,7 +132,7 @@ const seed={version:2,hand:'diestro',balls:[],patterns:[],sessions:[oldSession]}
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof abrirTorneoParejas==='function',{timeout:16000});
   const after=await db(),checkSat=after.sessions.find(s=>s.date==='2026-11-28');
-  assert.equal(checkSat.parejas2026.rankings.length,2,'Importaciones preservadas por migrate y recarga');
+  assert.equal(checkSat.parejas2026.rankings.length,3,'Importaciones preservadas por migrate y recarga');
   assert.equal(checkSat.parejas2026.lazaro[0],160,'Marcador compañero preservado');
   assert.equal(after.sessions.find(s=>s.date==='2026-11-29').parejas2026.lazaro[0],200);
   assert.equal(after.sessions.find(s=>s.id==='old-synthetic').games[0].finalOnly,165);
