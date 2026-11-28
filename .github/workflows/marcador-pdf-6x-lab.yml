@@ -1,0 +1,41 @@
+name: MI BOWLING - Compartir marcadores PDF 6 por hoja LAB
+on:
+  push:
+    branches: [lab/compartir-marcador-pdf-20261128]
+    paths:
+      - .github/workflows/marcador-pdf-6x-lab.yml
+      - integracion/marcador-pdf.js
+      - releases/catalogo-local-f1-fotos1/app.js
+      - index.html
+      - sw.js
+      - tests/marcador-pdf.test.cjs
+      - tests/marcador-pdf-browser.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pdf-marcador-ficticio:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis dominio seis por hoja e integridad PWA
+        run: |
+          node --check integracion/marcador-pdf.js
+          node --check releases/catalogo-local-f1-fotos1/app.js
+          node --check tests/marcador-pdf.test.cjs
+          node --check tests/marcador-pdf-browser.cjs
+          node tests/marcador-pdf.test.cjs
+      - name: Instalar Chromium WebKit aislados
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: 'Chromium: PDF seis marcadores por pagina con puntos rojos'
+        run: node tests/marcador-pdf-browser.cjs
+      - name: 'WebKit: PDF seis marcadores por pagina con puntos rojos'
+        run: BOWLING_BROWSER=webkit node tests/marcador-pdf-browser.cjs
