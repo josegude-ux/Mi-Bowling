@@ -1,0 +1,45 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'..'),M=require('../integracion/marcador-pdf.js');
+assert.equal(M.PER_PAGE,6,'El usuario elige seis partidas por página');
+const ALL=[1,2,3,4,5,6,7,8,9,10];
+const leave=[{frame:1,ball:1,pins:ALL.filter(x=>x!==10)},{frame:1,ball:2,pins:[]}];
+let pins=M.pinMap(leave,1,false);
+assert.equal(pins[10],'missed','10 fallado en segundo tiro se representa rojo');
+assert.equal(pins[9],'knocked');
+assert.equal(M.pinMap([leave[0]],1,false)[10],'standing','después primera bola blanco, no rojo');
+assert.equal(M.pinMap([{frame:1,ball:1,pinDetail:'count',count:9}],1,false),null,'No inventar bolos');
+assert.equal(M.pinMap(leave,1,true),null,'Final-only no inventa frames');
+assert.equal(M.pinMap([{frame:1,ball:1,pins:ALL}],1,false),null,'Strike sin triángulo');
+const item=i=>({date:'2026-11-28',lane:17+i,score:180+i,partnerScore:i%2?170+i:null,complete:true,finalOnly:false,
+ frames:Array.from({length:10},(_,f)=>({marks:f===0?'9 −':'X',cumulative:10+f*10,rolls:f===0?leave:[{pins:ALL}]}))});
+const report=M.prepareReport({title:'Parejas 2026',date:'28 y 29 de noviembre',venue:'Bolera ficticia',games:Array.from({length:12},(_,i)=>item(i))});
+assert.deepEqual(report.pages.map(x=>x.length),[6,6]);
+assert.deepEqual(report.pages[0].map(x=>x.index),[1,2,3,4,5,6]);
+assert.deepEqual(report.pages[1].map(x=>x.index),[7,8,9,10,11,12]);
+assert.equal(report.games[0].frames.length,10);
+assert.equal(report.games[0].frames[0].rack[10],'missed');
+assert.equal(report.games[0].frames[1].rack,null);
+assert.equal(report.games[0].partner,null);
+assert.equal(report.games[1].partner,171);
+assert.equal(report.totals.completed,12);
+assert.equal(report.totals.played,12);
+assert.equal(report.totals.score,Array.from({length:12},(_,i)=>180+i).reduce((a,b)=>a+b,0));
+const partial=M.prepareReport({games:[{score:123,complete:true,finalOnly:true,frames:[]},{complete:false,frames:[]}]});
+assert.equal(partial.games[0].frames[0].rack,null);
+assert.equal(partial.games[1].score,null);
+assert.equal(partial.pages.length,1);
+assert.throws(()=>M.prepareReport({games:[]}),/SIN_PARTIDAS/);
+assert.throws(()=>M.prepareReport({games:Array.from({length:61},item)}),/SIN_PARTIDAS/);
+const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),m=sw.match(/const HASHES=(\{[\s\S]*?\});/);
+assert(m,'Mapa SW');
+const hashes=JSON.parse(m[1]);
+for(const p of ['index.html','integracion/marcador-pdf.js','releases/catalogo-local-f1-fotos1/app.js']){
+ const actual=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,p))).digest('hex');
+ assert.equal(hashes['./'+p],actual,'SHA-256 '+p);
+}
+assert.equal(hashes['./'],hashes['./index.html']);
+const app=fs.readFileSync(path.join(root,'releases/catalogo-local-f1-fotos1/app.js'),'utf8');
+assert(app.includes("function compartirMarcadorPDF(modo)"));
+assert(app.includes('navigator.share({files:[file]'));
+console.log('MARCADOR-PDF-DOMAIN PASS: 6/ página, 12→2, triángulo rojo/blanco, final-only, totales, hashes y compartir');
