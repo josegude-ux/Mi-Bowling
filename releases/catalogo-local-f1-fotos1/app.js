@@ -20,7 +20,7 @@ function migrate(data){const o=emptyDB();if(!data||typeof data!=='object')return
  currentBallId:s.currentBallId||'',...(typeof s.spareBallId==='string'&&s.spareBallId?{spareBallId:s.spareBallId}:{}),currentLine:cleanLine(s.currentLine),lane:intLane(s.lane)||null,
  games:s.games.map(g=>({id:g.id||uid(),...(validFinalOnly(g.finalOnly)?{finalOnly:g.finalOnly}:{}),pair:Array.isArray(g.pair)&&g.pair.length===2?g.pair.map(Number):null,startLane:intLane(g.startLane)||null,
  includeStats:g.includeStats!==false,segments:Array.isArray(g.segments)?g.segments.filter(e=>e&&e.pair&&e.fromFrame).map(e=>({fromFrame:+e.fromFrame,pair:e.pair.map(Number),startLane:+e.startLane})):[],
- rolls:(g.rolls||[]).map(r=>({frame:+r.frame,ball:+r.ball,pins:Array.isArray(r.pins)?r.pins.map(Number).filter(p=>PINS.includes(p)):[],ballId:r.ballId||'',line:cleanLine(r.line),lane:intLane(r.lane)||null,pair:Array.isArray(r.pair)?r.pair:null,foul:!!r.foul,createdAt:r.createdAt||null,...(r.pinDetail==='count'&&Number.isInteger(r.count)&&r.count>=0&&r.count<=10?{pinDetail:'count',count:r.count,pins:[]}:{})}))}))
+ rolls:(g.rolls||[]).map(r=>({frame:+r.frame,ball:+r.ball,pins:Array.isArray(r.pins)?r.pins.map(Number).filter(p=>PINS.includes(p)):[],ballId:r.ballId||'',line:cleanLine(r.line),lane:intLane(r.lane)||null,pair:Array.isArray(r.pair)?r.pair:null,foul:!!r.foul,createdAt:r.createdAt||null,...(r.ball===1&&['1-3','1-2'].includes(r.impactSide)?{impactSide:r.impactSide}:{}),...(r.pinDetail==='count'&&Number.isInteger(r.count)&&r.count>=0&&r.count<=10?{pinDetail:'count',count:r.count,pins:[]}:{})}))}))
  }));return o}
 let selectedPatternId='',patternMode='entrenamiento';
 let registryDetailsOpen=false,registryHistoryOpen=false;
@@ -37,6 +37,10 @@ let db;
 try { db=migrate(JSON.parse(localStorage.getItem(KEY)||localStorage.getItem(OLDKEY)||'null')); }catch {db=emptyDB()}
 let pinSubtab='derribos',statsPeriod='all',quickLayout='standard',comboKind='normal',compSessionId='',tab='inicio',activeId=null,selection=[],statMode='entrenamiento',statPane='general',historyMode='entrenamiento',ballEditingId=null,editPair=false,showNext=false,noticeText='',statsBallId='',expanded={};
 let saveError=false;
+const classicPocketPending=Object.create(null);
+const classicPocketKey=(g,n)=>g.id+':'+n.frame;
+function setClassicPocketCross(checked){const s=session();if(!s)return;const g=game(s),n=next(g);if(n.ball===1&&!n.done)classicPocketPending[classicPocketKey(g,n)]=!!checked}
+
 let updateAvailable=false;try{quickLayout=localStorage.getItem('mi-bowling-quick-layout')||'standard'}catch(e){}
 let swRegistration=null;
 let updateCheckStarted=false;
@@ -190,7 +194,46 @@ function aggregate(type,ballFilter=''){const sessions=db.sessions.filter(s=>s.ty
  for(const g of counted)for(let f=1;f<=10;f++){const fr=rollsIn(g,f),a=fr[0],b=fr[1];if(!a||a.pins.length===10||!b||ballFilter&&b.ballId!==ballFilter)continue;const left=PINS.filter(p=>!a.pins.includes(p));opportunities.push({left,second:b.pins,converted:left.every(p=>b.pins.includes(p)),gameId:g.id,ballId:b.ballId,lane:b.lane,pair:b.pair})}
  const totals=scoreGames.map(g=>score(g));return{sessions,scoreGames,games,counted,allGames,rolls:eligibleRolls,first,strikes,opportunities,spare:opportunities.filter(a=>a.converted).length,avg:totals.length?totals.reduce((a,b)=>a+b,0)/totals.length:0,totals};}
 function cleanGame(g){if(!complete(g)||isFinalOnly(g))return false;for(let f=1;f<=10;f++){const fr=rollsIn(g,f);if(!fr.length)return false;if(kn(fr[0])===10)continue;if(fr.length<2||kn(fr[0])+kn(fr[1])!==10)return false;}return true}
-function pocketStats(a){const flank=db.hand==='zurdo'?2:3;const throws=a.games.flatMap(g=>Array.from({length:10},(_,i)=>rollsIn(g,i+1)[0]).filter(Boolean)).filter(r=>!r.foul&&(!statsBallId||r.ballId===statsBallId));return{hit:throws.filter(r=>r.pins.includes(1)&&r.pins.includes(flank)).length,total:throws.length,flank}}
+let pocketReviewOpen=false;
+function pocketStats(a){
+ const throws=a.scoreGames.flatMap(g=>Array.from({length:10},(_,i)=>rollsIn(g,i+1)[0]).filter(Boolean))
+  .filter(r=>!r.foul&&(!statsBallId||r.ballId===statsBallId));
+ const model=window.MiBowlingPocketReal;
+ if(!model)return{hit:0,total:throws.length,flank:db.hand==='zurdo'?2:3,assumed:throws.length,cross:0};
+ return {...model.analyze(throws,db.hand),flank:db.hand==='zurdo'?2:3};
+}
+/* Correcciones independientes de la anotación: nunca se reescriben bolos ni scores.
+ * Clon + escritor transaccional existente; no confirmar estado en memoria si falla. */
+function setPocketCross(el){
+ const sId=el?.dataset?.session,gId=el?.dataset?.game,f=Number(el?.dataset?.frame);
+ const s=db.sessions.find(x=>x.id===sId),g=s?.games?.find(x=>x.id===gId);
+ const r=g&&rollsIn(g,f).find(x=>x.ball===1);
+ if(!r||r.foul||f<1||f>10||!Number.isInteger(f)){render();return}
+ const copy=JSON.parse(JSON.stringify(db)),newGame=copy.sessions.find(x=>x.id===sId)?.games.find(x=>x.id===gId),
+  target=newGame?.rolls.find(x=>x.frame===f&&x.ball===1);
+ if(!target){render();return}
+ const model=window.MiBowlingPocketReal;
+ if(el.checked)target.impactSide=model?.crossSide(db.hand)||(db.hand==='zurdo'?'1-3':'1-2');
+ else delete target.impactSide;
+ try{window.MiBowlingEscritura.write(KEY,JSON.stringify(copy));db=copy;saveError=false;window.MiBowlingNube?.programar()}
+ catch(_){alert('No se pudo guardar el cruce. Las partidas no se han modificado.');render();return}
+ render();
+}
+function pocketReviewPanel(a){
+ const model=window.MiBowlingPocketReal;if(!model)return'';
+ const label=model.crossSide(db.hand),groups=a.scoreGames.map(g=>{
+  const first=Array.from({length:10},(_,i)=>rollsIn(g,i+1)[0]).filter(r=>r&&r.ball===1&&!r.foul&&(!statsBallId||r.ballId===statsBallId));
+  return{g,first};
+ }).filter(x=>x.first.length);
+ return '<div class="mt12"><button class="btn outline" type="button" aria-expanded="'+pocketReviewOpen+'" onclick="pocketReviewOpen=!pocketReviewOpen;render()">'+
+ (pocketReviewOpen?'Ocultar revisión de entradas':'Revisar entradas 1–'+(db.hand==='zurdo'?3:2))+'</button>'+
+ (pocketReviewOpen?'<p class="hint">Por defecto cada primera bola se considera pocket 1–'+(db.hand==='zurdo'?2:3)+'. Marca únicamente las que entraron por el '+label+'. No se modifican los bolos derribados ni la puntuación.</p>'+
+ groups.map(({g,first})=>'<div class="pocket-review-game" style="border-top:1px solid #444;padding:10px 0"><strong>'+esc(g._session?.date||'')+' · '+esc(g._session?.title||'Partida')+' · '+esc(g.id?.slice(-5)||'')+'</strong><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+first.map(r=>{
+  const checked=r.impactSide===label;
+  return '<label style="display:flex;align-items:center;gap:4px;padding:8px 10px;border:1px solid #545454;border-radius:12px;min-height:44px">'+
+  '<input type="checkbox" aria-label="Frame '+r.frame+': entró por '+label+'" data-session="'+esc(g._session.id)+'" data-game="'+esc(g.id)+'" data-frame="'+r.frame+'" onchange="setPocketCross(this)" '+(checked?'checked':'')+'><span>F'+r.frame+'</span></label>';
+ }).join('')+'</div></div>').join(''):'')+'</div>';
+}
 // 3.3.17 · Logotipo «mibowling» con bolo en la i, para imágenes generadas.
 function drawWordmark(c,x,y,size){c.save();c.font=`800 ${size}px system-ui,-apple-system,sans-serif`;c.textBaseline='alphabetic';c.fillStyle='#f5f5f7';c.fillText('mi',x,y);x+=c.measureText('mi').width;c.fillStyle='#f0612d';c.fillText('bowl',x,y);x+=c.measureText('bowl').width;const h=size*.74,sc=h/88;x+=size*.02;c.save();c.translate(x,y-h);c.scale(sc,sc);c.translate(-29,-6.5);c.fillStyle='#f0612d';c.fill(new Path2D('M50 7C58.5 7 62.5 14 61.5 23.5C60.6 31 56.5 34 56.5 38.5C56.5 43 66.5 50.5 68.5 62.5C70.5 76.5 63.5 88.5 58.5 94H41.5C36.5 88.5 29.5 76.5 31.5 62.5C33.5 50.5 43.5 43 43.5 38.5C43.5 34 39.4 31 38.5 23.5C37.5 14 41.5 7 50 7Z'));c.fillStyle='#1c1c1e';c.fillRect(43,33.5,14,2.6);c.fillRect(43.6,37.6,12.8,2.6);c.restore();x+=42*sc+size*.03;c.fillStyle='#f0612d';c.fillText('ng',x,y);c.restore()}
 // 3.3.19 · Compartir como tarjeta vertical tipo historia (1080×1920).
@@ -726,7 +769,7 @@ function registryClassic(){const s=session();if(!s)return `<div class="card"><h2
   <div class="card compact-score registry-v4-score"><div class="card-head"><h2>Marcador · Partida ${s.games.length}</h2><span class="pill">${complete(g)?score(g):'Parcial '+score(g)} pts</span></div>${scoreStrip(g,n)}${exactGame(g)?registryPinMini(g):''}<p class="registry-v4-mini-legend"><span><i class="registry-v4-legend-black" aria-hidden="true"></i> Negro: en pie tras la 1.ª / derribados en la 2.ª.</span><span><i class="registry-v4-legend-red" aria-hidden="true"></i> Rojo: en pie tras la 2.ª.</span></p><div class="score-actions-row mt12">${lane.pair?`<span class="hint">${n.done?'Última pista':`Frame ${n.frame} ·`} ${lane.lane?`Pista ${lane.lane}`:'Sin pista'}. Alternancia por frame.</span>`:''}<div class="score-action-buttons"><button type="button" class="btn outline" onclick="editPair=!editPair;render()">⇄ Cambiar par</button><button type="button" class="btn outline" onclick="undoRoll()" ${g.rolls.length?'':'disabled'} aria-label="Deshacer último lanzamiento">↶ Deshacer último lanzamiento</button></div></div></div>
 ${editPair?pairEditor(s,g,n):''}
 ${n.done?finishedGame(s,g,completed):`<div class="card registry-v4-roll"><div class="game-heading"><div><h1>Frame ${n.frame} · Tirada ${n.ball}</h1></div><span class="pill">${selection.length} en pie</span></div>
-<p class="registry-v4-pin-caption">Toca los <strong>bolos que quedan en pie</strong>.<small>Si no marcas ninguno, anotarás todos derribados.</small></p><div class="registry-v4-rack-wrap">${n.available?rackUI(n.available):'<p class="hint">Este frame se empezó por cantidad: termínalo en el registro nuevo (modo Cantidad).</p>'}</div>
+${n.ball===1?`<label class="switch" style="display:inline-flex;align-items:center;gap:8px;min-height:44px"><input id="classic-pocket-cross" type="checkbox" onchange="setClassicPocketCross(this.checked)" ${classicPocketPending[classicPocketKey(g,n)]?'checked':''}> Entró 1–${db.hand==='zurdo'?3:2} (si no marcas, pocket 1–${db.hand==='zurdo'?2:3})</label>`:''}<p class="registry-v4-pin-caption">Toca los <strong>bolos que quedan en pie</strong>.<small>Si no marcas ninguno, anotarás todos derribados.</small></p><div class="registry-v4-rack-wrap">${n.available?rackUI(n.available):'<p class="hint">Este frame se empezó por cantidad: termínalo en el registro nuevo (modo Cantidad).</p>'}</div>
  <button class="btn primary big block mt12 registry-v4-record" onclick="recordRoll()" id="quick-record">${selection.length===0?(n.available.length===10?'✕ Strike':'✓ Derribados todos'):`Registrar ${n.available.length-selection.length} derribados →`}</button>
  ${quickLayout==='large'?'':''}<p class="registry-v4-quick-caption">Atajos: «Todos en pie», «Todos derribados» y «Falta» registran directamente la tirada.</p><div class="actions mt12 v25-actions registry-v4-quick ${quickLayout==='compact'?'quick-compact':quickLayout==='large'?'quick-large':''}" data-quickbar><button class="btn" onclick="fastRoll(true)">Todos en pie</button><button class="btn" onclick="fastRoll(false)">Todos derribados</button><button class="btn foul-btn" onclick="foulRoll()">Falta</button><button type="button" class="btn" onclick="selection=[];render()">Limpiar</button></div>
  ${s.type==='entrenamiento'&&!pendingClassification(s)?`<label class="switch stats-checkbox"><input type="checkbox" ${g.includeStats!==false?'checked':''} onchange="toggleGameStats('${g.id}',this.checked)"> Incluir esta partida en estadísticas</label>`:''}
@@ -749,12 +792,12 @@ function recordRoll(isFoul=false){const s=session();if(!s)return;const g=game(s)
  const chosen=selectedForSession!==null&&!selectedForSession.includes(requestedBall)?'':requestedBall;
  if(chosen&&!db.balls.some(x=>x.id===chosen))return alert('La bola ya no existe en el catálogo.');s.currentBallId=chosen;
  for(const k of ['approach','arrow','breakpoint'])if($(k))s.currentLine[k]=$(k).value.trim();
- const where=currentLane(g,n.frame);g.rolls.push({frame:n.frame,ball:n.ball,pins:n.available.filter(p=>!selection.includes(p)).sort((a,b)=>a-b),ballId:chosen,line:cleanLine(s.currentLine),lane:where.lane,pair:where.pair?[...where.pair]:null,foul:!!isFoul,createdAt:new Date().toISOString()});selection=[];save();render()}
+ const where=currentLane(g,n.frame);g.rolls.push({frame:n.frame,ball:n.ball,pins:n.available.filter(p=>!selection.includes(p)).sort((a,b)=>a-b),ballId:chosen,line:cleanLine(s.currentLine),lane:where.lane,pair:where.pair?[...where.pair]:null,foul:!!isFoul,createdAt:new Date().toISOString(),...(n.ball===1&&classicPocketPending[classicPocketKey(g,n)]?{impactSide:db.hand==='zurdo'?'1-3':'1-2'}:{})});delete classicPocketPending[classicPocketKey(g,n)];selection=[];save();render()}
 function undoRoll(){const s=session(),g=game(s);if(isFinalOnly(g)){if(!confirm('¿Borrar la puntuación final anotada?'))return;delete g.finalOnly;save();render();return}if(!g.rolls.length)return;if(!confirm('¿Eliminar el último lanzamiento?'))return;g.rolls.pop();selection=[];save();render()}
 // 3.3.15 · Anotación del registro nuevo. Guarda por la misma vía (save → MiBowlingEscritura).
 function throwBallFor(s,n){const want=(n.capacity===10?s.currentBallId:(s.spareBallId||s.currentBallId))||'';const allowed=selectedBallsFor(s.id);if(!want||(allowed!==null&&!allowed.includes(want))||!db.balls.some(b=>b.id===want))return '';return want}
 function recordThrow(opts){const s=session();if(!s)return false;const g=game(s),n=next(g);if(n.done)return false;
- const where=currentLane(g,n.frame);const base={frame:n.frame,ball:n.ball,ballId:throwBallFor(s,n),line:cleanLine(s.currentLine),lane:where.lane,pair:where.pair?[...where.pair]:null,foul:!!opts.foul,createdAt:new Date().toISOString()};
+ const where=currentLane(g,n.frame);const base={frame:n.frame,ball:n.ball,ballId:throwBallFor(s,n),line:cleanLine(s.currentLine),lane:where.lane,pair:where.pair?[...where.pair]:null,foul:!!opts.foul,createdAt:new Date().toISOString(),...(n.ball===1&&['1-3','1-2'].includes(opts.impactSide)?{impactSide:opts.impactSide}:{})};
  if(Array.isArray(opts.pins)){if(!n.available)return false;const pins=[...new Set(opts.pins.map(Number))].sort((a,b)=>a-b);if(pins.some(p=>!n.available.includes(p)))return false;g.rolls.push({...base,pins:opts.foul?[]:pins})}
  else{const c=opts.foul?0:opts.count;if(!Number.isInteger(c)||c<0||c>n.capacity)return false;g.rolls.push({...base,pins:[],count:c,pinDetail:'count'})}
  selection=[];save();return true}
@@ -874,7 +917,7 @@ function stats(){const a=periodAggregate(aggregate(statMode,statsBallId)),m=metr
  <div class="row wrap mb12"><span class="hint">Material y rendimiento de tu arsenal</span><button type="button" class="textlink" onclick="openBallPickerFor('','estadisticas')">Ver mis bolas →</button></div>
  <div class="seg mb16"><button class="${statMode==='entrenamiento'?'active':''}" onclick="statMode='entrenamiento';statsBallId='';render()"><svg class="ui-line-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></svg> Entrenamientos</button><button class="${statMode==='oficial'?'active':''}" onclick="statMode='oficial';statsBallId='';render()"><svg class="ui-line-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></svg> Competición oficial</button></div>
  <div class="card"><div class="ui-stats-filter"><label for="stats-ball">Bola</label><div style="flex:1;min-width:0"><select class="input" id="stats-ball" onchange="statsBallId=this.value;render()"><option value="">Todas las bolas</option>${db.balls.map(b=>`<option value="${esc(b.id)}" ${statsBallId===b.id?'selected':''}>${esc(b.brand+' '+b.model)}</option>`).join('')}</select></div></div>
-  ${a.totals.length?`<div class="dashboard-grid mt16">${m.map(x=>tile(x.icon,x.label,x.value)).join('')}${tile('↗','Partidas 200+',a.totals.filter(v=>v>=200).length)}${tile('◎','Pocket 1–'+pocketStats(a).flank,p100(pocketStats(a).hit,pocketStats(a).total),pocketStats(a).hit+' / '+pocketStats(a).total)}${tile('✓','Clean Games',a.games.filter(cleanGame).length,p100(a.games.filter(cleanGame).length,a.games.length)+' partidas limpias')}</div>`:`<div class="ui-empty-card mt16"><div><h2>Sin resultados para este filtro</h2><p>Registra o completa partidas, o cambia el filtro para consultar tus resultados.</p></div><button type="button" class="btn primary" onclick="go('nueva')">Registrar partida</button></div>`}
+  ${a.totals.length?`<div class="dashboard-grid mt16">${m.map(x=>tile(x.icon,x.label,x.value)).join('')}${tile('↗','Partidas 200+',a.totals.filter(v=>v>=200).length)}${tile('◎','Pocket 1–'+pocketStats(a).flank+' (estimado)',p100(pocketStats(a).hit,pocketStats(a).total),pocketStats(a).hit+' / '+pocketStats(a).total)}${tile('✓','Clean Games',a.games.filter(cleanGame).length,p100(a.games.filter(cleanGame).length,a.games.length)+' partidas limpias')}</div>${pocketReviewPanel(a)}<p class="hint mt12">Sin marca: se supone entrada 1–${pocketStats(a).flank}. Cruces marcados: ${pocketStats(a).cross}. Este indicador refleja la entrada declarada, no los bolos derribados.</p>`:`<div class="ui-empty-card mt16"><div><h2>Sin resultados para este filtro</h2><p>Registra o completa partidas, o cambia el filtro para consultar tus resultados.</p></div><button type="button" class="btn primary" onclick="go('nueva')">Registrar partida</button></div>`}
  ${statsBallId?`<p class="warning-box">La media de las partidas corresponde a juegos en los que se usó esta bola, aunque también se hayan usado otras bolas. Las estadísticas por lanzamiento se atribuyen exclusivamente a la bola seleccionada.</p>`:''}
  </div><div class="card"><span class="field" id="ui-stats-label">Apartado de estadísticas</span><select id="stats-pane-select" class="input" hidden tabindex="-1" aria-hidden="true" onchange="statPane=this.value;render()">${[['general','Resumen general'],['bolos','Análisis por bolo'],['spares','Spares'],['tecnica','Técnica / pistas'],['boleras','Boleras y pistas'],['frames','Por frame'],['combinaciones','Combinaciones'],['periodos','Periodos'],['campeonatos','Campeonatos']].map(([k,l])=>`<option value="${k}" ${statPane===k?'selected':''}>${l}</option>`).join('')}</select> <div class="ui-stats-chips" role="group" aria-labelledby="ui-stats-label">${[['general','Resumen general'],['bolos','Análisis por bolo'],['spares','Spares'],['tecnica','Técnica / pistas'],['boleras','Boleras y pistas'],['frames','Por frame'],['combinaciones','Combinaciones'],['periodos','Periodos'],['campeonatos','Campeonatos']].map(([k,l])=>`<button type="button" class="ui-stats-chip" data-ui-pane="${k}" aria-pressed="${statPane===k}" onclick="uiSelectStatsPane(this.dataset.uiPane)">${l}</button>`).join('')}</div></div>
  ${(a.totals.length||statPane==='periodos'||statPane==='campeonatos')?(statPane==='general'?statsGeneral(a):statPane==='bolos'?pinAnalysisCombined(a):statPane==='spares'?statsSpares(a):statPane==='boleras'?venueLaneAnalysis(a):statPane==='frames'?frameAnalysis(a):statPane==='combinaciones'?combinationAnalysis(a):statPane==='periodos'?periodAnalysis(a):statPane==='campeonatos'?competitionAnalysis(a):statsTechnical(a)):''}`}

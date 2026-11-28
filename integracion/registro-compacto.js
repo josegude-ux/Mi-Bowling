@@ -10,6 +10,10 @@
  const MODE='mibowling.pref.registro-modo';       // bolos | cantidad | final
  const MODES=['bolos','cantidad','final'];
  let classicGameId=null,modeByGame={},sheet=null,hideTip=false;
+ const pendingPocketCross=Object.create(null);
+ const pocketKey=(g,n)=>g.id+':'+n.frame;
+ function pendingImpact(g,n){const side=window.MiBowlingPocketReal?.crossSide(db.hand)||(db.hand==='zurdo'?'1-3':'1-2');return n.ball===1&&pendingPocketCross[pocketKey(g,n)]?side:null}
+ function clearPocket(g,n){delete pendingPocketCross[pocketKey(g,n)]}
  const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
  const put=(k,v)=>{try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){alert('No se pudo guardar la preferencia.')}};
  const enabled=()=>get(PREF)!=='0';
@@ -56,6 +60,9 @@ body.rc-open{overflow:hidden}
 .rc-mode button[aria-selected="true"]{background:#636366;font-weight:600}
 .rc-mode button:disabled{opacity:.35}
 .rc-turn{text-align:center;font-size:19px;font-weight:700;margin:0}
+.rc-crossline{display:flex;align-items:center;justify-content:center;gap:8px;min-height:28px;flex-wrap:wrap}
+.rc-cross-check{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:#f5f5f7;white-space:nowrap;cursor:pointer}
+.rc-cross-check input{width:18px;height:18px;accent-color:#f0612d;margin:0}
 .rc-balls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .rc-ballbtn{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;background:#1c1c1e;padding:10px 6px;min-width:0}
 .rc-ballbtn span{font-size:12px;color:#8e8e93;white-space:nowrap}
@@ -210,7 +217,7 @@ body.rc-open{overflow:hidden}
     <div class="rc-foot">${undoBtn}<span></span></div>`;
   }else{
    const scoreRow=`<div class="rc-score"><span>Puntuación actual</span><span><small>máx. ${maxPossible(g)}</small><b>${total}</b></span></div>`;
-   const title=`<p class="rc-turn">Frame ${n.frame}, bola ${n.ball}</p>`;
+   const title=`<div class="rc-crossline"><p class="rc-turn">Frame ${n.frame}, bola ${n.ball}</p>${n.ball===1?`<label class="rc-cross-check" title="Sin marcar se supone pocket 1–${db.hand==='zurdo'?2:3}"><input id="rc-cross-first" type="checkbox" onchange="MiBowlingRegistroCompacto.cross(this.checked)" ${pendingPocketCross[pocketKey(g,n)]?'checked':''}>Entró 1–${db.hand==='zurdo'?3:2}</label>`:''}</div>`;
    if(mode==='cantidad'){
     body=`${boardHtml(g,n)}${scoreRow}${tabs}${title}${ballsHtml(s)}<div class="rc-panel"><p class="rc-hint">Bolos derribados</p>${keysHtml(n)}</div><div class="rc-foot">${undoBtn}<span></span></div>`;
    }else{
@@ -235,10 +242,12 @@ body.rc-open{overflow:hidden}
   closeSheet(){if(sheet==='modo'&&!defaultMode())put(MODE,'bolos');sheet=null;rerender()},
   chooseDefault(m,stay){if(!m){put(MODE,null);return}if(!MODES.includes(m))return;put(MODE,m);const id=currentGameId();if(id&&!stay){const g=game(session());if(!(m==='final'&&g.rolls.length))modeByGame[id]=m}sheet=null;if(document.querySelector('.rc-root'))rerender()},
   mode(m){const s=session();if(!s||!MODES.includes(m))return;const g=game(s),n=next(g);if(n.done)return;if(m==='bolos'&&!n.available)return;if(m==='final'&&g.rolls.length)return;modeByGame[g.id]=m;selection=[];rerender()},
-  pins(kind){const s=session();if(!s)return;const n=next(game(s));if(n.done||!n.available)return;
-   const ok=kind==='canal'?recordThrow({pins:[]}):kind==='foul'?recordThrow({pins:[],foul:true}):recordThrow({pins:n.available.filter(p=>!selection.includes(p))});
-   if(ok)rerender()},
-  count(v){const ok=v==='F'?recordThrow({foul:true}):recordThrow({count:v});if(ok)rerender()},
+  cross(checked){const s=session();if(!s)return;const g=game(s),n=next(g);if(n.done||n.ball!==1)return;pendingPocketCross[pocketKey(g,n)]=!!checked},
+  pins(kind){const s=session();if(!s)return;const g=game(s),n=next(g);if(n.done||!n.available)return;
+   const impactSide=pendingImpact(g,n);
+   const ok=kind==='canal'?recordThrow({pins:[],impactSide}):kind==='foul'?recordThrow({pins:[],foul:true,impactSide}):recordThrow({pins:n.available.filter(p=>!selection.includes(p)),impactSide});
+   if(ok){clearPocket(g,n);rerender()}},
+  count(v){const s=session();if(!s)return;const g=game(s),n=next(g),impactSide=pendingImpact(g,n);const ok=v==='F'?recordThrow({foul:true,impactSide}):recordThrow({count:v,impactSide});if(ok){clearPocket(g,n);rerender()}},
   finalInput(el){el.value=el.value.replace(/\D/g,'').slice(0,3);const v=Number(el.value);const b=document.getElementById('rc-final-save');if(b)b.disabled=!(el.value!==''&&v>=0&&v<=300)},
   saveFinal(){const el=document.getElementById('rc-final-input');if(!el||el.value==='')return;if(setFinalOnly(Number(el.value)))rerender();else alert('Introduce una puntuación de 0 a 300.')},
   undo(){if(undoLast())rerender()},

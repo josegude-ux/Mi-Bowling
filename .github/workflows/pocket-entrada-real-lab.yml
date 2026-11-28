@@ -1,0 +1,43 @@
+name: MI BOWLING - Pocket real checkbox 1-2 LAB
+on:
+  push:
+    branches: [lab/pocket-entrada-real-20261128]
+    paths:
+      - .github/workflows/pocket-entrada-real-lab.yml
+      - integracion/pocket-entrada-real.js
+      - releases/catalogo-local-f1-fotos1/app.js
+      - integracion/registro-compacto.js
+      - index.html
+      - sw.js
+      - tests/pocket-entrada-real.test.cjs
+      - tests/pocket-entrada-real-browser.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pocket-ficticio:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxis dominio persistencia y SHA
+        run: |
+          node --check integracion/pocket-entrada-real.js
+          node --check integracion/registro-compacto.js
+          node --check releases/catalogo-local-f1-fotos1/app.js
+          node --check tests/pocket-entrada-real.test.cjs
+          node --check tests/pocket-entrada-real-browser.cjs
+          node tests/pocket-entrada-real.test.cjs
+      - name: Instalar Chromium WebKit en runner aislado
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: 'Chromium: checkbox 1-2, compacto, clasico y estadisticas'
+        run: node tests/pocket-entrada-real-browser.cjs
+      - name: 'WebKit: checkbox 1-2, compacto, clasico y estadisticas'
+        run: BOWLING_BROWSER=webkit node tests/pocket-entrada-real-browser.cjs
