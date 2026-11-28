@@ -11,13 +11,16 @@ assert.equal(M.clean('1-2'),'1-2');assert.equal(M.clean('unknown'),null);
 const shots=[
  r(1,1,all), // sin marca: por petición del usuario, pocket supuesto
  r(2,1,[1,3],{impactSide:'1-2'}), // derriba 1 y 3 pero entró por 1-2: NO pocket
- r(3,1,[2,4,5]), // sin 1/3 derribados, pero entrada supuesta 1-3
+ r(3,1,[2,4,5]), // 3.3.38: bolo 1 en pie → nunca pocket (decisión del usuario)
  r(4,2,all), // segunda bola: no contar
- r(5,1,all,{foul:true}) // foul: no cuenta
+ r(5,1,all,{foul:true}), // foul: no cuenta
+ r(6,1,[]), // 3.3.38: canal → nunca pocket
+ r(7,1,[],{count:6,pinDetail:'count'}), // por cantidad, sin canal: se mantiene la suposición
+ r(8,1,[],{count:0,pinDetail:'count'}) // por cantidad, canal: nunca pocket
 ];
 const result=M.analyze(shots,'diestro');
-assert.deepEqual({hit:result.hit,total:result.total,cross:result.cross,assumed:result.assumed,legacyHits:result.legacyHits,rate:result.rate},
- {hit:2,total:3,cross:1,assumed:2,legacyHits:2,rate:67});
+assert.deepEqual({hit:result.hit,total:result.total,cross:result.cross,assumed:result.assumed,excluded:result.excluded,legacyHits:result.legacyHits,rate:result.rate},
+ {hit:2,total:6,cross:1,assumed:2,excluded:3,legacyHits:2,rate:33});
 const left=M.analyze([r(1,1,all),r(2,1,all,{impactSide:'1-3'})],'zurdo');
 assert.equal(left.hit,1);assert.equal(left.cross,1);assert.equal(left.rate,50);
 assert.equal(M.analyze([], 'diestro').rate,null);
