@@ -56,8 +56,29 @@
    const line=String(raw||'').replace(/\s+/g,' ').trim();
    if(!line)continue;
    const n=norm(line);
-   if(/^(SEGUNDA|2ª|2A)\s+CATEGORIA\b/.test(n)||/^CATEGORIA\s+(SEGUNDA|2ª|2A)\b/.test(n))currentCategory='2ª';
-   if(/^(TERCERA|3ª|3A)\s+CATEGORIA\b/.test(n)||/^CATEGORIA\s+(TERCERA|3ª|3A)\b/.test(n))currentCategory='3ª';
+   if(/^(SEGUNDA|2ª|2A)\s+CATEGORIA\b/.test(n)||/^CATEGORIA\s+(SEGUNDA|2ª|2A)\b/.test(n)||/^CLASIFICACION\s+(2ª|2A|SEGUNDA)\s+MASCULINA/.test(n))currentCategory='2ª';
+   if(/^(TERCERA|3ª|3A)\s+CATEGORIA\b/.test(n)||/^CATEGORIA\s+(TERCERA|3ª|3A)\b/.test(n)||/^CLASIFICACION\s+(3ª|3A|TERCERA)\s+MASCULINA/.test(n))currentCategory='3ª';
+   // Formato original FEB 28/11/2026, hoja Excel exportada a PDF:
+   // «3 Total CELTA XUNTA 464 343 415 281 398 328 12 2229 185,750 464»
+   // Solo extraemos filas Total COMPLETAS; las de jugadores no duplican parejas.
+   // La 3ª categoría contiene «8 Total CELTA XUNTA» SIN resultados: ignorar.
+   const feb=line.match(/^(\d{1,2})\s+Total\s+(.+?)\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s+(\d{1,2})\s+(\d{1,5})\s+(\d{1,3}[,.]\d{3})\s+(\d{1,3})$/i);
+   if(feb){
+    const pos=Number(feb[1]),team=feb[2].trim(),
+      games=feb.slice(3,9).map(Number),part=Number(feb[9]),bolos=Number(feb[10]),
+      mean=Number(feb[11].replace(',','.')),maxpt=Number(feb[12]),cat=currentCategory;
+    const valid=!!cat&&pos>=1&&pos<=100&&team.length>=2&&team.length<=110&&
+      games.every(v=>Number.isInteger(v)&&v>=0&&v<=600)&&part===12&&
+      bolos===games.reduce((t,v)=>t+v,0)&&Math.abs(bolos/12-mean)<0.002&&
+      maxpt===Math.max(...games);
+    if(!valid){skipped++;continue}
+    const key=[cat,pos,norm(team)].join('|');
+    if(seen.has(key)){skipped++;continue}
+    seen.add(key);recognized++;rows.push({pos,cat,team,bolos,part});
+    if(rows.length>=MAX_ROWS)break;
+    continue;
+   }
+   if(/^\d{1,2}\s+Total\b/i.test(line)){skipped++;continue}
    if(/^(?:POS(?:ICION)?\s+|CLASIFICACION|TOTAL|CTO |CAMPEONATO|PAGINA|FIRMA|PAREJAS 2026|FEDERACION)/.test(n))continue;
    // Formato reconocible: «POS [2M|3M] NOMBRE [PART] BOLOS».
    // No asignar categoría cuando no aparece en la fila ni en un encabezado de bloque.

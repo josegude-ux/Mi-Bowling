@@ -23,6 +23,32 @@ assert.equal(parsed.rows.length,5);
 assert.deepEqual(parsed.celta.map(x=>x.team),['CELTA XUNTA']);
 assert(parsed.rows.slice(0,3).every(x=>x.cat==='2ª'));
 assert(parsed.rows.slice(3).every(x=>x.cat==='3ª'));
+// Réplica FICTICIA (sin PDF ni datos personales de la competición): filas Excel/FEB
+// por 6 partidas, promedio sobre 12 entradas y dos categorías en un único documento.
+const febLines=[
+ 'FEDERACION ESPANOLA DE BOLOS',
+ 'CLASIFICACION 2ª MASCULINA',
+ '1ª SERIE',
+ 'ORD PAREJA CODG JUGADORES 1ª PART 2ª PART 3ª PART 4ª PART 5ª PART 6ª PART PART BOLOS PROMEDIO MAXPT',
+ '1 Total CLUB FICTICIO ALFA 400 450 320 380 430 410 12 2390 199,167 450',
+ '2 Total CELTA XUNTA 401 399 389 372 400 398 12 2359 196,583 401',
+ '3 Total CLUB FICTICIO BETA 360 400 390 360 370 400 12 2280 190,000 400',
+ '4 Total CLUB INVALIDO 100 100 100 100 100 100 12 999 83,250 100',
+ 'CLASIFICACION 3ª MASCULINA',
+ '1ª SERIE',
+ '1 Total CLUB FICTICIO GAMMA 310 320 300 290 310 280 12 1810 150,833 320',
+ '2 Total CLUB FICTICIO DELTA 300 320 280 290 305 275 12 1770 147,500 320',
+ '8 Total CELTA XUNTA',
+ '9 Total 0'
+];
+const febResult=C.parseTextLines(febLines);
+assert.equal(febResult.rows.length,5,'5 totales válidos de las dos categorías, no jugadores ni filas vacías');
+assert.equal(febResult.rows.filter(r=>r.cat==='2ª').length,3);
+assert.equal(febResult.rows.filter(r=>r.cat==='3ª').length,2);
+assert.deepEqual(febResult.celta.map(r=>[r.pos,r.cat,r.team,r.bolos]),[[2,'2ª','CELTA XUNTA',2359]]);
+assert.equal(febResult.rows.some(r=>r.team==='CLUB INVALIDO'),false,'no aceptar totales incongruentes');
+assert.equal(C.validateRows(febResult.rows,'2ª').length,5);
+assert.throws(()=>C.validateRows(febResult.rows,'3ª'),/IDENTIFICAR_CELTA_XUNTA/,'Celta 3ª sin bolos no es segunda pareja');
 const reviewed=C.validateRows(parsed.rows,'2ª');
 assert.equal(reviewed.length,5);
 assert.throws(()=>C.validateRows(reviewed.filter(x=>x.team!=='CELTA XUNTA'),'2ª'),/IDENTIFICAR_CELTA_XUNTA/);
