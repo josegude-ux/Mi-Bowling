@@ -67,10 +67,10 @@ const seed={version:2,hand:'diestro',balls:[{id:'x',brand:'Marca Ficticia',model
   assert.equal(data.sessions[1].games[0].rolls[0].pins.length,9,'Solo se registra un cruce; los bolos no cambian');
   assert.deepEqual(data.sessions[0].games[0].rolls.map(x=>x.pins),oldRolls.map(x=>x.pins),'No modificar otra partida');
   await page.evaluate(()=>window.MiBowlingRegistroCompacto.classic());
-  await page.evaluate(()=>rewindFrame(1));
+  await page.evaluate(()=>{rewindFrame(1);render()});
   await page.waitForSelector('#classic-pocket-cross');
   await page.locator('#classic-pocket-cross').check();
-  await page.locator('[aria-label="Bolo 7: en pie"]').first().click().catch(()=>{});
+  await page.evaluate(()=>togglePin(7));
   assert.equal(await page.locator('#classic-pocket-cross').isChecked(),true,'El check del modo clásico se conserva');
   await page.locator('.registry-v4-record').click();
   data=await read();
