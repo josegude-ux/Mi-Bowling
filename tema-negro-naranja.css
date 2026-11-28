@@ -273,3 +273,11 @@ html body .arsenal-recommend h3{color:#ff9f0a!important}
 html body .arsenal-recommend p,html body .arsenal-facts>div small{color:#d1d1d6!important}
 html body .arsenal-choice:has(input:checked){border-color:#ff6a2b!important;background:#2a1209!important}
 html body .arsenal-choice input,html body .ball-session-toggle input{accent-color:#ff6a2b}
+
+/* 3.3.37 · Detalle de jornada compacto */
+html body .sd-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 8px}
+html body .sd-row:empty{display:none}
+html body .sd-row .switch.stats-checkbox{background:transparent!important;border:0!important;padding:4px 0!important;min-height:0!important;font-size:13px;margin:0}
+html body .sd-row .btn{min-height:32px!important;padding:5px 12px!important;font-size:13px!important;margin:0!important}
+html body .sd-row>*{margin:0}
+html body details.sd-more>summary{font-size:13px;color:#a1a1a6;padding:8px 2px;cursor:pointer}
